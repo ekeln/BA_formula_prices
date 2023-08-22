@@ -427,14 +427,51 @@ and A4: "HML_failure (HML_conj [] (a # x2))"
 and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
   show ?thesis
   proof-
-    have "expr_5 a = 0"
+    have A6: "expr_5 a = 0"
       using A5 by auto
-    have "expr_1 a = 1"
+    have A7: "expr_1 a = 1"
       using A5 by force
-    have "expr_5 (HML_conj [] x2) \<le> 1"
+    have A8: "expr_5 (HML_conj [] x2) \<le> 1"
       by (metis (no_types, opaque_lifting) A3 A4 HML_failure.cases formula_list.distinct(1) formula_list.inject(1) list.set_intros(2) neg)
     have "expr_5 (HML_conj [] (a # x2)) = Max ({0} \<union> {expr_5 a} \<union> {expr_5 (HML_conj [] x2)} \<union> {expr_1 a})"
+      by simp
+    also from A6 A7 A8 have "... = 1"
+      by simp
+    finally show ?thesis
+      by simp
+    qed
+  qed
+qed
 
+lemma expr_6_fail:
+assumes A1: "HML_failure (HML_conj [] x2)" and A2: "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
+  shows "expr_6 (HML_conj [] x2) \<le> 1"
+  using A1 A2
+proof(induction x2)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a x2)
+  then show ?case
+  proof-
+assume A3: "(HML_failure (HML_conj [] x2) \<Longrightarrow>
+     \<forall>y\<in>set x2. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] []) \<Longrightarrow> expr_6 (HML_conj [] x2) \<le> 1)"
+and A4: "HML_failure (HML_conj [] (a # x2))"
+and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
+  show ?thesis
+  proof-
+    have A6: "expr_6 a = 0"
+      using A5 by force
+    from A3 A4 A5 have A7: "expr_6 (HML_conj [] x2) \<le> 1"
+      by (metis (no_types, opaque_lifting) HML_failure.simps formula_list.distinct(1) formula_list.inject(1) list.set_intros(2))
+    have "expr_6 (HML_conj [] (a # x2)) \<le> Max({0}  \<union> {1 + expr_6 a} \<union> {expr_6 (HML_conj [] x2)})"
+      by simp
+    also from A6 A7 have "... \<le> 1"
+      by simp
+    finally show ?thesis
+      by this
+    qed
+  qed
 qed
 
 thm subst
@@ -474,15 +511,88 @@ next
         by (meson HML_failure.neg expr_3_fail local.neg)
       have A4: "expr_4 (HML_conj [] x2) \<le> 0" 
         by (meson HML_failure.neg expr_4_fail_neg local.neg) 
-      have A5: "expr_5 (HML_conj [] x2) \<le> 1" sorry
-      have A6: "expr_6 (HML_conj [] x2) \<le> 1" sorry
+      have A5: "expr_5 (HML_conj [] x2) \<le> 1" 
+        by (meson HML_failure.neg expr_5_fail local.neg) 
+      have A6: "expr_6 (HML_conj [] x2) \<le> 1" 
+        by (meson HML_failure.neg expr_6_fail local.neg) 
       from A1 A2 A3 A4 A5 A6 show ?thesis
         by (simp add: Pair_inject numeral_eq_enat one_enat_def zero_enat_def)
     qed
   qed
 qed
- 
+
+lemma failure_left:
+  fixes \<phi>
+  assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
+  shows "HML_failure \<phi>"
+  by (smt (verit, del_insts) empty_iff formula_list.inject(1) formula_list.simps(4) indcution_basis_subformula list.set(1) neg subformula.cases)
 
 lemma "(HML_failure \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
-  oops
+  using failure_left failure_right by blast
+
+lemma expr_4_read:
+  fixes \<phi> and \<alpha>
+  assumes A1: "HML_readiness \<phi>" and A2: "less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1)"
+  shows "expr_4 (HML_poss \<alpha> \<phi>) \<le> 1"
+proof(cases \<phi>)
+  case (HML_conj x11 x12)
+  then show ?thesis
+  proof-
+    from A1 have A3: "\<forall>x \<in> set x11. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] [])"
+      by (metis HML_conj HML_readiness.cases formula_list.distinct(1) formula_list.inject(1))
+    from A1 have A4: "\<forall>y \<in> set x12. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])" 
+      by (metis HML_conj HML_readiness.cases formula_list.distinct(1) formula_list.inject(1))
+    have "expr_4 (HML_poss \<alpha> (HML_conj x11 x12)) \<le> 1"
+    proof(induct x11 arbitrary: x12)
+      case Nil
+      then show ?case
+        by (smt (verit, ccfv_threshold) empty_iff formula_list.distinct(1) formula_list.inject(1) indcution_basis_subformula list.set(1) subformula.cases) 
+    next
+      case (Cons a x11)
+      then show ?case
+        by (smt (verit, del_insts) empty_iff formula_list.distinct(1) formula_list.inject(1) indcution_basis_subformula list.set(1) subformula.cases) 
+    qed
+    thus ?thesis
+      using HML_conj by blast
+  qed
+next
+  case (HML_poss x21 x22)
+  then show ?thesis
+    by (metis A2 expr.simps expr_4.simps(2) formula_prices_list.expr_4_pos less_eq_t.simps of_nat_1 of_nat_eq_enat of_nat_le_iff) 
+qed
+
+lemma readiness_right:
+  fixes \<phi>
+  assumes A1: "HML_readiness \<phi>"
+  shows "(less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
+  using A1
+proof(induction \<phi>)
+  case (read_pos \<phi> \<alpha>)
+  then show ?case 
+  proof-
+    assume A2: "less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1)"
+    then show "less_eq_t (expr (HML_poss \<alpha> \<phi>)) (\<infinity>, 2, 1, 1, 1, 1)"
+    proof-
+      have A3: "expr_4 (HML_poss \<alpha> \<phi>) \<le> 1"
+        by (meson expr_4_read local.read_pos(2) read_pos.hyps)
+      show ?thesis
+        by (metis A2 A3 enat_ord_simps(1) enat_ord_simps(3) expr.simps formula_prices_list.expr_2_pos formula_prices_list.expr_3_pos formula_prices_list.expr_5_pos formula_prices_list.expr_6_pos less_eq_t.simps one_enat_def)
+    qed
+  qed
+    next
+  case (read_conj xs \<alpha> ys)
+  then show ?case
+    by (smt (verit, best) empty_iff formula_list.inject(1) formula_list.simps(4) indcution_basis_subformula list.set(1) subformula.cases) 
+qed
+  
+
+lemma readiness_left:
+  fixes \<phi>
+  assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
+  shows "HML_readiness \<phi>"
+  by (smt (verit, del_insts) empty_iff formula_list.distinct(1) formula_list.inject(1) indcution_basis_subformula list.set(1) read_conj subformula.cases)
+
+lemma "(HML_readiness \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
+  using readiness_left readiness_right by blast
+
 end

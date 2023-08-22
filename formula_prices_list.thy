@@ -70,24 +70,24 @@ Max ({0} \<union> {expr_1 x} \<union> {expr_3 (HML_conj xs \<Psi>)} \<union> {ex
 
 (* Neg := {i \<in> I| \<exists>\<phi>\<^sub>i. \<psi>\<^sub>i = \<not>\<phi>\<^sub>i}*)
 
-fun expr_4 :: "('a)formula_list \<Rightarrow> nat"
+fun expr_4_rest :: "('a)formula_list \<Rightarrow> nat"
 where
- expr_4_pos: \<open>expr_4 (HML_poss \<alpha> \<phi>) = expr_4 \<phi>\<close> |
-expr_4_conj_empty: \<open>expr_4 (HML_conj [] []) = 0\<close>|
-expr_4_conj_right: \<open>expr_4 (HML_conj [] (y#ys)) = Max ({0} \<union> {expr_4 y} \<union> {expr_4 (HML_conj [] ys)})\<close>|
-expr_4_conj: \<open>expr_4 (HML_conj (x#xs) \<Psi>) = 
-Max ({0} \<union> {expr_4 x} \<union> {expr_4 (HML_conj xs \<Psi>)})\<close>
+ expr_4_pos: \<open>expr_4_rest (HML_poss \<alpha> \<phi>) = expr_4_rest \<phi>\<close> |
+expr_4_conj_empty: \<open>expr_4_rest (HML_conj [] []) = 0\<close>|
+expr_4_conj_right: \<open>expr_4_rest (HML_conj [] (y#ys)) = Max ({0} \<union> {expr_4_rest y} \<union> {expr_4_rest (HML_conj [] ys)})\<close>|
+expr_4_conj: \<open>expr_4_rest (HML_conj (x#xs) \<Psi>) = 
+Max ({0} \<union> {expr_4_rest x} \<union> {expr_4_rest (HML_conj xs \<Psi>)})\<close>
 
 fun expr_4_r :: "('a)formula_list \<Rightarrow> nat"
   where
 \<open>expr_4_r (HML_conj (x#xs) \<Psi>) = Max({expr_1 x} \<union> {expr_4_r (HML_conj xs \<Psi>)})\<close>|
 \<open>expr_4_r _ = 0\<close>
 
-fun expr_4_pre :: "('a)formula_list \<Rightarrow> nat" 
+fun expr_4 :: "('a)formula_list \<Rightarrow> nat" 
   where
-pre_conj: \<open>expr_4_pre (HML_conj \<Phi> \<Psi>) = 
-Max ({expr_4 (HML_conj \<Phi> \<Psi>)} \<union> {expr_4_r (HML_conj (pos_comp_r \<Phi>) \<Psi>)})\<close> |
-\<open>expr_4_pre \<phi> = expr_4 \<phi>\<close>
+pre_conj: \<open>expr_4 (HML_conj \<Phi> \<Psi>) = 
+Max ({expr_4_rest (HML_conj \<Phi> \<Psi>)} \<union> {expr_4_r (HML_conj (pos_comp_r \<Phi>) \<Psi>)})\<close> |
+\<open>expr_4 \<phi> = expr_4_rest \<phi>\<close>
 
 
 fun expr_5 :: "('a)formula_list \<Rightarrow> nat"
@@ -108,12 +108,7 @@ expr_6_conj_2: \<open>expr_6 (HML_conj [] (y#ys)) = Max({0}  \<union> {1 + expr_
 
 fun expr :: "('a)formula_list \<Rightarrow> nat \<times> nat \<times> nat \<times>  nat \<times> nat \<times> nat" 
   where
-\<open>expr \<phi> = (expr_1 \<phi>, expr_2 \<phi>, expr_3 \<phi>, expr_4_pre \<phi>, expr_5 \<phi>, expr_6 \<phi>)\<close>
-
-(*<a>\<And>{\<not><a>}*)
-
-value "expr (HML_conj_2 {} F)"
-value "expr ((HML_poss_2 a) HML_true)" 
+\<open>expr \<phi> = (expr_1 \<phi>, expr_2 \<phi>, expr_3 \<phi>, expr_4 \<phi>, expr_5 \<phi>, expr_6 \<phi>)\<close>
 
 
 thm Sup
