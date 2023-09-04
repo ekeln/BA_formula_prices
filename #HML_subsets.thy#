@@ -506,10 +506,26 @@ A3: "less_eq_t (expr (HML_conj (a # xs) ys)) (n1, n2, n3, n4, n5, n6)"
       from A3 have E3_xs: "expr_3 (HML_conj xs ys) \<le> n3"
         using dual_order.trans by fastforce
       moreover {
-      have "expr_4 (HML_conj (a#xs) ys) = 
+      have E4: "expr_4 (HML_conj (a#xs) ys) = 
 Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
         by simp
-      also have "... = "
+      also from A3 have E_4: "... \<le> n4" 
+        by simp
+      have subs_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<subseteq> 
+({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+        by simp
+      thm Max_mono
+      have ne_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<noteq> {}"
+        by simp
+      have fin_4: "finite ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+        by simp
+      from subs_4 ne_4 fin_4 have "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le>
+ Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})" by (rule Max_mono)
+      from this A3 have max_rest: "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le> n4"
+        by (meson E_4 dual_order.trans enat_ord_simps(1))
+      have E4_2: "expr_4_rest (HML_conj (a#xs) ys) = 
+Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
+        by simp
       from A3 expr_1_pos_r have E4_a: "expr_4 a \<le> n4" sorry
       from A3 have E4_xs: "expr_4 (HML_conj xs ys) \<le> n4" sorry
     }

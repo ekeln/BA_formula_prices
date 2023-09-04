@@ -97,14 +97,239 @@ next
   qed
 qed
 
+lemma pos_r_1:
+  assumes A1: "\<forall>x\<in>set xs. expr_1 x < expr_1 a"
+  shows "pos_r (a#xs) = xs"
+  using A1
+proof(induction xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons x xs)
+  assume A1: "\<forall>x\<in>set xs. expr_1 x < expr_1 a \<Longrightarrow> pos_r (a # xs) = xs" and
+A2: "\<forall>x\<in>set (x # xs). expr_1 x < expr_1 a"
+  define max_val_xs where "max_val_xs = Max (set (map (\<lambda>x. expr_1 x) (a#xs)))"
+  define xs_new_xs where "xs_new_xs = filter (\<lambda>y. expr_1 y < max_val_xs) (a#xs)"
+  define max_val where "max_val = Max (set (map (\<lambda>x. expr_1 x) (a#x#xs)))"
+  define xs_new where "xs_new = filter (\<lambda>y. expr_1 y < max_val) (a#x#xs)"
+  from A2 have "\<forall>x\<in>set xs. expr_1 x < expr_1 a"
+    by simp
+  from this have A3: "pos_r (a # xs) = xs" 
+    by (rule A1)
+  have pos_r_xs_def: "pos_r (a # xs) = xs_new_xs"
+    by (metis max_val_xs_def pos_r.simps(2) xs_new_xs_def)
+  from this A3 xs_new_xs_def have "xs = filter (\<lambda>y. expr_1 y < max_val_xs) (a # xs)"
+    by simp
+
+  have pos_r_def: "pos_r (a # x # xs) = xs_new"
+    by (metis max_val_def pos_r.simps(2) xs_new_def)
+  have A2: "set (map (\<lambda>x. expr_1 x) (a#x#xs)) = {expr_1 y|y. y \<in> set (a#x#xs)}"
+    by auto
+  also have A3:"... = {expr_1 a} \<union> {expr_1 y|y. y \<in> set (x#xs)}"
+    by auto
+  from A2 have "Max ({expr_1 a} \<union> {expr_1 y|y. y \<in> set (x#xs)}) = expr_1 a"
+    by (smt (verit, best) Cons.prems List.finite_set Max_ge Max_in A3 empty_iff insert_iff insert_is_Un linorder_not_le mem_Collect_eq)
+  from this A2 have "max_val = expr_1 a"
+    using A3 max_val_def by presburger
+  then have X: "xs_new = filter (\<lambda>y. expr_1 y < expr_1 a) (a#x#xs)"
+    using xs_new_def by blast
+   have "filter (\<lambda>y. expr_1 y < expr_1 a) (a#x#xs) = (x#xs)"
+     by (simp add: Cons.prems)
+   from this X have "xs_new = x # xs"
+     by simp
+   from pos_r_def this show ?case by (rule HOL.back_subst)
+ qed
+
+lemma pos_r_2:
+  assumes A1: "(\<exists>x\<in>set xs. expr_1 a < expr_1 x)"
+  shows "set (pos_r (a#xs)) = set (pos_r (xs)) \<union> {a}"
+  using A1
+proof(induction xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a xs)
+  then show ?case 
+    by (smt (verit, ccfv_SIG) List.finite_set Max_ge Max_in Un_insert_right dual_order.trans empty_iff filter.simps(2) filter_cong image_eqI insert_iff linorder_not_le list.map(2) list.set(2) list.set_map pos_r.simps(2) sup_bot.right_neutral)
+qed
+
+lemma pos_r_3:
+  assumes A1: "(\<exists>x\<in>set xs. expr_1 a = expr_1 x) \<and> (\<forall>x\<in>set xs. expr_1 x \<le> expr_1 a)"
+  shows "set (pos_r (a#xs)) = set (pos_r xs)"
+  using A1
+proof(induction xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons x xs)
+  assume A1: "(\<exists>x\<in>set xs. expr_1 a = expr_1 x) \<and> (\<forall>x\<in>set xs. expr_1 x \<le> expr_1 a) \<Longrightarrow>
+    set (pos_r (a # xs)) = set (pos_r xs)" and
+A2: "(\<exists>x\<in>set (x # xs). expr_1 a = expr_1 x) \<and> (\<forall>x\<in>set (x # xs). expr_1 x \<le> expr_1 a)"
+  define max_val_xs where "max_val_xs = Max (set (map (\<lambda>x. expr_1 x) (a#xs)))"
+  define xs_new_xs where "xs_new_xs = filter (\<lambda>y. expr_1 y < max_val_xs) (a#xs)"
+  define max_val where "max_val = Max (set (map (\<lambda>x. expr_1 x) (a#x#xs)))"
+  define xs_new where "xs_new = filter (\<lambda>y. expr_1 y < max_val) (a#x#xs)"
+  from A2 have A3: "(\<forall>x\<in>set xs. expr_1 x \<le> expr_1 a)" 
+    by simp
+  have "{expr_1 x | x. x \<in> set (a#xs)} = ({expr_1 x | x. x \<in> set xs} \<union> {expr_1 a})"
+    by auto
+  then have expr_a_in: "expr_1 a \<in> {expr_1 x | x. x \<in> set (a#xs)}"
+    by simp
+  from A2 have "expr_1 x < expr_1 a \<or> expr_1 x = expr_1 a" 
+    by auto
+  then show ?case 
+  proof(rule disjE)
+    assume A4: "expr_1 x = expr_1 a"
+    from A3 A4 have "(\<forall>y\<in>set (a#xs). expr_1 y \<le> expr_1 x)" 
+      by simp
+    from this A4 have "(\<forall>y \<in> {expr_1 x | x. x \<in> set (a#xs)}. y \<le> expr_1 a)" 
+      by auto
+    then have A5: "(\<And>y. y \<in> {expr_1 x | x. x \<in> set (a#xs)} \<Longrightarrow> y \<le> expr_1 a)"
+      by simp
+    have "finite ({expr_1 x | x. x \<in> set (a#xs)})" 
+      by simp
+    thm Max_eqI
+    from this A5 expr_a_in have max_val_a: "Max({expr_1 x | x. x \<in> set (a#xs)}) = expr_1 a" 
+      by (rule Max_eqI)
+    have "set (map (\<lambda>x. expr_1 x) (a#xs)) = {expr_1 x | x. x \<in> set (a#xs)}" 
+      by auto
+    then have "max_val_xs = Max({expr_1 x | x. x \<in> set (a#xs)})" using max_val_xs_def
+      by simp
+    from this max_val_a have "max_val_xs = expr_1 a" 
+      by simp
+    from this A4 have max: "max_val_xs = expr_1 x"
+      by simp
+
+    have fin_2: "finite ({expr_1 y | y. y \<in> set (a#x#xs)})"
+      by simp
+    have "{expr_1 y | y. y \<in> set (a#x#xs)} = {expr_1 y | y. y \<in> set (x#xs)} \<union> {expr_1 a}"
+      by auto
+    then have a_in: "expr_1 a \<in> {expr_1 y | y. y \<in> set (a#x#xs)}"
+      by auto
+    from A3 A4 have "\<forall>x\<in>set (a#x#xs). expr_1 x \<le> expr_1 a"
+      by simp
+    then have fa_le: "(\<And>y. y \<in> {expr_1 z | z. z \<in> set (a#x#xs)} \<Longrightarrow> y \<le> expr_1 a)"
+      by auto
+    from fin_2 fa_le a_in have max_2: "Max({expr_1 y | y. y \<in> set (a#x#xs)}) = expr_1 a"
+      by (rule Max_eqI)
+    from max_2 A3 have "Max({expr_1 y | y. y \<in> set (a#x#xs)}) = expr_1 x"
+      using A4 by presburger
+    have "set (map (\<lambda>x. expr_1 x) (a#x#xs)) = {expr_1 y | y. y \<in> set (a#x#xs)}" 
+      by auto
+    then have "max_val = Max({expr_1 y | y. y \<in> set (a#x#xs)})"
+      using max_val_def by presburger
+    from this A3 A4 max_2 have "max_val = expr_1 a"
+      by simp
+    from this A4 have max_2: "max_val = expr_1 x"
+      by simp
+    from this max have max_eq: "max_val = max_val_xs"
+      by simp
+    from max_2 have "filter (\<lambda>y. expr_1 y < max_val) (a#x#xs) = filter (\<lambda>y. expr_1 y < expr_1 x) (a#x#xs)"
+      by simp
+    also have xs_new_1: "... = filter (\<lambda>y. expr_1 y < expr_1 x) (a#xs)"
+      by simp
+    finally have xs_new_1: "filter (\<lambda>y. expr_1 y < max_val) (a#x#xs) =filter (\<lambda>y. expr_1 y < expr_1 x) (a#xs)"
+      by this
+    from max have "filter (\<lambda>y. expr_1 y < max_val_xs) (a#xs) = filter (\<lambda>y. expr_1 y < expr_1 x) (a#xs)"
+      by simp
+    from this xs_new_1 have "filter (\<lambda>y. expr_1 y < max_val) (a#x#xs) = filter (\<lambda>y. expr_1 y < max_val_xs) (a#xs)"
+      by simp
+    then have pos_eq: "xs_new = xs_new_xs"
+      using xs_new_def xs_new_xs_def by blast
+    have A11: "pos_r(a #x #xs) = xs_new"
+      by (metis max_val_def pos_r.simps(2) xs_new_def)
+    have "pos_r(a#xs) = xs_new_xs" 
+      by (metis max_val_xs_def pos_r.simps(2) xs_new_xs_def)
+    from this A11 pos_eq have "pos_r(a#x#xs) = pos_r(a#xs)" 
+      by simp
+    then show ?thesis
+      using A4 \<open>max_val_xs \<equiv> Max (set (map expr_1 (a # xs)))\<close> max by force
+  next
+    assume A4: "expr_1 x < expr_1 a"
+    from A2 have A5: "(\<exists>x\<in>set (x # xs). expr_1 a = expr_1 x)" 
+      by simp
+    from this A4 have A6: "(\<exists>x\<in>set xs. expr_1 a = expr_1 x)"
+      by simp
+    from this obtain y where A7: "y \<in> set xs" and A8: "expr_1 a = expr_1 y" by (rule bexE)
+    thm Max_eqI
+    from A4 A8 have x_y: "expr_1 x < expr_1 y"
+      by simp
+    from A3 A8 have A9: "\<forall>x \<in> set (a#xs). expr_1 x \<le> expr_1 y"
+      by simp
+    from A7 have A10:"y \<in> set (a#xs)" 
+      by simp
+    have "finite ({expr_1 x|x. x \<in> set (a#xs)})"
+      by simp
+    from this A9 A10 Max_eqI have max_1: "Max {expr_1 x|x. x \<in> set (a#xs)} = expr_1 y"
+      by blast
+    have "{expr_1 y|y. y \<in> set (a#x#xs)} = (set (map (\<lambda>x. expr_1 x) (a#x#xs)))"
+      by auto
+
+    from A3 A8 A4 have A11: "\<forall>x \<in> set (a#xs). expr_1 x \<le> expr_1 y"
+      by simp
+    from A7 have A12: "y \<in> set (a#xs)" 
+      by simp
+    have "finite ({expr_1 y|y. y \<in> set (a#xs)})"
+      by simp
+    from this A11 A12 Max_eqI have max_1: "Max {expr_1 y|y. y \<in> set (a#xs)} = expr_1 y"
+      by blast
+    have "{expr_1 y|y. y \<in> set (a#xs)} = (set (map (\<lambda>x. expr_1 x) (a#xs)))"
+      by auto
+    from this max_1 have "Max (set (map (\<lambda>x. expr_1 x) (a#xs))) = expr_1 y"
+      by simp
+    then have max_1: "max_val_xs = expr_1 y"
+      using max_val_xs_def by blast
+
+
+    from A3 A8 A4 have A11: "\<forall>x \<in> set (a#x#xs). expr_1 x \<le> expr_1 y"
+      by simp
+    from A7 have A12: "y \<in> set (a#x#xs)" 
+      by simp
+    have "finite ({expr_1 y|y. y \<in> set (a#x#xs)})"
+      by simp
+    from this A11 A12 Max_eqI have max_2: "Max {expr_1 y|y. y \<in> set (a#x#xs)} = expr_1 y"
+      by blast
+    have "{expr_1 y|y. y \<in> set (a#x#xs)} = (set (map (\<lambda>x. expr_1 x) (a#x#xs)))"
+      by auto
+    from this max_2 have "Max (set (map (\<lambda>x. expr_1 x) (a#x#xs))) = expr_1 y"
+      by simp
+    then have max_2: "max_val = expr_1 y"
+      using max_val_def by blast
+    from max_val_def xs_new_def have "pos_r (a#x#xs) = xs_new"
+      by (metis pos_r.simps(2))
+    also from xs_new_def have "... = filter (\<lambda>y. expr_1 y < max_val) (a#x#xs)" 
+      by simp
+    also from max_2 have "... = filter (\<lambda>z. expr_1 z < expr_1 y) (a#x#xs)"
+      by simp
+    also from A8 have "... = filter (\<lambda>z. expr_1 z < expr_1 y) (x#xs)"
+      by simp
+    also from max_1 have "... = filter (\<lambda>z. expr_1 z < max_val_xs) (x#xs)"
+      by simp
+(*----------------------TODO------------*)
+    also from xs_new_xs_def max_val_xs_def have "... = pos_r (x#xs)" sorry
+(*_____________________TODO___________*)
+    finally show ?thesis using HOL.arg_cong by simp
+  qed
+qed
+
 lemma expr_1_pos_r:
   assumes A1: "expr_1 (HML_conj (pos_r (a#xs)) ys) \<le> n4"
   defines "A \<equiv> {0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))}"
   defines "B \<equiv> ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML_conj [] ys)})"
   shows "expr_1 (HML_conj (pos_r xs) ys) \<le> n4"
+  sorry
 proof-
+  have fin_A: "finite ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML_conj [] ys)})"
+    by simp
+  have fin_pos_r: "finite {expr_1 x |x. x \<in> set (pos_r (a#xs))}"
+    by simp
   from expr_1_union have A2: "expr_1 (HML_conj (pos_r (a#xs)) ys) = 
 Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML_conj [] ys)})" by simp
+  from A1 this have pos_r_A: 
+"Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML_conj [] ys)}) \<le> n4"
+    by (rule HOL.back_subst)
+  have subs_pos_r: "{expr_1 x |x. x \<in> set (pos_r (a#xs))} \<subseteq> ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML_conj [] ys)})" 
+    by auto
   from expr_1_union have A3: "expr_1 (HML_conj (pos_r xs) ys) =
 Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r xs)} \<union> {expr_1 (HML_conj [] ys)})" by simp
   thm Max_le_iff
@@ -121,6 +346,80 @@ Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r xs)} \<union> {expr_1 (HML_co
     moreover {
       assume A8: "b = 0"
       then have "b \<le> n4" by simp
+    }
+    moreover {
+      assume A8: "b \<in> {expr_1 x |x. x \<in> set (pos_r xs)}"
+      then have A9: "{expr_1 x |x. x \<in> set (pos_r xs)} \<noteq> {}"
+        by auto
+      have A10: "(\<forall>x \<in> set xs. expr_1 a > expr_1 x) \<or> ((\<exists>x \<in> set xs. expr_1 a < expr_1 x) \<or> 
+((\<exists>x\<in> set xs. expr_1 a = expr_1 x) \<and> (\<forall>x \<in> set xs. expr_1 x  \<le> expr_1 a)))"
+        by force
+      from A8 have b_le_pos_r: "b \<le> Max {expr_1 x |x. x \<in> set (pos_r xs)}"
+        by simp
+      from A10 have "b \<le> n4"
+      proof
+          assume "\<forall>x\<in>set xs. expr_1 x < expr_1 a"
+          then have A10: "pos_r (a#xs) = xs" 
+            by (rule HML_subsets.pos_r_1)
+          have A11: "set (pos_r xs) \<subseteq> set (xs)"
+            by (metis Orderings.order_eq_iff filter_is_subset pos_r.elims)
+          from this A10 have subs: "set (pos_r (xs)) \<subseteq> set (pos_r (a#xs))"
+            by simp
+          then have subs_xs_axs: "{expr_1 x |x. x \<in> set (pos_r xs)} \<subseteq> {expr_1 x |x. x \<in> set (pos_r (a#xs))}"
+            by auto
+          from A9 have "set (pos_r xs) \<noteq> {}" by simp
+          from this A10 A11 have ne: "set (pos_r (a # xs)) \<noteq> {}"
+            by auto
+          then have "{expr_1 x |x. x \<in> set (pos_r (a # xs))} \<noteq> {}"
+            by simp
+          thm Max_mono
+          from subs_pos_r this fin_A have 
+"Max {expr_1 x |x. x \<in> set (pos_r (a # xs))} \<le> Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a # xs))} \<union> {expr_1 (HML_conj [] ys)})"
+            by (rule Max_mono)
+          from this pos_r_A have a_xs_n4: "Max {expr_1 x |x. x \<in> set (pos_r (a # xs))} \<le> n4" 
+            by (rule Nat.le_trans)
+          from subs_xs_axs A9 fin_pos_r have 
+"Max {expr_1 x |x. x \<in> set (pos_r xs)} \<le> Max {expr_1 x |x. x \<in> set (pos_r (a # xs))}"
+            by (rule Max_mono)
+          from this a_xs_n4 have "Max {expr_1 x |x. x \<in> set (pos_r xs)} \<le> n4" 
+            by (rule Nat.le_trans)
+          from b_le_pos_r this show "b \<le> n4"
+            by (rule Nat.le_trans)
+        next
+          assume "(\<exists>x\<in>set xs. expr_1 a < expr_1 x) \<or>
+    (\<exists>x\<in>set xs. expr_1 a = expr_1 x) \<and> (\<forall>x\<in>set xs. expr_1 x \<le> expr_1 a)"
+          then show "b \<le> n4"
+          proof(rule disjE)
+            assume "\<exists>x\<in>set xs. expr_1 a < expr_1 x"
+            then have "set (pos_r (a#xs)) = set (pos_r xs) \<union> {a}"
+              by (rule pos_r_2)
+            then have 
+"{expr_1 x |x. x \<in> set (pos_r (a # xs))} = {expr_1 x | x. x\<in> set (pos_r xs) \<union> {a}}"
+              by simp
+            also have "... = {expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a}"
+              by auto
+            finally have set_eq: "{expr_1 x |x. x \<in> set (pos_r (a # xs))} = {expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a}"
+              by this
+            then have max_eq: "Max {expr_1 x |x. x \<in> set (pos_r (a # xs))} = Max({expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a})"
+              by simp
+            have subs_1: "{expr_1 x | x. x\<in> set (pos_r xs)} \<subseteq> ({expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a})"
+              by auto
+            have fin_1: "finite ({expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a})"
+              by simp
+            thm Max_mono
+            from subs_1 A9 fin_1 have 
+"Max {expr_1 x | x. x\<in> set (pos_r xs)} \<le> Max ({expr_1 x | x. x\<in> set (pos_r xs)} \<union> {expr_1 a})"
+              by (rule Max_mono)
+            from this max_eq have 
+"Max {expr_1 x |x. x \<in> set (pos_r xs)} \<le> Max {expr_1 x |x. x \<in> set (pos_r (a # xs))}" 
+              by simp
+            also have "... \<le> n4"
+              by (metis (no_types, lifting) A8 Max.subset_imp UnCI emptyE fin_A order_trans pos_r_A set_eq subs_pos_r)
+            then show "b \<le> n4"
+              using b_le_pos_r calculation by linarith
+          next
+            assume "(\<exists>x\<in>set xs. expr_1 a = expr_1 x) \<and> (\<forall>x\<in>set xs. expr_1 x \<le> expr_1 a)"
+
     }
     moreover {
       assume A8: "b \<in> ({0} \<union> {expr_1 x |x. x \<in> set (pos_r xs)})"
@@ -170,7 +469,12 @@ Max({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 (HML
             from A1 A2 have "expr_1 (HML_conj [] ys) \<le> n4" by simp
             from this A8 have "b \<le> n4" by simp
           }
+          show ?thesis sorry
+        qed
+        show ?thesis sorry
+      qed
     oops
+
 
 lemma mon_conj:
   fixes n1 and n2 and n3 and n4 and n5 and n6 and xs and ys
@@ -201,8 +505,32 @@ A3: "less_eq_t (expr (HML_conj (a # xs) ys)) (n1, n2, n3, n4, n5, n6)"
         using dual_order.trans by fastforce
       from A3 have E3_xs: "expr_3 (HML_conj xs ys) \<le> n3"
         using dual_order.trans by fastforce
+      moreover {
+      have E4: "expr_4 (HML_conj (a#xs) ys) = 
+Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+        by simp
+      also from A3 have E_4: "... \<le> n4" 
+        by simp
+      have subs_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<subseteq> 
+({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+        by simp
+      thm Max_mono
+      have ne_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<noteq> {}"
+        by simp
+      have fin_4: "finite ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+        by simp
+      from subs_4 ne_4 fin_4 have "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le>
+ Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})" by (rule Max_mono)
+      from this A3 have max_rest: "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le> n4"
+        by (meson E_4 dual_order.trans enat_ord_simps(1))
+      have E4_2: "expr_4_rest (HML_conj (a#xs) ys) = 
+Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
+        by simp
+      from this E4 have "Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)}) \<le> n4"
+      also have "... = "
       from A3 expr_1_pos_r have E4_a: "expr_4 a \<le> n4" sorry
       from A3 have E4_xs: "expr_4 (HML_conj xs ys) \<le> n4" sorry
+    }
       from A3 have E5_a: "expr_5 a \<le> n5"
         using dual_order.trans by fastforce
       from A3 have E5_xs: "expr_5 (HML_conj xs ys) \<le> n5" 
