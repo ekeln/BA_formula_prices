@@ -49,6 +49,77 @@ expr_1_conj_right:\<open>expr_1 (HML_conj [] (y#ys)) = (Max ({0} \<union> {expr_
 expr_1_pos: \<open>expr_1 (HML_poss \<alpha> \<phi>) = 
   1 + (expr_1 \<phi>)\<close>
 
+(*TODO: Lemma fertig beweisen (Sorry's)*)
+lemma expr_1_set_form: "expr_1 (HML_conj \<Phi> \<Psi>) =
+Max({0} \<union> {expr_1 x | x. x \<in> set \<Phi>} \<union> {expr_1 y | y. y \<in> set \<Psi>})"
+proof(induction \<Phi>)
+  case Nil
+  then show ?case
+  proof(induction \<Psi>)
+    case Nil
+    then show ?case by simp
+  next
+    case (Cons a \<Psi>)
+    then show ?case 
+    proof-
+      have A1: "{expr_1 y |y. y \<in> set (a#\<Psi>)} = {expr_1 a} \<union> {expr_1 y|y. y \<in> set \<Psi>}"
+        by auto
+      have "expr_1 (HML_conj [] (a#\<Psi>)) = (Max ({0} \<union> {expr_1 a} \<union> {expr_1 (HML_conj [] \<Psi>)}))"
+        by simp
+      also have "... = 
+(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set []} \<union> {expr_1 y |y. y \<in> set \<Psi>})}))"
+        using local.Cons by fastforce
+      finally have expr_1_IS: "expr_1 (HML_conj [] (a#\<Psi>)) = 
+(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set []} \<union> {expr_1 y |y. y \<in> set \<Psi>})}))"
+        by this
+      from A1 have "{Max ({0} \<union> {expr_1 x |x. x \<in> set []} \<union> {expr_1 y |y. y \<in> set \<Psi>})} =
+{Max {expr_1 y |y. y \<in> set (a # \<Psi>)}}" (*TODO*) sorry
+      then have "(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set []} \<union> {expr_1 y |y. y \<in> set \<Psi>})})) =
+ (Max ({0} \<union> {expr_1 x |x. x \<in> set []} \<union> {expr_1 y |y. y \<in> set (a # \<Psi>)}))" sorry (*TODO*)
+      from this expr_1_IS show ?thesis by simp
+    qed
+  qed
+next
+  case (Cons a \<Phi>)
+  then show ?case 
+  proof(induction \<Psi>)
+    case Nil
+    then show ?case
+    proof-
+      have "expr_1 (HML_conj (a # \<Phi>) []) = (Max ({0} \<union> {expr_1 a} \<union> {expr_1 (HML_conj \<Phi> [])}))"
+        by simp
+      also have "... = 
+(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set \<Phi>} \<union> {expr_1 y |y. y \<in> set []})}))"
+        using local.Nil by force
+      finally have "expr_1 (HML_conj (a#\<Phi>) []) = 
+(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set \<Phi>} \<union> {expr_1 y |y. y \<in> set []})}))"
+        by this
+      then show "expr_1 (HML_conj (a#\<Phi>) []) = 
+(Max ({0} \<union> {expr_1 x |x. x \<in> set (a # \<Phi>)} \<union> {expr_1 y |y. y \<in> set []}))" sorry (*TODO*)
+    qed
+  next
+    case (Cons b \<Psi>)
+    then show ?case 
+    proof-
+      have A1: "{expr_1 a} \<union> {expr_1 x |x. x \<in> set \<Phi>} = {expr_1 x |x. x \<in> set (a # \<Phi>)}" 
+        by auto
+      have "expr_1 (HML_conj (a # \<Phi>) (b # \<Psi>)) = 
+(Max ({0} \<union> {expr_1 a} \<union> {expr_1 (HML_conj \<Phi> (b#\<Psi>))}))"
+        by simp
+      also have "... = 
+(Max ({0} \<union> {expr_1 a} \<union> {Max ({0} \<union> {expr_1 x |x. x \<in> set \<Phi>} \<union> {expr_1 y |y. y \<in> set (b # \<Psi>)})}))"
+        using Cons.prems by presburger
+      also have "... = 
+(Max ({0} \<union> {expr_1 a} \<union> {expr_1 x |x. x \<in> set \<Phi>} \<union> {expr_1 y |y. y \<in> set (b # \<Psi>)}))" sorry
+      also from A1 have "... = Max ({0} \<union> {expr_1 x |x. x \<in> set (a # \<Phi>)} \<union> {expr_1 y |y. y \<in> set (b # \<Psi>)})"
+        by (metis (no_types, lifting) sup_assoc)
+      finally show "expr_1 (HML_conj (a # \<Phi>) (b # \<Psi>)) = 
+Max ({0} \<union> {expr_1 x |x. x \<in> set (a # \<Phi>)} \<union> {expr_1 y |y. y \<in> set (b # \<Psi>)})"
+        by this
+    qed
+  qed
+qed
+
 
 value "expr_1 (HML_conj ([]::nat formula_list list) ([]::nat formula_list list))"
 value"set ([HML_conj [] []]::nat formula_list list)"
@@ -97,10 +168,20 @@ expr_4_conj_right: \<open>expr_4_rest (HML_conj [] (y#ys)) = Max ({0} \<union> {
 expr_4_conj: \<open>expr_4_rest (HML_conj (x#xs) \<Psi>) = 
 Max ({0} \<union> {expr_4_rest x} \<union> {expr_4_rest (HML_conj xs \<Psi>)})\<close>
 
+(*TODODODOD*)
+lemma expr_4_rest_set: "expr_4_rest (HML_conj \<Phi> \<Psi>) = 
+Max({0} \<union> {expr_4_rest x |x. x \<in> set \<Phi>} \<union> {expr_4_rest y|y. y \<in> set \<Psi>})"
+  sorry
+
 fun expr_4_r :: "('a)formula_list \<Rightarrow> nat"
   where
 \<open>expr_4_r (HML_conj (x#xs) \<Psi>) = Max({expr_1 x} \<union> {expr_4_r (HML_conj xs \<Psi>)})\<close>|
 \<open>expr_4_r _ = 0\<close>
+
+lemma expr_4_r_set: "expr_4_r (HML_conj \<Phi> \<Psi>) =
+Max({0} \<union> {expr_1 x | x. x \<in> set \<Phi>})"
+  sorry
+
 
 fun expr_4 :: "('a)formula_list \<Rightarrow> nat" 
   where
