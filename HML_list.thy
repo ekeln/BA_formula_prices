@@ -10,6 +10,7 @@ HML_conj \<open>('a)formula_list list\<close>  \<open>('a)formula_list list\<clo
 
 context lts begin
 
+
 fun HML_semantics :: \<open>'s \<Rightarrow> ('a)formula_list \<Rightarrow> bool\<close>
 (\<open>_ \<Turnstile> _\<close> [50, 50] 50)
   where
@@ -29,8 +30,8 @@ trace_pos: "HML_trace (HML_poss \<alpha> \<phi>)" if "HML_trace \<phi>"
 inductive HML_failure :: "('a)formula_list \<Rightarrow> bool"
   where
 trace: "HML_failure (HML_poss \<alpha> \<phi>)" if "HML_failure \<phi>" |
-neg: "HML_failure (HML_conj [] x2)" if "\<forall>y \<in> (set x2). y = HML_poss \<alpha> (HML_conj [] [])" 
-                                    (*x2 = [] sollte implizit drin sein*)
+empty_conj: "HML_failure (HML_conj [] [])" |
+neg: "HML_failure (HML_conj [] x2)" if "\<forall>y \<in> (set x2). \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])" 
 
 inductive HML_simulation :: "('a)formula_list \<Rightarrow> bool"
   where

@@ -6,6 +6,25 @@ theory HML_subsets
   formula_prices_list
 begin
 
+locale Flattened_Formulas =
+fixes \<phi>
+assumes flattened: "(\<forall>x1. \<forall>x2. \<phi> = HML_conj x1 x2 \<longrightarrow>
+(\<forall>x \<in> set x1. \<nexists>x11. \<nexists>x12. x = HML_conj x11 x12) \<and> (\<forall>y \<in> set x2. \<nexists>x21. \<nexists>x22. y = HML_conj x21 x22))"
+begin
+
+lemma flattened_alt: "Flattened_Formulas \<phi> = (\<forall>x1. \<forall>x2. \<phi> =  HML_conj x1 x2 \<longrightarrow> 
+(\<forall>x \<in> set x1. \<exists>\<alpha>. \<exists>x11. x = HML_poss \<alpha> x11) \<and> (\<forall>x \<in> set x2. \<exists>\<alpha>. \<exists>x11. x = HML_poss \<alpha> x11))"
+proof(cases \<phi>)
+  case (HML_conj \<Phi> \<Psi>)
+  fix x11 x12
+  assume "\<phi> = HML_conj x11 x12"
+  then show ?thesis 
+    by (smt (z3) Flattened_Formulas_axioms flattened formula_list.inject(1) list.set_intros(1))
+next
+  case (HML_poss x1 \<psi>)
+  then show ?thesis
+    by (simp add: Flattened_Formulas.intro)
+qed
 
 fun less_eq_t :: "(nat \<times> nat \<times> nat \<times> nat \<times> nat \<times> nat) \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> bool"
   where
@@ -16,7 +35,7 @@ thm HML_trace.induct
 
 (*Done*)
 lemma mon_pos:
-  fixes n1 and n2 and n3 and n4::nat and n5 and n6 and \<phi> and \<alpha>
+  fixes n1 and n2 and n3 and n4::nat and n5 and n6 and \<alpha>
   assumes A1: "less_eq_t (expr (HML_poss \<alpha> \<phi>)) (n1, n2, n3, n4, n5, n6)"
   shows "less_eq_t (expr \<phi>) (n1, n2, n3, n4, n5, n6)" 
 using A1
@@ -155,8 +174,6 @@ A2: "\<forall>x\<in>set (x # xs). expr_1 x < expr_1 a"
      by simp
    from pos_r_def this show ?case by (rule HOL.back_subst)
  qed
-
-(*Done*)
 
 (*Done*)
 lemma pos_r_2:
@@ -406,7 +423,7 @@ Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r xs)} \<union> {expr_1 (HML_co
       proof
           assume "\<forall>x\<in>set xs. expr_1 x < expr_1 a"
           then have A10: "pos_r (a#xs) = xs" 
-            by (rule HML_subsets.pos_r_1)
+            by (rule local.pos_r_1)
           have A11: "set (pos_r xs) \<subseteq> set (xs)"
             by (metis Orderings.order_eq_iff filter_is_subset pos_r.elims)
           from this A10 have subs: "set (pos_r (xs)) \<subseteq> set (pos_r (a#xs))"
@@ -667,6 +684,55 @@ Max ({0} \<union> {expr_1 x |x. x \<in> set (pos_r (a#xs))} \<union> {expr_1 z |
 qed
 qed
 
+lemma expr_4_conj_le:
+  fixes n4 and xs and ys and a
+  assumes A2: "expr_4 (HML_conj xs ys) \<le> n4 \<Longrightarrow> 
+\<forall>x\<in>set xs.(expr_4 x \<le> n4)" and
+A3: "expr_4 (HML_conj (a # xs) ys) \<le> n4"
+shows "expr_4 (HML_conj xs ys) \<le> n4"
+proof- 
+  have eq_x: "{expr_4 x |x. x \<in> set (a#xs)} = {expr_4 a} \<union> {expr_4 x |x. x \<in> set xs}"
+    by auto
+  have ne_a: "{expr_4 a} \<noteq> {}"
+    by simp
+  from expr_4_set have E4: "expr_4 (HML_conj (a#xs) ys) = 
+Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set (a#xs)} \<union> {expr_4 y |y. y \<in> set ys})"
+    by blast
+  also from eq_x have "... = 
+Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 a} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})"
+    by simp
+  also from ne_a have "... = 
+Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})})"
+    by simp
+  finally have "expr_4 (HML_conj (a#xs) ys) =
+Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})})"
+    by this
+  from this A3 have le_expr_4_a:"Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})}) \<le>
+n4" 
+    by (rule HOL.subst)
+  then have le_a: "expr_4 a \<le> n4" 
+    by simp
+    from expr_4_set have eq_1: "expr_4 (HML_conj xs ys) =
+Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})"
+      by simp
+    have le_pos_r: "expr_1 (HML_conj (pos_r xs) []) \<le> expr_1 (HML_conj (pos_r (a#xs)) [])"
+      using expr_1_pos_r by blast
+    from this le_expr_4_a have le_1: "Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})}) \<le>
+n4" 
+      by simp
+    have "{Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})} \<noteq> {}"
+      by simp
+    from this le_1 have 
+"Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys}) \<le> n4"
+      by simp
+    from this eq_1 show "expr_4 (HML_conj xs ys) \<le> n4"
+      by simp
+  qed
+
 lemma expr_4_is:
   fixes n4 and xs and ys and a
   assumes A2: "expr_4 (HML_conj xs ys) \<le> n4 \<Longrightarrow> 
@@ -676,156 +742,53 @@ shows "\<forall>x\<in>set (a # xs). expr_4 x \<le> n4"
 proof(rule ballI)
   fix x
   assume "x \<in> set (a # xs)"
-  have E4: "expr_4 (HML_conj (a#xs) ys) = 
-Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-        by simp
-  also have "... = 
-Max({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})" 
+  have eq_x: "{expr_4 x |x. x \<in> set (a#xs)} = {expr_4 a} \<union> {expr_4 x |x. x \<in> set xs}"
+    by auto
+  have ne_a: "{expr_4 a} \<noteq> {}"
     by simp
-  also from A3 have E_4: "... \<le> n4" 
+  from expr_4_set have E4: "expr_4 (HML_conj (a#xs) ys) = 
+Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set (a#xs)} \<union> {expr_4 y |y. y \<in> set ys})"
+    by blast
+  also from eq_x have "... = 
+Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 a} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})"
     by simp
-  have expr_4_xs_def: "expr_4 (HML_conj xs ys) = Max ({expr_4_rest (HML_conj xs ys)} \<union> {expr_1 (HML_conj (pos_r xs) ys)})"
+  also from ne_a have "... = 
+Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})})"
     by simp
-  moreover {
-  thm Max_ge
-  have max_in: "Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)}) \<in> 
-({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})" 
+  finally have "expr_4 (HML_conj (a#xs) ys) =
+Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})})"
+    by this
+  from this A3 have le_expr_4_a:"Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r (a#xs)) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})}) \<le>
+n4" 
+    by (rule HOL.subst)
+  then have le_a: "expr_4 a \<le> n4" 
     by simp
-  have fin_a_xs :"finite ({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})" 
-    by simp
-  from fin_a_xs max_in have "Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)}) \<le> 
-Max({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-    by (rule Max_ge)
-  from this E_4 have le_n4: "Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)}) \<le> n4" 
-    by simp
-  have fin_subs: "finite ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})" 
-    by simp
-  have ne_a: "{expr_4_rest a} \<noteq> {}"
-    by simp
-  have subs_a: "{expr_4_rest a} \<subseteq> ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
-    by simp
-  from fin_subs ne_a subs_a le_n4 have max_a: "Max {expr_4_rest a} \<le> n4"
-    by simp
-  have ne: "{expr_4_rest (HML_conj xs ys)} \<noteq> {}"
-    by simp
-  have subs: "{expr_4_rest (HML_conj xs ys)} \<subseteq> ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})" 
-    by simp
-  from fin_subs ne subs le_n4 have "Max {expr_4_rest (HML_conj xs ys)} \<le> n4" 
-    by simp
-  from this max_a have "Max {expr_4_rest (HML_conj xs ys)} \<le> n4 \<and> Max {expr_4_rest a} \<le> n4"
-    by simp
-}
-  moreover {
-    have ne: "{expr_1 (HML_conj (pos_r (a#xs)) ys)} \<noteq> {}" 
+    from expr_4_set have eq_1: "expr_4 (HML_conj xs ys) =
+Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})"
       by simp
-    have fin: "finite ({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})"
+    have le_pos_r: "expr_1 (HML_conj (pos_r xs) []) \<le> expr_1 (HML_conj (pos_r (a#xs)) [])"
+      using expr_1_pos_r by blast
+    from this le_expr_4_a have le_1: "Max({Max{expr_4 a}} \<union> 
+{Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})}) \<le>
+n4" 
       by simp
-    have subs: "{expr_1 (HML_conj (pos_r (a#xs)) ys)} \<subseteq> ({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})" 
+    have "{Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys})} \<noteq> {}"
       by simp
-    from E_4 ne fin subs have "Max {expr_1 (HML_conj (pos_r (a#xs)) ys)} \<le> n4" 
+    from this le_1 have 
+"Max ({expr_1 (HML_conj (pos_r xs) [])} \<union> {expr_4 x |x. x \<in> set xs} \<union> {expr_4 y |y. y \<in> set ys}) \<le> n4"
       by simp
-    from this expr_1_pos_r have "Max {expr_1 (HML_conj (pos_r xs) ys)} \<le> n4" 
-      by fastforce
-  }
-  ultimately have max_le_n4: 
-"Max {expr_4_rest (HML_conj xs ys)} \<le> n4 \<and> Max {expr_4_rest a} \<le> n4 \<and> Max {expr_1 (HML_conj (pos_r xs) ys)} \<le> n4" 
-    by simp
-  from this A2 have fa_xs: "\<forall>x\<in>set xs. expr_4 x \<le> n4" by simp
-  have "expr_4 (HML_conj (a # xs) ys) = 
-Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-    by simp
-  from max_le_n4 have expr_rest_a: "Max {expr_4_rest a} \<le> n4" by simp
-  then have expr_rest_a: "expr_4_rest a \<le> n4" by simp
-  have "expr_4 a \<le> n4"
-  proof(cases a)
-    case (HML_conj x11 x12)
-    show ?thesis 
-    proof(rule ccontr)
-      assume "expr_4 a > n4"
-      have a_subst: "expr_4 a = expr_4 (HML_conj x11 x12)"
-        using HML_conj by fastforce
-      have "expr_4_rest (HML_conj (a#xs) ys) = 
-Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
-        by simp
-      from this E4 have 
-"expr_4 (HML_conj (a#xs) ys) = 
-Max ({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union>
- {expr_1 (HML_conj (pos_r (a # xs)) ys)})"
-        by (rule HOL.subst)
-      from this A3 have "... \<le> n4" 
-        by (rule HOL.subst)
-      then have "Max {Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<le> n4"
-        by simp
-      then have "\<forall>x \<in> {Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})}. x \<le> n4"
-        by simp
-      then have "Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)}) \<le> n4"
-        by simp
-      from this a_subst have le_n4: "Max {expr_4_rest (HML_conj x11 x12)} \<le> n4"
-        using HML_conj by fastforce
-      have "expr_4 (HML_conj x11 x12) =
-Max ({expr_4_rest (HML_conj x11 x12)} \<union> {expr_1 (HML_conj (pos_r x11) x12)})"
-        by simp
-      also have gr_n4_s: "... > n4"
-        using HML_conj \<open>n4 < expr_4 a\<close> calculation by presburger
-      have fin_s: "finite ({expr_4_rest (HML_conj x11 x12)} \<union> {expr_1 (HML_conj (pos_r x11) x12)})"
-        by simp
-      have ne: "{expr_4_rest (HML_conj x11 x12)} \<noteq> {}" 
-        by simp
-      from gr_n4_s have "(Max {expr_4_rest (HML_conj x11 x12)} > n4) \<or> 
-(Max {expr_1 (HML_conj (pos_r x11) x12)} > n4)"
-        by auto
-      from gr_n4_s fin_s ne have "Max {expr_4_rest (HML_conj x11 x12)} > n4" sorry
-  next
-    case (HML_poss x21 x22)
-    then show ?thesis sorry
+    from this eq_1 have "expr_4 (HML_conj xs ys) \<le> n4"
+      by simp
+    from this A2 have "\<forall>x\<in>set xs. expr_4 x \<le> n4" 
+      by simp
+    from this le_a have "\<forall>x\<in>set (a # xs). expr_4 x \<le> n4"
+      by simp
+    then show "\<And>x. x \<in> set (a # xs) \<Longrightarrow> expr_4 x \<le> n4" 
+      by auto
   qed
-(*-----------------*)
-    using expr_rest_a
-  proof(induction a)
-    case (HML_conj x1 x2)
-    assume A4: "(\<And>x1a. x1a \<in> set x1 \<Longrightarrow> expr_4_rest x1a \<le> n4 \<Longrightarrow> expr_4 x1a \<le> n4)"
-and A5: "(\<And>x2a. x2a \<in> set x2 \<Longrightarrow> expr_4_rest x2a \<le> n4 \<Longrightarrow> expr_4 x2a \<le> n4)"
-and A6: "expr_4_rest (HML_conj x1 x2) \<le> n4"
-    then show "expr_4 (HML_conj x1 x2) \<le> n4"
-    proof(cases x1)
-      have "expr_4 (HML_conj x1 x2) =
-Max ({expr_4_rest (HML_conj x1 x2)} \<union> {expr_1 (HML_conj (pos_r x1) x2)})"
-        by simp
-      from expr_4_rest_set A6 have rest_set:
-"Max ({0} \<union> {expr_4_rest x |x. x \<in> set x1} \<union> {expr_4_rest y |y. y \<in> set x2}) \<le> n4"
-        by metis
-      have ne: "{expr_4_rest x |x. x \<in> set x1} \<noteq> {}"
-        (*TODO*)
-        (*Wenn Menge nicht leer ist muss sie \<le> n4 sein, da sonst vereinigung auch größer als n4 ist.*)
-      have fin_set: "finite ({0} \<union> {expr_4_rest x |x. x \<in> set x1} \<union> {expr_4_rest y |y. y \<in> set x2})"
-        by simp
-      have "{expr_4_rest x |x. x \<in> set x1} \<subseteq>
- {0} \<union> {expr_4_rest x |x. x \<in> set x1} \<union> {expr_4_rest y |y. y \<in> set x2}"
-        by auto
-      from fin_set this rest_set have "Max {expr_4_rest x |x. x \<in> set x1} \<le> 
-Max ({0} \<union> {expr_4_rest x |x. x \<in> set x1} \<union> {expr_4_rest y |y. y \<in> set x2})" 
-      have "expr_1 (HML_conj (pos_r x1) x2) \<le> n4" 
-      proof(induction x1)
-        case Nil
-        then show ?case sorry
-      next
-        case (Cons a x1)
-        then show ?case sorry
-      qed
-    then have "\<forall>x1a \<in> set x1. expr_4_rest x1a \<le> n4" 
-    then show ?case sorry
-  next
-    case (HML_poss x1 b)
-    then show ?case by simp
-  qed
-  from this fa_xs have "\<forall>x\<in>set (a#xs). expr_4 x \<le> n4" 
-  oops
 
 lemma mon_conj:
   fixes n1 and n2 and n3 and n4 and n5 and n6 and xs and ys
@@ -856,37 +819,6 @@ A3: "less_eq_t (expr (HML_conj (a # xs) ys)) (n1, n2, n3, n4, n5, n6)"
         using dual_order.trans by fastforce
       from A3 have E3_xs: "expr_3 (HML_conj xs ys) \<le> n3"
         using dual_order.trans by fastforce
-      moreover {
-      have E4: "expr_4 (HML_conj (a#xs) ys) = 
-Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-        by simp
-      also have "... = 
-Max({Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})} \<union> 
-{expr_1 (HML_conj (pos_r (a#xs)) ys)})" 
-        by simp
-      also from A3 have E_4: "... \<le> n4" 
-        by simp
-      have "expr_4 (HML_conj xs ys) =
-Max ({expr_4_rest (HML_conj xs ys)} \<union> {expr_1 (HML_conj (pos_r xs) ys)})" 
-        by simp
-      have subs_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<subseteq> 
-({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-        by simp
-      thm Max_mono
-      have ne_4: "{expr_4_rest (HML_conj (a#xs) ys)} \<noteq> {}"
-        by simp
-      have fin_4: "finite ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})"
-        by simp
-      from subs_4 ne_4 fin_4 have "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le>
- Max ({expr_4_rest (HML_conj (a#xs) ys)} \<union> {expr_1 (HML_conj (pos_r (a#xs)) ys)})" by (rule Max_mono)
-      from this A3 have max_rest: "Max {expr_4_rest (HML_conj (a#xs) ys)} \<le> n4"
-        by (meson E_4 dual_order.trans enat_ord_simps(1))
-      have E4_2: "expr_4_rest (HML_conj (a#xs) ys) = 
-Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
-        by simp
-      from A3 expr_1_pos_r have E4_a: "expr_4 a \<le> n4" sorry
-      from A3 have E4_xs: "expr_4 (HML_conj xs ys) \<le> n4" sorry
-    }
       from A3 have E5_a: "expr_5 a \<le> n5"
         using dual_order.trans by fastforce
       from A3 have E5_xs: "expr_5 (HML_conj xs ys) \<le> n5" 
@@ -895,13 +827,67 @@ Max ({0} \<union> {expr_4_rest a} \<union> {expr_4_rest (HML_conj xs ys)})"
         using dual_order.trans by fastforce
       from A3 have E6_xs: "expr_6 (HML_conj xs ys) \<le> n6" 
         using dual_order.trans by fastforce
-      from A2 E1_a E1_xs E2_a E2_xs E3_a E3_xs E4_a E4_xs E5_a E5_xs E6_a E6_xs show ?thesis
+      from A2 E1_xs E2_xs E3_xs E5_xs E6_xs have 
+"expr_4 (HML_conj xs ys) \<le> n4 \<Longrightarrow> \<forall>x\<in>set xs. less_eq_t (expr x) (n1, n2, n3, n4, n5, n6)" 
+        by simp
+      then have dim_4: "expr_4 (HML_conj xs ys) \<le> n4 \<Longrightarrow> \<forall>x\<in>set xs. expr_4 x \<le> n4"
+        by simp
+      from A3 have E4_a_le:"expr_4 (HML_conj (a#xs) ys) \<le> n4"
+        by simp
+      from this dim_4 expr_4_is have E4: "\<forall>x\<in>set (a # xs). expr_4 x \<le> n4"
+        by (smt (verit) enat_ile enat_ord_simps(1) nle_le)
+      then have E4_xs: "\<forall>x\<in>set xs. expr_4 x \<le> n4"
+        by simp
+      from E4_a_le dim_4 expr_4_conj_le have E4_xs: "expr_4 (HML_conj xs ys) \<le> n4"
+        by (metis enat_ile enat_ord_simps(1) linorder_le_cases)
+      from E4 have E4_a:"expr_4 a \<le> n4"
+        by simp
+      from A2 E1_xs E2_xs E3_xs E4_xs E5_xs E6_xs have 
+"\<forall>x\<in>set xs. less_eq_t (expr x) (n1, n2, n3, n4, n5, n6)" 
+        by simp 
+      from this E1_a E2_a E3_a E4_a E5_a E6_a show ?thesis 
         by simp
     qed
   qed
 next
   show "(\<forall>y \<in> set ys. less_eq_t (expr y) (n1, n2, n3, n4, n5, n6))"
-    sorry
+    using A1
+  proof(induction ys)
+    case Nil
+    then show ?case by simp
+  next
+    case (Cons a ys)
+    assume A2: "less_eq_t (expr (HML_conj xs ys)) (n1, n2, n3, n4, n5, n6) \<Longrightarrow> 
+\<forall>x\<in>set ys.(less_eq_t (expr x) (n1, n2, n3, n4, n5, n6))" and
+A3: "less_eq_t (expr (HML_conj xs (a#ys))) (n1, n2, n3, n4, n5, n6)"
+    from A3 have e_1: "expr_1 (HML_conj xs (a#ys)) \<le> n1" by simp
+    from A3 have e_2: "expr_2 (HML_conj xs (a#ys)) \<le> n2" by simp
+    from A3 have e_3: "expr_3 (HML_conj xs (a#ys)) \<le> n3" by simp
+    from A3 have e_4: "expr_4 (HML_conj xs (a#ys)) \<le> n4" by simp
+    from A3 have e_5: "expr_5 (HML_conj xs (a#ys)) \<le> n5" by simp
+    from A3 have e_6: "expr_6 (HML_conj xs (a#ys)) \<le> n6" by simp
+    from e_1 expr_1_set_form have le_1:
+"Max({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 y | y. y \<in> set (a#ys)}) \<le> n1"
+      by metis
+    have "{expr_1 y | y. y \<in> set (a#ys)} = {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys}"
+      by auto
+    from this le_1 have le_1: 
+"Max({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys}) \<le> n1"
+      by simp
+    have fin: "finite ({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys})"
+      by simp
+    have ne: "({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys}) \<noteq> {}"
+      by simp
+    from fin have elem: "expr_1 a \<in> 
+({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys})"
+      by simp
+    from le_1 elem have "expr_1 a \<le> 
+Max ({0} \<union> {expr_1 x | x. x \<in> set xs} \<union> {expr_1 a} \<union> {expr_1 y | y. y \<in> set ys})"
+      by simp
+    from this le_1 have "expr_1 a \<le> n1"
+      by (meson dual_order.trans enat_ord_simps(1))
+    then show ?case sorry
+  qed
 qed
 
 lemma expr_2_lb: "expr_2 f \<ge> 1"
@@ -937,7 +923,6 @@ next
 qed
 
 lemma trace_right: 
-  fixes "\<phi>"
   assumes A1: "HML_trace \<phi>"
   shows "(less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
   using A1
@@ -1007,7 +992,6 @@ have A4: "x2 = []"
 qed
 
 lemma trace_left:
-  fixes \<phi>
   assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
   shows "(HML_trace \<phi>)"
   using A1
@@ -1037,7 +1021,6 @@ lemma "(HML_trace \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0
   using trace_left trace_right by blast
 
 lemma simulation_right:
-  fixes "\<phi>"
   assumes A1: "HML_simulation \<phi>"
   shows "(less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
   using A1
@@ -1268,7 +1251,7 @@ shows "x2 = []"
 proof(induction x1)
   case Nil
   then show ?case 
-    by (smt (verit, ccfv_SIG) A1 HML_subsets.expr_6_conj enat_0_iff(2) expr.simps expr_6.elims formula_list.inject(1) formula_list.simps(4) le_zero_eq less_eq_t.simps list.distinct(1) not_one_le_zero)
+    by (smt (verit, ccfv_SIG) A1 local.expr_6_conj enat_0_iff(2) expr.simps expr_6.elims formula_list.inject(1) formula_list.simps(4) le_zero_eq less_eq_t.simps list.distinct(1) not_one_le_zero)
 next
   case (Cons a list)
   then show ?case
@@ -1282,22 +1265,21 @@ Max ({0} \<union> {expr_6 xa |xa. xa \<in> set x1} \<union> {1 + expr_6 ya |ya. 
       by auto
     then have A4: "Max ({0} \<union> {expr_6 xa |xa. xa \<in> set x1} \<union> {1 + expr_6 ya |ya. ya \<in> set x2}) \<le> Max({1 + expr_6 ya |ya. ya \<in> set x2})"
       using A2 A3 by linarith
-    have A5: "x2 \<noteq> [] \<Longrightarrow> Max({1 + expr_6 ya |ya. ya \<in> set x2}) \<ge> 1"
-      by (metis A2 HML_subsets.expr_6_conj list.exhaust not_one_le_zero)
+    from A2 have A5: "x2 \<noteq> [] \<Longrightarrow> Max({1 + expr_6 ya |ya. ya \<in> set x2}) \<ge> 1"
+      by (metis local.expr_6_conj not_one_le_zero pos_r.cases)
     show ?thesis
     proof(rule ccontr)
       assume A6: "x2 \<noteq> []"
       from this A5 have A7: "Max({1 + expr_6 ya |ya. ya \<in> set x2}) \<ge> 1"
         by simp
       from A2 A3 A4 A6 have A8: "Max({1 + expr_6 ya |ya. ya \<in> set x2}) \<le> 0"
-        by (metis HML_subsets.expr_6_conj neq_Nil_conv not_one_le_zero)
+        by (metis local.expr_6_conj neq_Nil_conv not_one_le_zero)
       from A7 A8 show False by simp
     qed
   qed
 qed
 
 lemma simulation_left:
-  fixes \<phi>
   assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
   shows "(HML_simulation \<phi>)"
   using A1
@@ -1310,15 +1292,14 @@ A3: " (\<And>x2a. x2a \<in> set x2 \<Longrightarrow> less_eq_t (expr x2a) (\<inf
 A4: "less_eq_t (expr (HML_conj x1 x2)) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0)"
     show "HML_simulation (HML_conj x1 x2)"
     proof-
-      (*from A1 have A1: "(less_eq_t (expr (HML_conj x1 x2)) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))" sorry*)
       from A2 have A2: "\<forall>x1a \<in> set x1. HML_simulation x1a"
         using A4 mon_conj by blast 
       from A3 have A3: "\<forall>x2a \<in> set x2. HML_simulation x2a" 
         using A4 mon_conj by blast
-      from A2 have "\<forall>x1a \<in> set x1. (less_eq_t (expr x1a) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
-        using simulation_right by blast
-      from A3 have "\<forall>x2a \<in> set x2. (less_eq_t (expr x2a) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
-        using simulation_right by blast
+      from A2 simulation_right have "\<forall>x1a \<in> set x1. (less_eq_t (expr x1a) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
+        using A4 mon_conj by blast
+      from A3 simulation_right A4 mon_conj have "\<forall>x2a \<in> set x2. (less_eq_t (expr x2a) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
+        by blast
       from this A1 A4 x2_empty have A4: "x2 = []"
         by auto
       have A5: "(\<forall>x1a \<in> (set x1). HML_simulation x1a)\<longrightarrow>HML_simulation (HML_conj  x1 [])"
@@ -1341,7 +1322,7 @@ lemma "(HML_simulation \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, \<infini
   using simulation_left simulation_right by blast
 
 lemma expr_4_fail:
-  fixes \<phi> :: "('a)formula_list" and \<alpha>
+  fixes \<alpha>
   assumes A1: "HML_failure (HML_poss \<alpha> \<phi>)" and A2: "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1)"
   shows "expr_4 (HML_poss \<alpha> \<phi>) = 0"
   using A2 enat_0_iff(2) by auto
@@ -1369,7 +1350,7 @@ and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (
       then have "expr_2 a = 1"
         by auto
       from A3 A4 A5 have A6: "expr_2 (HML_conj [] x2) \<le> 2"
-        by (metis (no_types, opaque_lifting) HML_failure.simps formula_list.distinct(1) formula_list.inject(1) list.set_intros(2))
+        by (simp add: neg)
       have "expr_2 (HML_conj [] (a # x2)) = (Max ({1 + expr_2 a} \<union> {expr_2 (HML_conj [] x2)}))"
         by simp
       also have "... = (Max ({2} \<union> {expr_2 (HML_conj [] x2)}))"
@@ -1404,8 +1385,12 @@ and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (
         by simp
       then have A6: "expr_3 a = 0"
         by auto
+      from A5 have A7: "\<forall>y\<in>set x2. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])" 
+        by simp
+      then have A8: "HML_failure (HML_conj [] x2)"
+        by (rule HML_list.HML_failure.neg)
       from A3 A4 A5 have A7: "expr_3 (HML_conj [] x2) = 0" 
-        by (metis (no_types, opaque_lifting) HML_failure.simps formula_list.distinct(1) formula_list.inject(1) le_zero_eq list.set_intros(2))
+        using A8 A7 by blast
       show ?thesis 
         by (simp add: A6 A7)
     qed
@@ -1413,7 +1398,8 @@ and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (
 qed
 
 lemma expr_4_fail_neg:
-assumes A1: "HML_failure (HML_conj [] x2)" and A2: "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
+  assumes A0: "\<phi> = (HML_conj [] x2)" and
+A1: "HML_failure (HML_conj [] x2)" and A2: "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
   shows "expr_4 (HML_conj [] x2) \<le> 0"
   using A1 A2
 proof(induction x2)
@@ -1430,22 +1416,48 @@ and A4: "HML_failure (HML_conj [] (a # x2))"
 and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
     show "expr_4 (HML_conj [] (a # x2)) \<le> 0"
     proof-
-      have "expr_4 a = 0"
+      from A5 have A6: "\<forall>y\<in>set x2. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
+        by simp
+      then have A7: "HML_failure (HML_conj [] x2)"
+        by (rule HML_list.HML_failure.neg)
+      from A7 A6 have A8: "expr_4 (HML_conj [] x2) \<le> 0"
+        by (rule A3)
+      from expr_4_set have expr_4_decomp: "expr_4 (HML_conj [] (a # x2)) = 
+Max ({expr_1 (HML_conj (pos_r ([]::'a formula_list list)) [])}
+ \<union> {expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set (a#x2)})" 
+        by blast
+      have empty: "{expr_4 x|x. x \<in> set ([]::'a formula_list list)} = {}" 
+        by simp
+      from A5 have expr_4_fa: "\<forall>y \<in> set (a#x2). expr_4 y \<le> 0"
+        by auto
+      have ne: "{expr_4 y |y. y \<in> set (a#x2)} \<noteq> {}"
+        by auto
+      have fin: "finite({expr_4 y |y. y \<in> set (a#x2)})" 
+        by simp
+      from expr_4_fa ne fin have max_e_4: "Max {expr_4 y |y. y \<in> set (a#x2)} \<le> 0"
+        by (smt (verit, best) Max_in mem_Collect_eq)
+      then have max_e_4: "Max {expr_4 y |y. y \<in> set (a#x2)} = 0"
+        by simp
+      from empty have "({expr_1 (HML_conj (pos_r ([]::'a formula_list list)) ([]::'a formula_list list))}
+ \<union> {expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set (a#x2)}) =
+({expr_1 (HML_conj (pos_r ([]::'a formula_list list)) ([]::'a formula_list list))}
+  \<union> {expr_4 y|y. y \<in> set (a#x2)})"
+        by simp
+      also from max_e_4 have "... = 
+({expr_1 (HML_conj (pos_r ([]::'a formula_list list)) ([]::'a formula_list list))} \<union> {0})"
         using local.Cons(3) by fastforce
-      from A3 A4 A5 have "expr_4 (HML_conj [] x2) = 0"
-        by (metis (no_types, opaque_lifting) HML_failure.simps formula_list.inject(1) formula_list.simps(4) le_zero_eq list.set_intros(2))
-      have "expr_4 (HML_conj [] (a # x2)) = 
-Max ({expr_4_rest (HML_conj [] (a#x2))} \<union> {expr_1 (HML_conj (pos_r []) (a#x2))})"
+      also have "... = {0}" 
         by simp
-      also have "... = Max ({Max ({0} \<union> {expr_4_rest a} \<union> {expr_1 (HML_conj [] x2)})} \<union> {0})"
+      finally have "({expr_1 (HML_conj (pos_r ([]::'a formula_list list)) ([]::'a formula_list list))}
+ \<union> {expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set (a#x2)}) =
+{0}"
+        by this
+      from this expr_4_decomp have "expr_4 (HML_conj [] (a # x2)) =
+Max {0}" 
+        by (rule HOL.subst)
+      then have "expr_4 (HML_conj [] (a # x2)) = 0"
         by simp
-      also have "... = Max ({Max ({0} \<union> {0} \<union> {expr_4_rest (HML_conj [] x2)})} \<union> {0})"
-        using A5 by auto
-      also have "... = Max ({Max ({0} \<union> {0} \<union> {0})} \<union> {0})"
-        using \<open>expr_4 (HML_conj [] x2) = 0\<close> by force
-      also have "... = 0"
-        by simp
-      finally show ?thesis
+      then show ?thesis 
         by simp
     qed
   qed
@@ -1474,7 +1486,7 @@ and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (
     have A7: "expr_1 a = 1"
       using A5 by force
     have A8: "expr_5 (HML_conj [] x2) \<le> 1"
-      by (metis (no_types, opaque_lifting) A3 A4 HML_failure.cases formula_list.distinct(1) formula_list.inject(1) list.set_intros(2) neg)
+      by (meson A3 A5 list.set_intros(2) neg)
     have "expr_5 (HML_conj [] (a # x2)) = Max ({0} \<union> {expr_5 a} \<union> {expr_5 (HML_conj [] x2)} \<union> {expr_1 a})"
       by simp
     also from A6 A7 A8 have "... = 1"
@@ -1505,7 +1517,7 @@ and A5: "\<forall>y\<in>set (a # x2). \<exists>\<alpha>. y = HML_poss \<alpha> (
     have A6: "expr_6 a = 0"
       using A5 by force
     from A3 A4 A5 have A7: "expr_6 (HML_conj [] x2) \<le> 1"
-      by (metis (no_types, opaque_lifting) HML_failure.simps formula_list.distinct(1) formula_list.inject(1) list.set_intros(2))
+      by (simp add: neg)
     have "expr_6 (HML_conj [] (a # x2)) \<le> Max({0}  \<union> {1 + expr_6 a} \<union> {expr_6 (HML_conj [] x2)})"
       by simp
     also from A6 A7 have "... \<le> 1"
@@ -1519,7 +1531,6 @@ qed
 thm subst
 
 lemma failure_right:
-  fixes \<phi>
   assumes A1: "HML_failure \<phi>"
   shows "(less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
   using A1
@@ -1532,7 +1543,7 @@ proof(induction \<phi> rule:HML_failure.induct)
     have A3: "expr_3 (HML_poss \<alpha> \<psi>) \<le> 0"
       using enat_0_iff(2) local.trace(2) by force
     have A4: "expr_4 (HML_poss \<alpha> \<psi>) \<le> 0"
-      by (metis HML_failure.trace Orderings.order_eq_iff expr_4_fail trace.IH trace.hyps)
+      by (metis expr.simps expr_4.simps(1) less_eq_t.simps of_nat_0 of_nat_eq_enat of_nat_le_iff trace.IH)
     have A5: "expr_5 \<psi> \<le> 1"
       by (metis expr.simps less_eq_t.simps local.trace(2) of_nat_1 of_nat_eq_enat of_nat_le_iff)
     have A6: "expr_6 \<psi> \<le> 1"
@@ -1541,18 +1552,60 @@ proof(induction \<phi> rule:HML_failure.induct)
       using trace.IH by auto
   qed
 next
-  case (neg x2 \<alpha>)
+  case(empty_conj)
+  then show ?case
+    using enat_0 enat_1 by auto
+  next
+  case (neg x2)
   then show ?case
   proof-
-    assume "\<forall>y\<in>set x2. y = HML_poss \<alpha> (HML_conj [] [])"
+    assume assm: "\<forall>y\<in>set x2. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
     show "less_eq_t (expr (HML_conj [] x2)) (\<infinity>, 2, 0, 0, 1, 1)"
     proof-
       have A2: "expr_2 (HML_conj [] x2) \<le> 2"
         by (meson HML_failure.neg expr_2_fail local.neg)
       have A3: "expr_3 (HML_conj [] x2) \<le> 0"
         by (meson HML_failure.neg expr_3_fail local.neg)
-      have A4: "expr_4 (HML_conj [] x2) \<le> 0"
-        by (meson HML_failure.neg expr_4_fail_neg local.neg) 
+      have eq: "expr_4 (HML_conj ([]::'a formula_list list) x2) = 
+Max ({expr_1 (HML_conj (pos_r [])([]::'a formula_list list))} \<union> 
+{expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set x2})"
+        by (rule expr_4_set)
+      have A4_2: "{expr_4 x|x. x \<in> set ([]::'a formula_list list)} = {}"
+        by simp
+      have "pos_r [] = []"
+        by simp
+      then have A4_1: "{expr_1 (HML_conj (pos_r [])([]::'a formula_list list))} = 
+{expr_1 (HML_conj []([]::'a formula_list list))}" 
+        by simp
+      have "expr_1 (HML_conj [] ([]::'a formula_list list)) = 0" 
+        by simp
+      from this A4_1 have A4_1: "{expr_1 (HML_conj (pos_r [])([]::'a formula_list list))} = {0}" 
+        by simp
+      from assm have fa_x2: "\<forall>y\<in>set x2. expr_4 y = 0"
+        by auto
+      have "x2 = [] \<or> x2 \<noteq> []" 
+        by simp
+      then have A4: "expr_4 (HML_conj ([]::'a formula_list list) x2) \<le> 0"
+      proof(rule disjE)
+        assume "x2 = []"
+        then have "{expr_4 y|y. y \<in> set x2} = {}"
+          by simp
+        from this A4_1 A4_2 have "Max ({expr_1 (HML_conj (pos_r [])([]::'a formula_list list))} \<union> 
+{expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set x2}) = 0" 
+          by simp
+        from this eq show ?thesis by simp
+      next
+        assume "x2 \<noteq> []"
+        then have "{expr_4 y|y. y \<in> set x2} \<noteq> {}"
+          by simp
+        from this fa_x2 have "Max {expr_4 y|y. y \<in> set x2} = 0" 
+          by (smt (verit, best) Collect_cong Collect_empty_eq bot_set_def empty_set expr_1_set_form formula_prices_list.expr_1_conj_empty insert_Collect insert_is_Un mem_Collect_eq)
+        from this A4_1 A4_2 have "Max ({expr_1 (HML_conj (pos_r [])([]::'a formula_list list))} \<union> 
+{expr_4 x|x. x \<in> set ([]::'a formula_list list)} \<union> {expr_4 y|y. y \<in> set x2}) = 0"
+          using \<open>{expr_4 y |y. y \<in> set x2} \<noteq> {}\<close> by auto
+        from this eq show ?thesis 
+          by simp
+      qed
       have A5: "expr_5 (HML_conj [] x2) \<le> 1" 
         by (meson HML_failure.neg expr_5_fail local.neg) 
       have A6: "expr_6 (HML_conj [] x2) \<le> 1" 
@@ -1566,17 +1619,138 @@ qed
 (* ------------ *)
 (* Ab hier: Alles veraltet *)
 
+lemma failure_x1_empty:
+  "\<forall>x1 x2. \<phi> = HML_conj x1 x2 \<longrightarrow> (less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1)  \<longrightarrow> x1 = [])"
+proof(rule allI)
+  fix x1
+  show "\<forall>x2. \<phi> = HML_conj x1 x2 \<longrightarrow>
+               (less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1) \<longrightarrow>
+               x1 = [])"
+  proof(rule allI)
+    fix x2
+    show "\<phi> = HML_conj x1 x2 \<longrightarrow>
+          less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1) \<longrightarrow>
+          x1 = [] "
+    proof(rule impI)
+      assume A1: "\<phi> = HML_conj x1 x2"
+      show "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1) \<longrightarrow>
+    x1 = []"
+      proof(rule impI)
+        assume A2: "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1)"
+        show "x1 = []"
+proof(rule ccontr)
+    assume A3: "x1 \<noteq> []"
+    then have A4: "\<exists>x. x \<in> set x1"
+      using ex_in_conv by blast
+    from A1 A2 have e3_eq_0: "expr_3 (HML_conj x1 x2) \<le> 0"
+      by (metis expr.simps less_eq_t.simps of_nat_0 of_nat_eq_enat of_nat_le_iff)
+    have eq: "expr_3 (HML_conj x1 x2) =
+Max({0} \<union> {expr_3 x | x. x \<in> set x1} \<union> {expr_3 y | y. y \<in> set x2} \<union> {expr_1 x | x. x \<in> set x1})"
+      by (rule expr_3_set)
+    from flattened_alt A1 have 
+"(\<forall>x\<in>set x1. \<exists>\<alpha> x11. x = HML_poss \<alpha> x11)" 
+      using Flattened_Formulas_axioms by blast
+    then have fa_x1: "\<forall>x \<in>set x1. expr_1 x \<ge> 1" 
+      by auto
+    from A3 have ne: "{expr_1 x | x. x \<in> set x1} \<noteq> {}"
+      by simp
+    have fin: "finite {expr_1 x | x. x \<in> set x1}" by simp
+    from fin ne fa_x1 have ge_1: "Max {expr_1 x | x. x \<in> set x1} \<ge> 1"
+      using A1 Flattened_Formulas_axioms flattened flattened_alt by fastforce 
+    have subs: "{expr_1 x | x. x \<in> set x1} \<subseteq> 
+{0} \<union> {expr_3 x | x. x \<in> set x1} \<union> {expr_3 y | y. y \<in> set x2} \<union> {expr_1 x | x. x \<in> set x1}"
+      by auto
+    have fin: 
+"finite ({0} \<union> {expr_3 x | x. x \<in> set x1} \<union> {expr_3 y | y. y \<in> set x2} \<union> {expr_1 x | x. x \<in> set x1})"
+      by simp
+    from subs fin ge_1 have 
+"Max ({0} \<union> {expr_3 x | x. x \<in> set x1} \<union> {expr_3 y | y. y \<in> set x2} \<union> {expr_1 x | x. x \<in> set x1})
+\<ge> 1"
+      by (metis (no_types, lifting) Max_ge_iff UnCI Un_empty finite_subset ne)
+    from this eq have "expr_3 (HML_conj x1 x2) \<ge> 1" 
+      by simp
+    from this e3_eq_0 show False 
+      by simp
+  qed
+qed
+qed
+qed
+qed
+
+lemma failure_x1_empty_2:
+  fixes x1 x2
+  assumes "\<phi> = HML_conj x1 x2" and "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1)"
+shows "x1 = []"
+  using assms(1) assms(2) failure_x1_empty by blast
+
 lemma failure_left:
-  fixes \<phi>
   assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
   shows "HML_failure \<phi>"
-  by (smt (verit, del_insts) empty_iff formula_list.inject(1) formula_list.simps(4) indcution_basis_subformula list.set(1) neg subformula.cases)
+  using A1
+proof(cases \<phi>)
+  case (HML_conj x11 x12)
+  then have eq: "\<phi> = (HML_conj x11 x12)" by simp
+  from this A1 have x11_e: "x11 = []" 
+    by (rule failure_x1_empty_2) 
+  from eq A1 mon_conj have fa_le: "(\<forall>y \<in> set x12. less_eq_t (expr y) (\<infinity>, 2, 0, 0, 1, 1))"
+    by blast
+  from flattened flattened_alt eq have fa_pos: "(\<forall>x\<in>set x12. \<exists>\<alpha> x11. x = HML_poss \<alpha> x11)"
+    using Flattened_Formulas_axioms by blast
+  from fa_le have "(\<forall>x\<in>set x12. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] []))"
+    by (metis eq fa_pos flattened formula_list.distinct(1))
+  from eq this x11_e show ?thesis
+    using neg by blast
+next
+  case (HML_poss x21 x22)
+  from mon_pos A1 have "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1)" 
+    by simp
+  then show ?thesis 
+    sorry
+qed
+proof(induction \<phi>)
+  case (HML_conj x1 x2)
+  have A2: "\<forall>x1a \<in> set x1. less_eq_t (expr x1a) (\<infinity>, 2, 0, 0, 1, 1) \<longrightarrow> HML_failure x1a"
+    using HML_conj.IH(1) by blast
+  have A3: "\<forall>x2a \<in> set x2. less_eq_t (expr x2a) (\<infinity>, 2, 0, 0, 1, 1) \<longrightarrow> HML_failure x2a" 
+    using HML_conj.IH(2) by blast
+  from A1 mon_conj have A4: "\<forall>x1a \<in> set x1. less_eq_t (expr x1a) (\<infinity>, 2, 0, 0, 1, 1)"
+    using HML_conj.prems by blast
+  from A1 mon_conj have A5: "\<forall>x2a \<in> set x2. less_eq_t (expr x2a) (\<infinity>, 2, 0, 0, 1, 1)"
+    using HML_conj.prems by blast
+  from A2 A4 have A6: "\<forall>x1a \<in> set x1. HML_failure x1a" 
+    by simp
+  from A3 A5 have A7: "\<forall>x2a \<in> set x2. HML_failure x2a"
+    by simp
+  have "\<phi> = HML_conj x1 x2"
+  from failure_x1_empty have "x1 = []"
+  proof(cases x1)
+    case Nil
+    then show ?thesis by simp
+  next
+    case (Cons a list)
+    then show ?thesis 
+    proof(cases a)
+      case (HML_conj x11 x12)
+      then show ?thesis sorry
+    next
+      case (HML_poss x21 x22)
+      then show ?thesis sorry
+    qed
+  qed
+  then show ?case 
+    sorry
+next
+  case (HML_poss x1 \<phi>)
+  then show ?case 
+    by (simp add: trace)
+qed
+  oops
 
 lemma "(HML_failure \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
   using failure_left failure_right by blast
 
 lemma expr_4_read:
-  fixes \<phi> and \<alpha>
+  fixes \<alpha>
   assumes A1: "HML_readiness \<phi>" and A2: "less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1)"
   shows "expr_4 (HML_poss \<alpha> \<phi>) \<le> 1"
 proof(cases \<phi>)
@@ -1607,7 +1781,6 @@ next
 qed
 
 lemma readiness_right:
-  fixes \<phi>
   assumes A1: "HML_readiness \<phi>"
   shows "(less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
   using A1
@@ -1619,7 +1792,7 @@ proof(induction \<phi>)
     then show "less_eq_t (expr (HML_poss \<alpha> \<phi>)) (\<infinity>, 2, 1, 1, 1, 1)"
     proof-
       have A3: "expr_4 (HML_poss \<alpha> \<phi>) \<le> 1"
-        by (meson expr_4_read local.read_pos(2) read_pos.hyps)
+        by (metis expr.simps expr_4.simps(1) less_eq_t.simps local.read_pos(2) of_nat_1 of_nat_eq_enat of_nat_le_iff)
       show ?thesis
         by (metis A2 A3 enat_ord_simps(1) enat_ord_simps(3) expr.simps formula_prices_list.expr_2_pos formula_prices_list.expr_3_pos formula_prices_list.expr_5_pos formula_prices_list.expr_6_pos less_eq_t.simps one_enat_def)
     qed
@@ -1631,9 +1804,9 @@ proof(induction \<phi>)
 qed
 
 lemma readiness_left:
-  fixes \<phi>
   assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
   shows "HML_readiness \<phi>"
+  
   by (smt (verit, del_insts) empty_iff formula_list.distinct(1) formula_list.inject(1) indcution_basis_subformula list.set(1) read_conj subformula.cases)
 
 lemma "(HML_readiness \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 1, 1, 1))"
@@ -1851,5 +2024,7 @@ then show ?thesis by (rule HML_list.HML_failure_trace.f_trace_conj)
 qed
 
 lemma "(HML_failure_trace \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1))" 
+
+end
 
 end
