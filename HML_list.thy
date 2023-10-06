@@ -42,7 +42,7 @@ inductive HML_readiness :: "('a)formula_list \<Rightarrow> bool"
   where
 read_pos: "HML_readiness (HML_poss \<alpha> \<phi>)" if "HML_readiness \<phi>"|
 read_conj: "HML_readiness (HML_conj xs ys)" 
-if "(\<forall>x \<in> set xs. x = HML_poss \<alpha> (HML_conj [] [])) \<and> (\<forall> y \<in> set ys. y = HML_poss \<alpha> (HML_conj [] []))"
+if "(\<forall>x \<in> set xs. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] [])) \<and> (\<forall> y \<in> set ys. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] []))"
 
 
 inductive HML_failure_trace :: "('a)formula_list \<Rightarrow> bool"
