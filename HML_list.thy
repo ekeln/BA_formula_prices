@@ -44,12 +44,17 @@ read_pos: "HML_readiness (HML_poss \<alpha> \<phi>)" if "HML_readiness \<phi>"|
 read_conj: "HML_readiness (HML_conj xs ys)" 
 if "(\<forall>x \<in> set xs. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] [])) \<and> (\<forall> y \<in> set ys. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] []))"
 
+inductive HML_impossible_futures :: "('a)formula_list \<Rightarrow> bool"
+  where
+  if_pos: "HML_impossible_futures (HML_poss \<alpha> \<phi>)" if "HML_impossible_futures \<phi>" |
+if_conj: "HML_impossible_futures (HML_conj ([]:: 'a formula_list list) ys)"
+if "\<forall>x \<in> set ys. (HML_trace x)"
 
 inductive HML_failure_trace :: "('a)formula_list \<Rightarrow> bool"
   where
 f_trace_pos: "HML_failure_trace (HML_poss \<alpha> \<phi>)" if "HML_failure_trace \<phi>"|
 f_trace_e_conj : "HML_failure_trace (HML_conj [] [])" |
-f_trace_conj: "HML_failure_trace (HML_conj xs ys)" if "\<exists>x \<in> set xs. (HML_failure_trace x \<and> (\<forall>y. y \<in> set xs \<longrightarrow> y = x))
- \<and> (\<forall> y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
+f_trace_conj: "HML_failure_trace (HML_conj (x#xs) ys)" if "(HML_failure_trace x \<and> (\<forall>y \<in> set xs. y = x))
+ \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
 
 end

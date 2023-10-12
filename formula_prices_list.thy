@@ -188,9 +188,12 @@ fun pos_r :: "('a)formula_list list \<Rightarrow> ('a)formula_list list"
   where
 "pos_r [] = []"|
 "pos_r xs = (
-let max_val = Max (set (map(\<lambda>x. expr_1 x) xs));
-xs_new = filter (\<lambda>y. expr_1 y < max_val) xs
+let max_val = Max (set (map(\<lambda>x. expr_1 x) xs)); 
+max_elem = hd(filter (\<lambda>y. expr_1 y = max_val) xs);
+xs_new = filter(\<lambda>y. y \<noteq> max_elem) xs
 in xs_new)"
+(*xs_new = filter (\<lambda>y. expr_1 y < max_val) xs*)
+
 
 fun r :: "('a)formula_list list \<Rightarrow> nat"
   where
