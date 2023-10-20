@@ -1637,7 +1637,7 @@ le_1: "Max({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y
     proof-
       from fa_pos have "\<exists>\<alpha> x11. y = HML_poss \<alpha> x11"
         using \<open>y \<in> set x2\<close> by fastforce
-      then obtain \<alpha> x11 where A3: "y = HML_poss \<alpha> x11" by auto-
+      then obtain \<alpha> x11 where A3: "y = HML_poss \<alpha> x11" by auto
       from A3 have "expr_1 y = expr_1 (HML_poss \<alpha> x11)"
         by simp
       from this e1 have "expr_1 (HML_poss \<alpha> x11) \<le> 1"
@@ -2392,7 +2392,10 @@ lemma e5_e6_ge_1:
   using A1
 proof(induction \<phi>)
   case (HML_conj x1 x2)
-  assume A2: "1 \<le> expr_5 (HML_conj x1 x2)"
+  (*Wenn e5 x1 \<ge> 1, dann nach I.V. 1 \<le> expr_6 x1a, wenn e5 x2 \<ge> 1, dann nach I.V. 1 \<le> expr_6 x2a,
+dann kann man bei beiden, da dann ihre Mengen nicht leer sein können, sagen, dass e6 \<ge> 1 (mit e6_eq).
+Wenn e1 x2 \<ge> 1, dann ist {1 + expr_6 y | y. y \<in> set x2} (bzw x2) nicht leer und damit
+Max {1 + expr_6 y | y. y \<in> set \<Psi>} \<ge> 1.*)
   have fin_e5: "finite ({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2})"
     by simp
   have max_0: "Max {0} < (1::nat)" 
@@ -2400,85 +2403,194 @@ proof(induction \<phi>)
   have e5_eq: "expr_5 (HML_conj x1 x2) =
 Max({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2})"
     by (rule expr_5_set)
-  from this A2 have 
+  from this HML_conj have 
 "Max({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) \<ge> 1"
     by simp
-  from this fin_e5 max_0 have "Max({expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) \<ge> 1"
+  from this fin_e5 max_0 have e1_ge_1: "Max({expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) \<ge> 1"
     by (smt (verit, best) Max.union Un_infinite less_one max_nat.comm_neutral not_one_le_zero sup_assoc sup_bot.right_neutral sup_commute)
-  from this fin_e5 have e5_disj: "(Max {expr_5 x | x. x \<in> set x1} \<ge> 1) \<or> (Max {expr_5 y | y. y \<in> set x2} \<ge> 1) \<or>
-(Max {expr_1 y | y. y \<in> set x2} \<ge> 1)"
-    by (smt (z3) Sup_fin.union Sup_fin_Max Un_absorb1 Un_infinite bot.extremum finite_UnI nle_le sup.bounded_iff sup_commute)
-  (*Wenn e5 x1 \<ge> 1, dann nach I.V. 1 \<le> expr_6 x1a, wenn e5 x2 \<ge> 1, dann nach I.V. 1 \<le> expr_6 x2a,
-dann kann man bei beiden, da dann ihre Mengen nicht leer sein können, sagen, dass e6 \<ge> 1 (mit e6_eq).
-Wenn e1 x2 \<ge> 1, dann ist {1 + expr_6 y | y. y \<in> set x2} (bzw x2) nicht leer und damit
-Max {1 + expr_6 y | y. y \<in> set \<Psi>} \<ge> 1.*)
   have e6_eq: "expr_6 (HML_conj x1 x2) =
 Max({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
     by (rule HML_subsets.expr_6_union_neg)
-  from e5_disj show ?case
-  proof(rule disjE)
-    assume A4: "1 \<le> Max {expr_5 x |x. x \<in> set x1}"
+  from HML_conj show "1 \<le> expr_6 (HML_conj x1 x2)"
+  proof(cases x1)
+    case Nil
+    then have "{expr_5 x | x. x \<in> set x1} = {}" 
+      by simp
+    then have "({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) =
+({0} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2})"
+      by simp
+    then have e5_eq_2: "Max({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) =
+Max({0} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2})"
+      by simp
+    then show ?thesis 
+    proof(cases x2)
+      case Nil
+      then have "({expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) = {}"
+        by simp
+      then have "Max({0} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) = 0" 
+        by simp
+      from this e5_eq HML_conj e5_eq_2 have False 
+        by simp
+      then show ?thesis by simp
+    next
+      case (Cons a list)
+      then have ne_e5: "{expr_5 y | y. y \<in> set x2} \<noteq> {}"
+        by auto
+      from Cons have ne_e1: "{expr_1 y | y. y \<in> set x2} \<noteq> {}"
+        by auto
+      have fin: "finite ({0} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2})"
+        by simp
+      from e5_eq HML_conj e5_eq_2 ne_e5 ne_e1 fin have "Max ({expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) \<ge> 1"
+        by simp
+      then have "(Max {expr_5 y | y. y \<in> set x2} \<ge> 1) \<or> (Max {expr_1 y | y. y \<in> set x2} \<ge> 1)"
+        by (metis (no_types, lifting) Max_of_union fin_e5 finite_Un less_one linorder_le_less_linear ne_e5 sup_bot_right sup_idem)
+
+      then show ?thesis
+      proof(rule disjE)
+        assume A2: "1 \<le> Max {expr_5 y |y. y \<in> set x2}"
+        have fin: "finite {expr_5 y |y. y \<in> set x2}"
+          by simp
+        from this A2 ne_e5 have "\<exists>x2a \<in> set x2. expr_5 x2a \<ge> 1" 
+          by (smt (verit, ccfv_SIG) Max_in ex_in_conv mem_Collect_eq set_empty2)
+        then obtain x2a where x2a_in_x2: "x2a \<in> set x2" and e5_x2a: "expr_5 x2a \<ge> 1"
+          by auto
+        then have e6_x1a: "expr_6 x2a \<ge> 1"
+          by (rule local.HML_conj(2))
+        from x2a_in_x2 have ne:"{1 + expr_6 y | y. y \<in> set x2} \<noteq> {}"
+          by auto
+        have fin: "finite {1 + expr_6 y | y. y \<in> set x2}"
+          by simp
+        from fin ne have e6_x2: "Max {1 + expr_6 y | y. y \<in> set x2} \<ge> 1"
+          by (smt (verit, ccfv_SIG) Max_in le_add1 mem_Collect_eq)
+        have subs: "{1 + expr_6 y | y. y \<in> set x2} \<subseteq> ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+          by auto
+        have fin: "finite ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+          by simp
+        from this subs e6_x2 e6_eq show "expr_6 (HML_conj x1 x2) \<ge> 1"
+          by (metis (no_types, lifting) Max_mono dual_order.trans ne)  
+      next
+        assume A4: "1 \<le> Max {expr_1 y |y. y \<in> set x2}"
+        from ne_e1 have "x2 \<noteq> []" by simp
+        then have ne:"{1 + expr_6 y | y. y \<in> set x2} \<noteq> {}"
+          by simp
+        have fin: "finite {1 + expr_6 y | y. y \<in> set x2}"
+          by simp
+        from fin ne have e6_x2: "Max {1 + expr_6 y | y. y \<in> set x2} \<ge> 1"
+          by (smt (verit, ccfv_SIG) Max_in le_add1 mem_Collect_eq)
+        have subs: "{1 + expr_6 y | y. y \<in> set x2} \<subseteq> ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+          by auto
+        have fin: "finite ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+          by simp
+        from this subs e6_x2 e6_eq show "expr_6 (HML_conj x1 x2) \<ge> 1"
+          by (metis (no_types, lifting) Max_mono dual_order.trans ne)
+      qed
+    qed
+  next
+    case (Cons a list)
+    then have "x1 \<noteq> []" 
+      by simp
+    from Cons show ?thesis 
+    proof(cases x2)
+      case Nil
+      have fin: "finite {expr_6 x |x. x \<in> set x1}" 
+        by simp
+      from Nil have "({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) =
+({0} \<union> {expr_5 x | x. x \<in> set x1})" 
+        by simp
+      then have "Max ({0} \<union> {expr_5 x | x. x \<in> set x1} \<union> {expr_5 y | y. y \<in> set x2} \<union> {expr_1 y | y. y \<in> set x2}) =
+Max ({0} \<union> {expr_5 x | x. x \<in> set x1})" 
+        by simp
+      from this e5_eq HML_conj(3) have "Max ({0} \<union> {expr_5 x |x. x \<in> set x1}) \<ge> 1"
+        by simp
+      then have "Max ({expr_5 x |x. x \<in> set x1})\<ge> 1"
+        using e1_ge_1 local.Nil by auto
+      from this HML_conj(1) \<open>x1 \<noteq> []\<close> have "\<exists>x1a \<in> set x1. 1 \<le> expr_6 x1a"
+        by (smt (verit) Max_in all_not_in_conv fin_e5 finite_Un mem_Collect_eq set_empty)
+      from this fin \<open>x1 \<noteq> []\<close> have e6_x1: "Max {expr_6 x |x. x \<in> set x1} \<ge> 1" 
+        using Max_ge_iff by blast
+      have subs: "{expr_6 x |x. x \<in> set x1} \<subseteq> ({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2}) "
+        by auto
+      have fin:"finite ({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2}) "
+        by simp
+      from this subs e6_x1 e6_eq show ?thesis 
+        by (smt (verit, ccfv_threshold) Max_mono One_nat_def \<open>\<exists>x1a\<in>set x1. 1 \<le> expr_6 x1a\<close> 
+empty_Collect_eq le_imp_less_Suc less_one linorder_not_less) 
+    next
+      case (Cons b list2)
+      then have "x2 \<noteq> []"
+        by simp
+      from e1_ge_1 fin_e5 have e5_disj: 
+"(Max {expr_5 x | x. x \<in> set x1} \<ge> 1) \<or> (Max {expr_5 y | y. y \<in> set x2} \<ge> 1) \<or>
+(Max {expr_1 y | y. y \<in> set x2} \<ge> 1)"
+    by (smt (z3) Sup_fin.union Sup_fin_Max Un_absorb1 Un_infinite bot.extremum finite_UnI nle_le sup.bounded_iff sup_commute)
+  then show ?thesis 
+  proof
+    assume ass1: "1 \<le> Max {expr_5 x |x. x \<in> set x1}"
     have fin: "finite {expr_5 x |x. x \<in> set x1}"
       by simp
-    from A4 have ne_x1: "x1 \<noteq> []" sorry
-    from A4 fin ne_x1 have "\<exists>x1a \<in> set x1. expr_5 x1a \<ge> 1"
-      by (smt (verit, ccfv_SIG) Max_in ex_in_conv mem_Collect_eq set_empty2)
-    then obtain x1a where x1a_in_x1: "x1a \<in> set x1" and e5_x1a: "expr_5 x1a \<ge> 1"
-      by auto
-    then have e6_x1a: "expr_6 x1a \<ge> 1" 
-      by (rule local.HML_conj(1))
-    have fin_e6: "finite {expr_6 x | x. x \<in> set x1}"
+    have fin_e6: "finite {expr_6 x |x. x \<in> set x1}"
       by simp
-    from ne_x1 have "{expr_6 x | x. x \<in> set x1} \<noteq> {}"
+    from ass1 fin \<open>x1 \<noteq> []\<close> have "\<exists>x \<in> set x1. expr_5 x \<ge> 1"
+      by (smt (verit, best) Max_in empty_Collect_eq list.set_intros(1) mem_Collect_eq neq_Nil_conv)
+    then obtain x where x_in: "x \<in> set x1" and x_e5: "expr_5 x \<ge> 1" by auto
+    from this have "expr_6 x \<ge> 1" by (rule local.HML_conj(1))
+    from this x_in fin_e6 have e6_x1: "Max {expr_6 x |x. x \<in> set x1} \<ge> 1"
+      using Max_ge_iff by blast
+    have subs: "{expr_6 x |x. x \<in> set x1} \<subseteq> 
+({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
       by auto
-    from fin_e6 this e6_x1a have e6_x1: "Max {expr_6 x | x. x \<in> set x1} \<ge> 1"
-      by (metis (mono_tags, lifting) Max.bounded_iff antisym linorder_linear mem_Collect_eq x1a_in_x1)
-    have subs: "{expr_6 x | x. x \<in> set x1} \<subseteq> ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
-      by auto
-    have fin: "finite ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+    have fin: "finite ({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
       by simp
-    from this subs e6_x1 e6_eq show
-"expr_6 (HML_conj x1 x2) \<ge> 1" 
-      by (metis (no_types, lifting) Max_mono \<open>{expr_6 x |x. x \<in> set x1} \<noteq> {}\<close> order_trans)
+    from this subs e6_eq e6_x1 show ?thesis
+      using HML_subsets.expr_6_conj local.Cons by blast
   next
     assume "1 \<le> Max {expr_5 y |y. y \<in> set x2} \<or> 1 \<le> Max {expr_1 y |y. y \<in> set x2}"
-    then show "1 \<le> expr_6 (HML_conj x1 x2)"
+    then show ?thesis 
     proof(rule disjE)
-      assume A4: "1 \<le> Max {expr_5 y |y. y \<in> set x2}"
-      then have "x2 \<noteq> []" sorry
-      then have ne:"{1 + expr_6 y | y. y \<in> set x2} \<noteq> {}"
+      assume ass1: "1 \<le> Max {expr_5 y |y. y \<in> set x2}"
+      have fin: "finite {expr_5 y |y. y \<in> set x2}"
         by simp
-      have fin: "finite {1 + expr_6 y | y. y \<in> set x2}"
+      have fin_e6: "finite {1 + expr_6 y |y. y \<in> set x2}"
         by simp
-      from fin ne have e6_x2: "Max {1 + expr_6 y | y. y \<in> set x2} \<ge> 1"
-        by (smt (verit, ccfv_SIG) Max_in le_add1 mem_Collect_eq)
-      have subs: "{1 + expr_6 y | y. y \<in> set x2} \<subseteq> ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+      from fin ass1 \<open>x2 \<noteq> []\<close> have "\<exists>y \<in> set x2. expr_5 y \<ge> 1" 
+        by (smt (verit, best) Max_in empty_Collect_eq list.set_intros(1) mem_Collect_eq neq_Nil_conv)
+      then obtain y where y_in: "y \<in> set x2" and e5_y: "expr_5 y \<ge> 1"
         by auto
-      have fin: "finite ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
-        by simp
-      from this subs e6_x2 e6_eq show "expr_6 (HML_conj x1 x2) \<ge> 1"
-        by (metis (no_types, lifting) Max_mono dual_order.trans ne)
-    next
-      assume A4: "1 \<le> Max {expr_1 y |y. y \<in> set x2}"
-      then have "x2 \<noteq> []" sorry
-      then have ne:"{1 + expr_6 y | y. y \<in> set x2} \<noteq> {}"
-        by simp
-      have fin: "finite {1 + expr_6 y | y. y \<in> set x2}"
-        by simp
-      from fin ne have e6_x2: "Max {1 + expr_6 y | y. y \<in> set x2} \<ge> 1"
-        by (smt (verit, ccfv_SIG) Max_in le_add1 mem_Collect_eq)
-      have subs: "{1 + expr_6 y | y. y \<in> set x2} \<subseteq> ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
+      from this have "expr_6 y \<ge> 1" by (rule local.HML_conj(2))
+      from this y_in fin_e6 have e6_x1: "Max {1 + expr_6 x |x. x \<in> set x2} \<ge> 1"
+        using Max_ge_iff
+        by (smt (verit, del_insts) Max_ge add_leE mem_Collect_eq)
+      have subs: "{1 + expr_6 x |x. x \<in> set x2} \<subseteq>
+({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
         by auto
-      have fin: "finite ({0} \<union> {expr_6 x | x. x \<in> set x1} \<union> {1 + expr_6 y | y. y \<in> set x2})"
-        by simp
-      from this subs e6_x2 e6_eq show "expr_6 (HML_conj x1 x2) \<ge> 1"
-        by (metis (no_types, lifting) Max_mono dual_order.trans ne)
-    qed
+      have fin: "finite ({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
+      by simp
+    from this subs e6_eq e6_x1 show ?thesis
+      using HML_subsets.expr_6_conj local.Cons by blast
+  next
+    assume "1 \<le> Max {expr_1 y |y. y \<in> set x2}"
+    have fin: "finite {1 + expr_6 y |y. y \<in> set x2}"
+      by simp
+    from \<open>x2 \<noteq> []\<close> have "{1 + expr_6 y |y. y \<in> set x2} \<noteq> {}"
+      by auto
+    from fin this have "Max {1 + expr_6 y |y. y \<in> set x2} \<ge> 1"
+      by (smt (verit, ccfv_threshold) Max_in le_add1 mem_Collect_eq)
+have subs: "{1 + expr_6 x |x. x \<in> set x2} \<subseteq>
+({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
+        by auto
+      have fin: "finite ({0} \<union> {expr_6 x |x. x \<in> set x1} \<union> {1 + expr_6 y |y. y \<in> set x2})"
+      by simp
+    from this subs e6_eq show ?thesis
+      using HML_subsets.expr_6_conj local.Cons by blast
   qed
+qed
+qed
+qed
 next
-  case (HML_poss x1 \<phi>)
+case (HML_poss x1 \<phi>)
   then show ?case by simp
 qed
+
 
 lemma impossible_futures_left:
   assumes A1: "less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, \<infinity>, 1)" and A2: "conj_flattened \<phi>"
@@ -2622,6 +2734,12 @@ next
   then show ?case
     by (simp add: if_pos)
 qed
+
+lemma impossible_futures_lemma:
+  fixes \<phi>
+  assumes "conj_flattened \<phi>"
+  shows "HML_impossible_futures \<phi> = less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, \<infinity>, 1)"
+  using assms impossible_futures_left impossible_futures_right by blast
 
 lemma expr_4_ft_poss:
   fixes \<phi> and \<alpha>
@@ -2880,7 +2998,8 @@ expr_4_ft_conj f_trace_conj.IH fin_ys finite.emptyI finite_insert ne_ys sup.idem
 
 lemma failure_trace_conj:
   assumes A1: "(less_eq_t (expr (HML_conj (x#xs) ys)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1))" and 
-A2: "conj_flattened (HML_conj (x#xs) ys)"
+A2: "conj_flattened (HML_conj (x#xs) ys)" and
+A3: "\<And>x1a. x1a \<in> set (x#xs) \<Longrightarrow> less_eq_t (expr x1a) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1) \<Longrightarrow> HML_failure_trace x1a"
 shows "(HML_failure_trace x \<and> (\<forall>y \<in> set xs. y = x))
  \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
 proof
@@ -2949,56 +3068,32 @@ Max ({expr_1 (HML_conj (pos_r (x#xs))[])} \<union> {expr_4 y|y. y \<in> set (x#x
       by (metis (no_types, lifting) Max_ge_iff insert_subset)
     from this e4_0 show False by simp
   qed
-(*HML_failure_trace x: induktion über x:
-    Fall 1: Form HML_conj nicht möglich wegen conj_flattened
-    Fall 2: Form HML_poss \<alpha> rest: trivial? *)
-  have "HML_failure_trace x"
-    using A2
-  proof(induction x)
-    case (HML_conj x1 x2)
-    then have "(HML_conj x1 x2) \<in> set ((HML_conj x1 x2)#xs)"
+(*HML_failure_trace x: durch I.V. *)
+  from A1 have "less_eq_t (expr x) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)"
+      by (metis list.set_intros(1) mon_conj)
+    from this A3 have ft_x: "HML_failure_trace x" 
       by simp
-    have "conj_flattened (HML_conj ((HML_conj x1 x2) # xs) ys)"
-      by (rule local.HML_conj(3))
-    from this conj_flattened_alt have "\<exists>\<alpha> \<phi>. (HML_conj x1 x2) = (HML_poss \<alpha> \<phi>)"
-      by simp
-    then have False
-      by simp
-    then show ?case by simp
-  next
-(*TODO*)
-    case (HML_poss x1 x)
-    assume "conj_flattened (HML_conj ((HML_poss x1 x) # xs) ys)"
-    then have "((\<forall>x \<in> set ((HML_poss x1 x) # xs). (\<nexists>x11 x12. x = HML_conj x11 x12) \<and> conj_flattened x) \<and> 
-(\<forall>x \<in> set ys. (\<nexists>x21 x22. x = HML_conj x21 x22) \<and> conj_flattened x))"
-      by simp
-    then have flat_xs: "(\<forall>x \<in> set ((HML_poss x1 x) # xs). (\<nexists>x11 x12. x = HML_conj x11 x12) \<and> conj_flattened x)"
-      by simp
-    then have "conj_flattened (HML_poss x1 x)"
-      by simp
-    then have "conj_flattened x"
-      by simp
-    then show ?case  by (rule HML_list.HML_failure_trace.f_trace_pos)
-  qed
 (*Wenn die y in ys nicht diese Form hätten, wäre: 
     Fall 1:   bei Form HML_conj x2 y2: nicht möglich wegen conj_flattened
     Fall 2:   Form HML_poss \<alpha> x2 y2: x2 = y2= [] ist erlaubt, 
               wenn x2 \<noteq> [], muss das elem x HML_poss (wegen conj_flattened) sein, dann expr_5 x \<ge> 2
               wenn y2 \<noteq> [] genauso, das elem muss HML_poss sein, expr_5 x \<ge> 2*)
-  have "\<forall>y\<in>set ys. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
+    show fa_ys: "\<forall>y\<in>set ys. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
   proof(rule ballI)
     fix y
     assume "y \<in> set ys"
     then show "\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
     proof(induction y)
       case (HML_conj x1 x2)
-      then show ?case sorry
+      then show ?case
+        using A2 conj_flattened.simps(2) by blast
     next
-      case (HML_poss x1 y)
+      case (HML_poss x11 z)
       then show ?case sorry
     qed
-
-  sorry
+  qed
+  from ft_x y_eq_x show "HML_failure_trace x \<and> (\<forall>y\<in>set xs. y = x)" by simp
+qed
 
 lemma failure_trace_left:
   fixes \<phi>
@@ -3010,7 +3105,8 @@ proof(induction \<phi>)
   assume A2: "\<And>x1a. x1a \<in> set x1 \<Longrightarrow> less_eq_t (expr x1a) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1) \<Longrightarrow> HML_failure_trace x1a" and
 A3: "\<And>x2a. x2a \<in> set x2 \<Longrightarrow> less_eq_t (expr x2a) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1) \<Longrightarrow> HML_failure_trace x2a" and
 A4: "less_eq_t (expr (HML_conj x1 x2)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)"
-  then show "HML_failure_trace (HML_conj x1 x2)"
+  from this failure_trace_conj show "HML_failure_trace (HML_conj x1 x2)"
+
   proof(cases x1)
     case Nil
     assume "x1 = []"
