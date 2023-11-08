@@ -16,7 +16,7 @@ fun HML_semantics :: \<open>'s \<Rightarrow> ('a)formula_list \<Rightarrow> bool
   where
 HML_sem_conj: \<open>(p \<Turnstile> HML_conj \<Phi> \<Psi>) = 
 (\<forall>\<phi>. (\<phi> \<in> set \<Phi> \<longrightarrow> HML_semantics p  \<phi>) \<and> (\<phi> \<in> set \<Psi> \<longrightarrow> \<not>(HML_semantics p \<phi>)))\<close>
-| HML_sem_poss: \<open>(HML_semantics p (HML_poss \<alpha> \<phi>)) = (\<exists> q. (p \<longmapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close>
+| HML_sem_poss: \<open>(HML_semantics p (HML_poss \<alpha> \<phi>)) = (\<exists> q. (p \<mapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close>
 end
 
 (*TODO*)
@@ -50,15 +50,29 @@ inductive HML_impossible_futures :: "('a)formula_list \<Rightarrow> bool"
 if_conj: "HML_impossible_futures (HML_conj ([]:: 'a formula_list list) ys)"
 if "\<forall>x \<in> set ys. (HML_trace x)"
 
+inductive HML_possible_futures :: "('a)formula_list \<Rightarrow> bool"
+  where
+pf_pos: "HML_possible_futures (HML_poss \<alpha> \<phi>)" if "HML_possible_futures \<phi>" |
+pf_conj: "HML_possible_futures (HML_conj xs ys)" if "(\<forall>x \<in> set xs. (HML_trace x)) \<and> (\<forall>y \<in> set ys. (HML_trace y))"
+
 inductive HML_failure_trace :: "('a)formula_list \<Rightarrow> bool"
   where
 f_trace_pos: "HML_failure_trace (HML_poss \<alpha> \<phi>)" if "HML_failure_trace \<phi>"|
 f_trace_conj: "HML_failure_trace (HML_conj xs ys)" 
 if "(xs = [] \<or> (\<exists>x xs2. xs = (x#xs2) \<and> (HML_failure_trace x \<and> (\<forall>y \<in> set xs2. y = x)))) \<and> 
 (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
-(*f_trace_e_conj : "HML_failure_trace (HML_conj [] [])" |
-f_trace_conj: "HML_failure_trace (HML_conj (x#xs) ys)" if "(HML_failure_trace x \<and> (\<forall>y \<in> set xs. y = x))
- \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"*)
 
+inductive HML_ready_trace :: "('a)formula_list \<Rightarrow> bool"
+where
+r_trace_pos: "HML_ready_trace (HML_poss \<alpha> \<phi>)" if "HML_ready_trace \<phi>"|
+r_trace_conj: "HML_ready_trace (HML_conj xs ys)" 
+if "(\<forall>x \<in> set xs. \<forall>y \<in> set xs. (\<nexists>\<alpha>. x \<noteq> HML_poss \<alpha> (HML_conj [] []) \<and> y \<noteq> HML_poss \<alpha> (HML_conj [] [])) \<longrightarrow> (x = y \<and> HML_ready_trace x))
+\<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
+
+inductive HML_n_nested_sim_obs :: "('a) formula_list \<Rightarrow> nat \<Rightarrow> bool"
+  where
+"HML_n_nested_sim_obs _ _"
+(*Für pos \<alpha> \<phi>: wenn \<phi>
+Für conj xs ys: fa. x in xs: wenn x, fa. y in ys: wenn x HML_nested_sim_obs für n-1, wenn n=1: simulation*)
 
 end
