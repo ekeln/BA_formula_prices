@@ -10,7 +10,6 @@ HML_conj \<open>('a)formula_list list\<close>  \<open>('a)formula_list list\<clo
 
 context lts begin
 
-
 fun HML_semantics :: \<open>'s \<Rightarrow> ('a)formula_list \<Rightarrow> bool\<close>
 (\<open>_ \<Turnstile> _\<close> [50, 50] 50)
   where
@@ -66,13 +65,27 @@ inductive HML_ready_trace :: "('a)formula_list \<Rightarrow> bool"
 where
 r_trace_pos: "HML_ready_trace (HML_poss \<alpha> \<phi>)" if "HML_ready_trace \<phi>"|
 r_trace_conj: "HML_ready_trace (HML_conj xs ys)" 
-if "(\<forall>x \<in> set xs. \<forall>y \<in> set xs. (\<nexists>\<alpha>. x \<noteq> HML_poss \<alpha> (HML_conj [] []) \<and> y \<noteq> HML_poss \<alpha> (HML_conj [] [])) \<longrightarrow> (x = y \<and> HML_ready_trace x))
+if "(\<forall>x \<in> set xs. \<forall>y \<in> set xs. (\<exists>\<alpha> \<beta>. x \<noteq> HML_poss \<alpha> (HML_conj [] []) \<and> y \<noteq> HML_poss \<beta> (HML_conj [] [])) \<longrightarrow> (x = y \<and> HML_ready_trace x))
 \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
 
-inductive HML_n_nested_sim_obs :: "('a) formula_list \<Rightarrow> nat \<Rightarrow> bool"
+(*TODO: überprüfen*)
+inductive HML_ready_sim :: "('a) formula_list \<Rightarrow> bool"
   where
-"HML_n_nested_sim_obs _ _"
-(*Für pos \<alpha> \<phi>: wenn \<phi>
-Für conj xs ys: fa. x in xs: wenn x, fa. y in ys: wenn x HML_nested_sim_obs für n-1, wenn n=1: simulation*)
+"HML_ready_sim (HML_poss \<alpha> \<phi>)" if "HML_ready_sim \<phi>" |
+"HML_ready_sim (HML_conj xs ys)" if 
+"(\<forall>x \<in> set xs. HML_ready_sim x) \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. y = (HML_poss \<alpha> (HML_conj [] [])))" 
+
+(*TODO: überprüfen*)
+inductive HML_2_nested_sim :: "('a) formula_list \<Rightarrow> bool" 
+  where
+"HML_2_nested_sim (HML_poss \<alpha> \<phi>)" if "HML_2_nested_sim \<phi>" |
+"HML_2_nested_sim (HML_conj xs ys)" if "(\<forall>x \<in> set xs. HML_2_nested_sim x) \<and> (\<forall>y \<in> set ys. HML_simulation y)"
+
+(*TODO: überprüfen*)
+inductive HML_revivals :: "('a) formula_list \<Rightarrow> bool" 
+  where
+revivals_pos: "HML_revivals (HML_poss \<alpha> \<phi>)" if "HML_revivals \<phi>" |
+revivals_conj: "HML_revivals (HML_conj xs ys)" if "\<exists>\<alpha>. \<forall>x \<in> set xs. x = HML_poss \<alpha> (HML_conj [] []) \<and>
+(\<forall>x \<in> set ys. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] []))"
 
 end

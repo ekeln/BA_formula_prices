@@ -16,6 +16,10 @@ abbreviation derivatives :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's set\<clo
   where
 \<open>derivatives p \<alpha> \<equiv> {p'. p \<mapsto>\<alpha> p'}\<close>
 
+abbreviation initial_actions:: \<open>'s \<Rightarrow> 'a set\<close>
+  where
+\<open>initial_actions p \<equiv> {\<alpha>|\<alpha>. (\<exists>p'. p \<mapsto>\<alpha> p')}\<close>
+
 abbreviation deadlock :: \<open>'s \<Rightarrow> bool\<close> where
 \<open>deadlock p \<equiv> (\<forall>a. derivatives p a = {})\<close>
 
@@ -86,6 +90,22 @@ lemma
   shows \<open>transp (\<lesssim>T)\<close>
   unfolding transp_def trace_preordered_def by blast
 
+text \<open>Failure Pairs\<close>
+
+abbreviation failure_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a set)\<close>
+  where
+\<open>failure_pairs p \<equiv> 
+let T = traces p 
+xs = (SOME x. x \<in> T) in
+(xs, {})\<close>
+
+text \<open>Failure preorder\<close>
+
+(*traces p \<subseteq> traces q \<and> \<forall>p'. (\<exists>A F. p \<mapsto>$ A p' \<and> \<longrightarrow>*)
+(*Wenn es für jeden trace von q und für jede Menge aus states, sodass es *)
+definition failure_preordered (infix \<open>\<lesssim>F\<close> 60) where
+\<open>failure_preordered p q \<equiv> traces p \<subseteq> traces q\<close>
+
 definition isomorphism :: \<open>('s \<Rightarrow> 's) \<Rightarrow> bool\<close> where
 \<open>isomorphism f \<equiv> bij f \<and> (\<forall>p a p'. p \<mapsto> a p' \<longleftrightarrow> f p \<mapsto> a (f p'))\<close>
 
@@ -112,6 +132,9 @@ text \<open>Bisimilarity is a simulation.\<close>
 lemma bisim_sim:
   shows \<open>simulation (\<simeq>B)\<close>
   unfolding bisimilar_def simulation_def by blast
+
+(*TODO: relationale definition der anderen äquivalenzen*)
+
 
 end
 end
