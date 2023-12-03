@@ -16,15 +16,68 @@ fun HML_semantics :: \<open>'s \<Rightarrow> ('a)formula_list \<Rightarrow> bool
 HML_sem_conj: \<open>(p \<Turnstile> HML_conj \<Phi> \<Psi>) = 
 (\<forall>\<phi>. (\<phi> \<in> set \<Phi> \<longrightarrow> HML_semantics p  \<phi>) \<and> (\<phi> \<in> set \<Psi> \<longrightarrow> \<not>(HML_semantics p \<phi>)))\<close>
 | HML_sem_poss: \<open>(HML_semantics p (HML_poss \<alpha> \<phi>)) = (\<exists> q. (p \<mapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close>
+
+find_theorems HML_semantics
+
+text \<open>Two states are HML equivalent if they satisfy the same formula.\<close>
+definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
+  \<open>HML_equivalent p q \<equiv> (\<forall> \<phi>::('a) formula_list. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))\<close>
+
+text \<open>
+  A formula distinguishes one state from another if its true for the
+  first and false for the second.
+\<close>
+abbreviation distinguishes ::  \<open>('a) formula_list \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close> where
+   \<open>distinguishes \<phi> p q \<equiv> p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>\<close>
+
+lemma hml_equiv_sym:
+  shows \<open>symp HML_equivalent\<close>
+unfolding HML_equivalent_def symp_def by simp
+
+text \<open>
+  If two states are not HML equivalent then there must be a
+  distinguishing formula.
+\<close>
+lemma hml_distinctions:
+  assumes \<open>\<not> HML_equivalent p q\<close>
+  shows \<open>\<exists>\<phi>. distinguishes \<phi> p q\<close>
+proof-
+  from assms have "\<not> (\<forall> \<phi>::('a) formula_list. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))" 
+    unfolding HML_equivalent_def by blast
+  then obtain \<phi>::"('a) formula_list" where "(p \<Turnstile> \<phi>) \<noteq> (q \<Turnstile> \<phi>)" by blast
+  then have "((p \<Turnstile> \<phi>) \<and> \<not>(q \<Turnstile> \<phi>)) \<or> (\<not>(p \<Turnstile> \<phi>) \<and> (q \<Turnstile> \<phi>))"
+    by blast
+  then show ?thesis
+  proof
+    show "distinguishes \<phi> p q \<Longrightarrow> \<exists>\<phi>. distinguishes \<phi> p q" by blast
+  next
+    assume assm: "\<not> p \<Turnstile> \<phi> \<and> q \<Turnstile> \<phi>"
+    show "\<exists>\<phi>. distinguishes \<phi> p q"
+    proof
+      from assm show "(p \<Turnstile> (HML_conj [] [\<phi>])) \<and> \<not> q \<Turnstile>(HML_conj [] [\<phi>])" using HML_semantics.simps
+        by simp
+    qed
+  qed
+qed
+
 end
 
-(*TODO*)
 (*Trace equiv: T \<in> trace, wenn \<phi> dann auch <a>\<phi>.*)
 (*(\<infinity>, 1, 0, 0, 0, 0)*)
 inductive HML_trace :: "('a)formula_list \<Rightarrow> bool"
   where
 trace_conj: "HML_trace (HML_conj [] [])"|
 trace_pos: "HML_trace (HML_poss \<alpha> \<phi>)" if "HML_trace \<phi>"
+
+definition HML_trace_formulas where
+"HML_trace_formulas \<equiv> {\<phi>. HML_trace \<phi>}"
+
+text \<open>translation of a trace to a formula\<close>
+
+fun trace_to_formula :: "'a list \<Rightarrow> ('a)formula_list"
+  where
+"trace_to_formula [] = HML_conj [] []" |
+"trace_to_formula (a#xs) = HML_poss a (trace_to_formula xs)"
 
 inductive HML_failure :: "('a)formula_list \<Rightarrow> bool"
   where
@@ -68,14 +121,12 @@ r_trace_conj: "HML_ready_trace (HML_conj xs ys)"
 if "(\<forall>x \<in> set xs. \<forall>y \<in> set xs. (\<exists>\<alpha> \<beta>. x \<noteq> HML_poss \<alpha> (HML_conj [] []) \<and> y \<noteq> HML_poss \<beta> (HML_conj [] [])) \<longrightarrow> (x = y \<and> HML_ready_trace x))
 \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. (y = HML_poss \<alpha> (HML_conj [] [])))"
 
-(*TODO: überprüfen*)
 inductive HML_ready_sim :: "('a) formula_list \<Rightarrow> bool"
   where
 "HML_ready_sim (HML_poss \<alpha> \<phi>)" if "HML_ready_sim \<phi>" |
 "HML_ready_sim (HML_conj xs ys)" if 
 "(\<forall>x \<in> set xs. HML_ready_sim x) \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. y = (HML_poss \<alpha> (HML_conj [] [])))" 
 
-(*TODO: überprüfen*)
 inductive HML_2_nested_sim :: "('a) formula_list \<Rightarrow> bool" 
   where
 "HML_2_nested_sim (HML_poss \<alpha> \<phi>)" if "HML_2_nested_sim \<phi>" |

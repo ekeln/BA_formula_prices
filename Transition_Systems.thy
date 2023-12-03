@@ -1,5 +1,5 @@
 theory Transition_Systems
-imports Main
+  imports Main
 begin
 
 
@@ -8,8 +8,6 @@ seine Transitionsrelation definiert.*)
 locale lts = 
   fixes tran :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close>
     ("_ \<mapsto>_ _" [70, 70, 70] 80)
-(*    and S :: \<open>'s set\<close>
-    and A :: \<open>'a set\<close> *)
 begin
 
 abbreviation derivatives :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's set\<close>
@@ -92,19 +90,25 @@ lemma
 
 text \<open>Failure Pairs\<close>
 
-abbreviation failure_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a set)\<close>
+abbreviation failure_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a set) set\<close>
   where
-\<open>failure_pairs p \<equiv> 
-let T = traces p 
-xs = (SOME x. x \<in> T) in
-(xs, {})\<close>
+\<open>failure_pairs p \<equiv> {(xs, F)|xs F. \<exists>p'. p \<mapsto>$ xs p' \<and> (initial_actions p' \<inter> F = {})}\<close>
 
-text \<open>Failure preorder\<close>
+text \<open>Failure preorder and -equivalence\<close>
 
-(*traces p \<subseteq> traces q \<and> \<forall>p'. (\<exists>A F. p \<mapsto>$ A p' \<and> \<longrightarrow>*)
-(*Wenn es für jeden trace von q und für jede Menge aus states, sodass es *)
 definition failure_preordered (infix \<open>\<lesssim>F\<close> 60) where
-\<open>failure_preordered p q \<equiv> traces p \<subseteq> traces q\<close>
+\<open>p \<lesssim>F q \<equiv> failure_pairs p \<subseteq> failure_pairs q\<close>
+
+abbreviation failure_equivalent (infix \<open>\<simeq>F\<close> 60) where
+\<open> p \<simeq>F q \<equiv> p \<lesssim>F q \<and> q \<lesssim>F p\<close>
+
+text \<open>Possible future sets\<close>
+
+abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a list set) set\<close>
+  where
+\<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X}\<close>
+
+text \<open>isomorphism\<close>
 
 definition isomorphism :: \<open>('s \<Rightarrow> 's) \<Rightarrow> bool\<close> where
 \<open>isomorphism f \<equiv> bij f \<and> (\<forall>p a p'. p \<mapsto> a p' \<longleftrightarrow> f p \<mapsto> a (f p'))\<close>
@@ -133,8 +137,11 @@ lemma bisim_sim:
   shows \<open>simulation (\<simeq>B)\<close>
   unfolding bisimilar_def simulation_def by blast
 
+text \<open>Transition System is image-finite\<close>
+
+definition image_finite where
+\<open>image_finite \<equiv> (\<forall>p \<alpha>. finite (derivatives p \<alpha>))\<close>
+
 (*TODO: relationale definition der anderen äquivalenzen*)
-
-
 end
 end
