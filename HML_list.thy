@@ -23,6 +23,18 @@ text \<open>Two states are HML equivalent if they satisfy the same formula.\<clo
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
   \<open>HML_equivalent p q \<equiv> (\<forall> \<phi>::('a) formula_list. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))\<close>
 
+lemma equiv_der:
+  assumes "HML_equivalent p q \<and> p \<mapsto>\<alpha> p'"
+  shows "\<forall>q'. q' \<in> derivatives q \<alpha> \<longrightarrow> (HML_equivalent p' q')"
+  using assms
+  unfolding HML_equivalent_def
+  sorry
+
+
+text \<open>HML_equivalency is transitive\<close>
+lemma equiv_trans: "transp HML_equivalent"
+  by (simp add: HML_equivalent_def transp_def)
+
 text \<open>
   A formula distinguishes one state from another if its true for the
   first and false for the second.
