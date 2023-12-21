@@ -108,6 +108,9 @@ abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 
   where
 \<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X}\<close>
 
+definition possible_futures_equivalent (infix \<open>\<simeq>PF\<close> 60) where
+\<open>p \<simeq>PF q \<equiv> (possible_future_pairs p = possible_future_pairs q)\<close>
+
 text \<open>isomorphism\<close>
 
 definition isomorphism :: \<open>('s \<Rightarrow> 's) \<Rightarrow> bool\<close> where

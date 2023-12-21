@@ -24,11 +24,11 @@ definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<clos
   \<open>HML_equivalent p q \<equiv> (\<forall> \<phi>::('a) formula_list. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))\<close>
 
 lemma equiv_der:
-  assumes "HML_equivalent p q \<and> p \<mapsto>\<alpha> p'"
-  shows "\<forall>q'. q' \<in> derivatives q \<alpha> \<longrightarrow> (HML_equivalent p' q')"
-  using assms
-  unfolding HML_equivalent_def
-  sorry
+  assumes "HML_equivalent p q" "\<exists>p'. p \<mapsto>\<alpha> p'"
+  shows "\<exists>p' q'. (HML_equivalent p' q') \<and> q \<mapsto>\<alpha> q'"
+  using assms HML_semantics.simps
+  unfolding HML_equivalent_def 
+  by (metis empty_iff list.set(1))
 
 
 text \<open>HML_equivalency is transitive\<close>
@@ -102,6 +102,9 @@ inductive HML_simulation :: "('a)formula_list \<Rightarrow> bool"
 sim_pos: "HML_simulation (HML_poss \<alpha> \<phi>)" if "HML_simulation \<phi>"|
 sim_conj: "HML_simulation (HML_conj xs [])" if "\<forall>x \<in> (set xs). HML_simulation x"
 
+definition HML_simulation_formulas where
+"HML_simulation_formulas \<equiv> {\<phi>. HML_simulation \<phi>}"
+
 inductive HML_readiness :: "('a)formula_list \<Rightarrow> bool"
   where
 read_pos: "HML_readiness (HML_poss \<alpha> \<phi>)" if "HML_readiness \<phi>"|
@@ -118,6 +121,9 @@ inductive HML_possible_futures :: "('a)formula_list \<Rightarrow> bool"
   where
 pf_pos: "HML_possible_futures (HML_poss \<alpha> \<phi>)" if "HML_possible_futures \<phi>" |
 pf_conj: "HML_possible_futures (HML_conj xs ys)" if "(\<forall>x \<in> set xs. (HML_trace x)) \<and> (\<forall>y \<in> set ys. (HML_trace y))"
+
+definition HML_possible_futures_formulas where
+"HML_possible_futures_formulas \<equiv> {\<phi>. HML_possible_futures \<phi>}"
 
 inductive HML_failure_trace :: "('a)formula_list \<Rightarrow> bool"
   where
