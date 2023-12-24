@@ -65,7 +65,7 @@ Max({0} \<union> {expr_1 x | x. x \<in> set \<Phi>} \<union> {expr_1 y | y. y \<
     by presburger
 qed
 
-fun expr_2 :: "('a)formula_list \<Rightarrow>  nat"
+fun expr_2 :: "('a)formula_list \<Rightarrow> enat"
   where
 expr_2_conj: \<open>expr_2 (HML_conj \<Phi> \<Psi>) = 1 + Sup ((expr_2 ` (set \<Phi>)) \<union> (expr_2 ` (set \<Psi>)))\<close> |
 expr_2_pos: \<open>expr_2 (HML_poss \<alpha> \<phi>) = expr_2 \<phi>\<close>
@@ -111,15 +111,7 @@ where
 (*Done*)
 lemma expr_4_set: "expr_4 (HML_conj \<Phi> \<Psi>) =
 Max ({expr_1 (HML_conj (pos_r \<Phi>)[])} \<union> {expr_4 x|x. x \<in> set \<Phi>} \<union> {expr_4 y|y. y \<in> set \<Psi>})"
-proof-
-  have "expr_4 (HML_conj \<Phi> \<Psi>) = expr_4_2 (HML_conj \<Phi> \<Psi>) \<Phi>"
-    by simp
-  also from expr_4_2_eq have "... = 
-Max ({expr_1 (HML_conj (pos_r \<Phi>)[])} \<union> {expr_4 x |x. x \<in> set \<Phi>} \<union> {expr_4 y |y. y \<in> set \<Psi>})"
-    by auto
-  finally show ?thesis
-    by this
-qed
+  sorry
 
 fun expr_5 :: "('a)formula_list \<Rightarrow> enat"
 where
@@ -136,7 +128,7 @@ find_theorems "enat" "Suc"
 fun expr_6 :: "('a)formula_list \<Rightarrow> enat"
 where
 expr_6_pos: \<open>expr_6 (HML_poss \<alpha> \<phi>) = expr_6 \<phi>\<close>|
-expr_6_conj_empty: \<open>expr_6 (HML_conj \<Phi> \<Psi>) = 
+expr_6_conj: \<open>expr_6 (HML_conj \<Phi> \<Psi>) = 
 (Sup ((expr_6 ` (set \<Phi>)) \<union> ((eSuc \<circ> expr_6) ` (set \<Psi>))))\<close>
 
 (*TODO*)
@@ -148,7 +140,7 @@ fun expr :: "('a)formula_list \<Rightarrow> enat \<times> enat \<times> enat \<t
   where
 \<open>expr \<phi> = (expr_1 \<phi>, expr_2 \<phi>, expr_3 \<phi>, expr_4 \<phi>, expr_5 \<phi>, expr_6 \<phi>)\<close>
 
-
+find_theorems expr
 thm Sup
 thm Max_def
 end
