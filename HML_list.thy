@@ -94,7 +94,6 @@ fun trace_to_formula :: "'a list \<Rightarrow> ('a)formula_list"
 inductive HML_failure :: "('a)formula_list \<Rightarrow> bool"
   where
 trace: "HML_failure (HML_poss \<alpha> \<phi>)" if "HML_failure \<phi>" |
-empty_conj: "HML_failure (HML_conj [] [])" |
 neg: "HML_failure (HML_conj [] x2)" if "\<forall>y \<in> (set x2). \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])" 
 
 inductive HML_simulation :: "('a)formula_list \<Rightarrow> bool"
