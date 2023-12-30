@@ -5,12 +5,14 @@ theory formula_prices_list
     "HOL-Library.Extended_Nat"
 begin
 
-fun expr_1 :: "('a)formula_list \<Rightarrow> enat"
+primrec expr_1 :: "('a, 's)hml \<Rightarrow> enat"
   where
-expr_1_conj: \<open>expr_1 (HML_conj \<Phi> \<Psi>) = (Sup ((expr_1 ` (set \<Phi>)) \<union> (expr_1 ` (set \<Psi>))))\<close> |
-expr_1_pos: \<open>expr_1 (HML_poss \<alpha> \<phi>) = 
+expr_1_tt: \<open>expr_1 TT = 0\<close> |
+expr_1_conj: \<open>expr_1 (hml_conj I \<Phi> J \<Psi>) = Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_1 \<circ> \<Psi>) ` J)\<close> |
+(*(Sup ((expr_1 ` (set \<Phi>)) \<union> (expr_1 ` (set \<Psi>))))\<close> *)
+expr_1_pos: \<open>expr_1 (hml_pos \<alpha> \<phi>) = 
   1 + (expr_1 \<phi>)\<close>
-
+(*
 (*Done*)
 lemma expr_1_set_form: "expr_1 (HML_conj \<Phi> \<Psi>) =
 Max({0} \<union> {expr_1 x | x. x \<in> set \<Phi>} \<union> {expr_1 y | y. y \<in> set \<Psi>})"
@@ -64,79 +66,94 @@ Max({0} \<union> {expr_1 x | x. x \<in> set \<Phi>} \<union> {expr_1 y | y. y \<
   with eq max_insert_0 show ?thesis using expr_1.simps(1)
     by presburger
 qed
+*)
 
-fun expr_2 :: "('a)formula_list \<Rightarrow> enat"
+primrec expr_2 :: "('a, 's)hml \<Rightarrow> enat"
   where
-expr_2_conj: \<open>expr_2 (HML_conj \<Phi> \<Psi>) = 1 + Sup ((expr_2 ` (set \<Phi>)) \<union> (expr_2 ` (set \<Psi>)))\<close> |
-expr_2_pos: \<open>expr_2 (HML_poss \<alpha> \<phi>) = expr_2 \<phi>\<close>
+expr_2_tt: \<open>expr_2 TT = 1\<close> |
+expr_2_conj: \<open>expr_2 (hml_conj I \<Phi> J \<Psi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Psi>) ` J)\<close> |
+expr_2_pos: \<open>expr_2 (hml_pos \<alpha> \<phi>) = expr_2 \<phi>\<close>
 
+(*
 (*TODO*)
 lemma expr_2_set: "expr_2 (HML_conj \<Phi> \<Psi>) =
 Max({1} \<union> {1 + expr_2 x | x. x \<in> set \<Phi>} \<union> {1 + expr_2 y | y. y \<in> set \<Psi>})"
   sorry
+*)
 
-fun pos_r :: "('a)formula_list list \<Rightarrow> ('a)formula_list list"
-  where
-"pos_r xs = (
-let max_val = (Sup (expr_1 ` (set xs))); 
-max_elem = hd(filter (\<lambda>y. expr_1 y = max_val) xs);
-xs_new = filter(\<lambda>y. y \<noteq> max_elem) xs
-in xs_new)"
-
-
-fun r :: "('a)formula_list list \<Rightarrow> enat"
+(*
+fun r :: "('a, 's)hml set \<Rightarrow> enat"
   where
 \<open>r xs = Max (set (map(\<lambda>x. expr_1 x) xs))\<close>
+*)
 
 
-fun expr_3 :: "('a) formula_list \<Rightarrow> enat"
-where
- expr_3_pos: \<open>expr_3 (HML_poss \<alpha> \<phi>) = expr_3 \<phi>\<close>
-| expr_3_conj_right: \<open>expr_3 (HML_conj \<Phi> \<Psi>) = (Sup ((expr_1 ` (set \<Phi>)) \<union> (expr_3 ` (set \<Phi>)) \<union> (expr_3 ` (set \<Psi>))))\<close>
+primrec expr_3 :: "('a, 's) hml \<Rightarrow> enat"
+  where
+expr_3_tt: \<open>expr_3 TT = 0\<close> |
+ expr_3_pos: \<open>expr_3 (hml_pos \<alpha> \<phi>) = expr_3 \<phi>\<close> | 
+expr_3_conj: \<open>expr_3 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Psi>) ` J))\<close>
 
+(*
 (*TODO*)
 lemma expr_3_set: "expr_3 (HML_conj \<Phi> \<Psi>) =
 Max({0} \<union> {expr_3 x | x. x \<in> set \<Phi>} \<union> {expr_3 y | y. y \<in> set \<Psi>} \<union> {expr_1 x | x. x \<in> set \<Phi>})"
   sorry
+*)
 
 (* Neg := {i \<in> I| \<exists>\<phi>\<^sub>i. \<psi>\<^sub>i = \<not>\<phi>\<^sub>i}*)
 
-fun 
-  expr_4 :: "('a)formula_list \<Rightarrow> enat" 
-where
-"expr_4 (HML_poss a \<phi>) = expr_4 \<phi>" |
-"expr_4 (HML_conj \<Phi> \<Psi>) = Sup ({expr_1 (HML_conj (pos_r \<Phi>) [])} \<union> (expr_4 ` (set \<Phi>)) \<union> (expr_4 ` (set \<Psi>)))"
+fun pos_r :: "('a, 's)hml set \<Rightarrow> ('a, 's)hml set"
+  where
+"pos_r xs = (
+let max_val = (Sup (expr_1 ` xs)); 
+max_elem = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val);
+xs_new = xs - {max_elem}
+in xs_new)"
 
+primrec expr_4 :: "('a, 's)hml \<Rightarrow> enat" 
+  where
+expr_4_tt: "expr_4 TT = 0" |
+expr_4_pos: "expr_4 (hml_pos a \<phi>) = expr_4 \<phi>" |
+expr_4_conj: "expr_4 (hml_conj I \<Phi> J \<Psi>) = Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Psi>) ` J)"
 
+(*
 (*Done*)
 lemma expr_4_set: "expr_4 (HML_conj \<Phi> \<Psi>) =
 Max ({expr_1 (HML_conj (pos_r \<Phi>)[])} \<union> {expr_4 x|x. x \<in> set \<Phi>} \<union> {expr_4 y|y. y \<in> set \<Psi>})"
   sorry
+*)
 
-fun expr_5 :: "('a)formula_list \<Rightarrow> enat"
-where
-expr_5_pos:\<open>expr_5 (HML_poss \<alpha> \<phi>) = expr_5 \<phi>\<close>|
-expr_5_conj: \<open>expr_5 (HML_conj \<Phi> \<Psi>) = 
-(Sup ((expr_5 ` (set \<Phi>)) \<union> (expr_5 ` (set \<Psi>)) \<union> (expr_1 ` (set \<Psi>))))\<close> 
+primrec expr_5 :: "('a, 's)hml \<Rightarrow> enat"
+  where
+expr_5_tt: \<open>expr_5 TT = 0\<close> |
+expr_5_pos:\<open>expr_5 (hml_pos \<alpha> \<phi>) = expr_5 \<phi>\<close>|
+expr_5_conj: \<open>expr_5 (hml_conj I \<Phi> J \<Psi>) = 
+(Sup ((expr_5 \<circ> \<Phi>) ` I \<union> (expr_5 \<circ> \<Psi>) ` J \<union> (expr_1 \<circ> \<Psi>) ` J))\<close>
 
+(*
 lemma expr_5_set: "expr_5 (HML_conj \<Phi> \<Psi>) = 
 Max({0} \<union> {expr_5 x | x. x \<in> set \<Phi>} \<union> {expr_5 y | y. y \<in> set \<Psi>} \<union> {expr_1 y | y. y \<in> set \<Psi>})"
   sorry
+*)
 
 find_theorems "enat" "Suc"
 
-fun expr_6 :: "('a)formula_list \<Rightarrow> enat"
-where
-expr_6_pos: \<open>expr_6 (HML_poss \<alpha> \<phi>) = expr_6 \<phi>\<close>|
-expr_6_conj: \<open>expr_6 (HML_conj \<Phi> \<Psi>) = 
-(Sup ((expr_6 ` (set \<Phi>)) \<union> ((eSuc \<circ> expr_6) ` (set \<Psi>))))\<close>
+primrec expr_6 :: "('a, 's)hml \<Rightarrow> enat"
+  where
+expr_6_tt: \<open>expr_6 TT = 0\<close> |
+expr_6_pos: \<open>expr_6 (hml_pos \<alpha> \<phi>) = expr_6 \<phi>\<close>|
+expr_6_conj: \<open>expr_6 (hml_conj I \<Phi> J \<Psi>) = 
+(Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J)))\<close>
 
+(*
 (*TODO*)
 lemma expr_6_set: "expr_6 (HML_conj \<Phi> \<Psi>) = 
 Max({0} \<union> {expr_6 x | x. x \<in> set \<Phi>} \<union> {1 + expr_6 y | y. y \<in> set \<Psi>})"
   sorry
+*)
 
-fun expr :: "('a)formula_list \<Rightarrow> enat \<times> enat \<times> enat \<times>  enat \<times> enat \<times> enat" 
+fun expr :: "('a, 's)hml \<Rightarrow> enat \<times> enat \<times> enat \<times>  enat \<times> enat \<times> enat" 
   where
 \<open>expr \<phi> = (expr_1 \<phi>, expr_2 \<phi>, expr_3 \<phi>, expr_4 \<phi>, expr_5 \<phi>, expr_6 \<phi>)\<close>
 

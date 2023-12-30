@@ -154,7 +154,7 @@ proof-
   qed
 qed
 
-lemma dinst_junctor_implies_dist_conjunction:
+lemma dist_junctor_implies_dist_conjunction:
   assumes "\<forall>q' \<in> set der_list. \<exists>\<phi>. distinguishes \<phi> p' q'"
   shows "(\<forall>q' \<in> set der_list. \<not>q' \<Turnstile> HML_conj (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list) [])"
 proof
@@ -216,7 +216,7 @@ proof (safe, rule ccontr)
   with contra_assms(1) have "p \<Turnstile> \<phi>d" unfolding \<phi>d_def
     using local.HML_sem_poss by blast
   have \<open>(\<forall>q' \<in> der. \<not>q' \<Turnstile> HML_conj \<phi>d_list [])\<close> 
-    using dinst_junctor_implies_dist_conjunction dist_exists
+    using dist_junctor_implies_dist_conjunction dist_exists
     unfolding \<phi>d_list_def der_def
     using \<open>finite der\<close> der_def der_list_def set_to_list_eq by blast
   with contra_assms(1) \<open>p' \<Turnstile> HML_conj \<phi>d_list []\<close> have \<open>distinguishes \<phi>d p q\<close>
@@ -235,6 +235,70 @@ theorem Hennessy_Milner_theorem:
 theorem HM_simulation_theorem:
   assumes "image_finite"
   shows "HML_simulation_equivalent p q = (p \<simeq>F q)"
+  oops
+
+  section \<open>HM PF Theorem\<close>
+
+lemma 
+  assumes "\<phi> \<in> HML_possible_futures_formulas" "p \<simeq>PF q" "p \<Turnstile> \<phi>"
+  shows "q \<Turnstile> \<phi>"
+  using assms
+proof(induction \<phi> arbitrary: p q)
+  case (HML_conj x1 x2 p q)
+  from this(3) have "\<forall>x1a \<in> set x1. HML_trace x1a"
+    using HML_list.HML_possible_futures_formulas_def HML_possible_futures.simps
+    by fastforce
+  hence "\<forall>x1a \<in> set x1. HML_possible_futures x1a" 
+    using HML_possible_futures.simps HML_trace.simps
+  then show ?case sorry
+next
+  case (HML_poss \<alpha> \<psi>)
+  then have "\<psi> \<in> HML_possible_futures_formulas"
+    using HML_possible_futures_formulas_def HML_possible_futures.simps
+    by (metis formula_list.distinct(1) formula_list.inject(2) mem_Collect_eq)
+  from HML_poss obtain p' X where "p \<mapsto>\<alpha> p'" "p' \<Turnstile> \<psi>" "traces p' = X"
+    using HML_semantics.simps(2)
+    by blast
+  hence "p \<mapsto>$ [\<alpha>] p'"
+    using step_sequence.simps
+    by metis 
+  obtain q' where "p' \<simeq>PF q'"
+    using possible_futures_equivalent_def 
+    by blast
+
+  have "q \<mapsto>$ [\<alpha>] q'" using \<open>p \<mapsto>$ [\<alpha>] p'\<close> \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def
+    sorry
+  have "q \<mapsto>\<alpha> q'" using \<open>p  \<mapsto>\<alpha> p'\<close> \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def sorry
+  then obtain q' where "q \<mapsto>$[\<alpha>] q'" "traces q' = X"
+    using \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def sorry
+    by auto+
+  hence "q \<mapsto>\<alpha> q'"
+    using step_sequence.simps
+    by (metis list.distinct(1) list.sel(1) list.sel(3))
+  hence "p' \<simeq>PF q'"
+  hence "possible_future_pairs p' = possible_future_pairs q'"
+    using \<open>p \<simeq>PF q\<close> \<open>traces p' = X\<close> \<open>traces q' = X\<close> \<open>p  \<mapsto>\<alpha> p'\<close> 
+    unfolding possible_futures_equivalent_def 
+  then have "p' \<simeq>PF q'" sorry
+    using \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def \<open>traces p' = X\<close> \<open>traces q' = X\<close> \<open>p  \<mapsto>\<alpha> p'\<close> 
+      step_sequence.simps PF_trans
+  from \<open>p  \<mapsto>\<alpha> p'\<close> HML_poss obtain q' where "p' \<simeq>PF q'" 
+    using possible_futures_equivalent_def by blast
+  with HML_poss \<open>p' \<Turnstile> \<psi>\<close> \<open>\<psi> \<in> HML_possible_futures_formulas\<close> have "q' \<Turnstile> \<psi>"
+    by blast
+  then show ?case 
+    using possible_futures_equivalent_def sorry
+qed
+  oops
+
+(*TODO*)
+fun pf_pair_to_formula where
+"pf_pair_to_formula ([], X) = HML_conj [] []" |
+"pf_pair_to_formula ((a#tail), X) = HML_poss a (pf_pair_to_formula (tail, X))"
+
+theorem pf_auxillary:
+  assumes "image_finite" "\<phi> \<in> HML_possible_futures_formulas" "p \<Turnstile> \<phi>"
+  shows "\<exists>t X. (t, X) \<in> possible_future_pairs p \<and> p \<Turnstile> pf_pair_to_formula (t, X)"
   oops
 
 theorem HM_possible_futures_theorem:
