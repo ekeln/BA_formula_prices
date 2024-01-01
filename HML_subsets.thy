@@ -331,55 +331,62 @@ lemma HML_trace_lemma:
   using trace_left trace_right by blast
 
 lemma simulation_right:
-  assumes A1: "HML_simulation \<phi>"
+  assumes "HML_simulation \<phi>"
   shows "(less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
-  using A1
+  using assms
 proof(induction \<phi> rule:HML_simulation.induct)
-  case (sim_pos \<phi>)
-  then show ?case
+  case sim_tt
+  then show ?case by simp 
+next
+  case (sim_pos \<phi> \<alpha>)
+  then show ?case 
     using trace_right by force
 next
-  case (sim_conj xs)
-  hence "\<forall>x\<in>set xs. expr_5 x \<le> 0" "\<forall>x\<in>set xs. expr_6 x \<le> 0"
-    using less_eq_t.simps expr.simps
-    by auto
-  have "expr_5 (HML_conj xs []) = Sup ((expr_5 ` (set xs)))" 
-    using expr_5.simps 
-    by auto
-  with \<open>\<forall>x\<in>set xs. expr_5 x \<le> 0\<close> have "expr_5 (HML_conj xs []) \<le> 0"
-    using Sup_enat_def
-    by simp
-  have "expr_6 (HML_conj xs []) = Sup (expr_6 ` (set xs))"
+  case (sim_conj \<Phi> I \<Psi> J)
+  have e5_eq: "expr_5 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_5 \<circ> \<Phi>) ` I \<union> (expr_5 \<circ> \<Psi>) ` J \<union> (expr_1 \<circ> \<Psi>) ` J))"
+    using expr_5.simps
+    by force
+  from sim_conj have "\<forall>x\<in>\<Phi> ` I. expr_5 x \<le> 0"
+    using expr.simps 
+    by force
+  hence "Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+    using Sup_le_iff comp_apply image_iff
+    by (smt (verit, ccfv_SIG))
+  hence e5: "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 0" 
+    using e5_eq local.sim_conj by force
+
+  have e6_eq: "expr_6 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J)))"
     using expr_6.simps
-    by auto
-  with \<open>\<forall>x\<in>set xs. expr_6 x \<le> 0\<close> have "expr_6 (HML_conj xs []) \<le> 0"
-    using Sup_enat_def
-    by auto
-  with \<open>expr_5 (HML_conj xs []) \<le> 0\<close> show ?case
-    using less_eq_t.simps enat_ord_code(3) expr.simps 
-    by simp
+    by force
+  from sim_conj have "\<forall>x\<in>\<Phi> ` I. expr_6 x \<le> 0"
+    using expr.simps 
+    by force
+    hence "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
+    using Sup_le_iff comp_apply image_iff
+    by (smt (verit, ccfv_SIG))
+  hence e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 0" 
+    using e6_eq local.sim_conj
+    by force
+  then show ?case 
+    using less_eq_t.simps expr.simps e5 e6 
+    by simp 
 qed
 
 lemma expr_6_conj:
-  assumes "\<Psi> \<noteq> []"
-  shows "expr_6 (HML_conj \<Phi> \<Psi>) \<ge> 1"
+  assumes "(\<Psi> ` J) \<noteq> {}"
+  shows "expr_6 (hml_conj I \<Phi> J \<Psi>) \<ge> 1"
 proof-
-  from assms obtain a tail where "\<Psi> = (a#tail)"
-    using list.exhaust_sel by blast
-  hence "expr_6 (HML_conj \<Phi> \<Psi>) = (Sup ((expr_6 ` (set \<Phi>)) \<union> ((eSuc \<circ> expr_6) ` (set (a#tail)))))"
-    using expr_6.simps(2) 
-    by blast
-  also have "... = (Sup ((expr_6 ` (set \<Phi>)) \<union> {eSuc(expr_6 a)} \<union>((eSuc \<circ> expr_6) ` (set tail))))"
+  have e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J)))"
+    using expr.simps
     by simp
-  also have "... = sup (eSuc (expr_6 a)) (Sup ((expr_6 ` (set \<Phi>)) \<union>((eSuc \<circ> expr_6) ` (set tail))))"
-    using Sup_insert
+  have "\<forall>A::enat set. Sup A \<ge> 0" 
     by simp
-  also have "... \<ge> 1"
-    using bot_enat_def eSuc_def
-    by (metis eSuc_ile_mono le_supI1 one_eSuc zero_le)
-  finally have "expr_6 (HML_conj \<Phi> \<Psi>) \<ge> 1" by this
-  thus ?thesis 
-    by blast
+  from assms have "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<ge> 1"
+    using eSuc_def Sup_enat_def SUP_image eSuc_Sup bot_enat_def
+    by (metis iless_eSuc0 image_is_empty linorder_not_le one_eSuc zero_ne_eSuc)
+  hence "(Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J))) \<ge> 1"
+    by (simp add: Sup_union_distrib sup.coboundedI2)
+  with e6 show ?thesis by simp
 qed
 
 lemma Max_eq_expr_6:
@@ -398,163 +405,43 @@ proof-
 qed
 
 lemma x2_empty:
-  assumes A1: "(less_eq_t (expr (HML_conj x1 x2)) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))" 
-shows "x2 = []"
+  assumes "(less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))" 
+  shows "(\<Psi> ` J) = {}"
 proof(rule ccontr)
-  assume "x2 \<noteq> []"
-  hence "expr_6 (HML_conj x1 x2) \<ge> 1" 
-    using expr_6_conj
-    by blast
-  from A1 have "expr_6 (HML_conj x1 x2) \<le> 0"
-    using expr.simps less_eq_t.simps
-    by auto
-  with \<open>expr_6 (HML_conj x1 x2) \<ge> 1\<close> show False
-    using ile0_eq not_one_le_zero 
-    by simp
+  assume "\<Psi> ` J \<noteq> {}"
+  hence "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<ge> 1"
+    using Sup_enat_def eSuc_def
+    by (metis SUP_image eSuc_Sup iless_eSuc0 image_is_empty linorder_not_le one_eSuc zero_ne_eSuc)
+  hence "expr_6 (hml_conj I \<Phi> J \<Psi>) \<ge> 1"
+    using expr_6.simps
+    by (simp add: Sup_union_distrib sup.coboundedI2)
+  thus False using assms by simp
 qed
 
 lemma simulation_left:
-  assumes A1: "(less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
+  assumes "(less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
   shows "(HML_simulation \<phi>)"
-  using A1
+  using assms
 proof(induction \<phi>)
-  case (HML_conj x1 x2)
-  from this(3) x2_empty have "x2 = []" 
-    by blast
-  from HML_conj(3) have "\<forall>x \<in> set x1. (less_eq_t (expr x) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
-    using mon_conj
-    by blast
-  with HML_conj(1) have "\<forall>x \<in> set x1. HML_simulation x"
-    by blast
+  case TT
   then show ?case 
-    using \<open>x2 = []\<close> HML_simulation.sim_conj 
-    by blast
+    using sim_tt by blast 
 next
-  case (HML_poss x1 \<phi>)
-  then show ?case
-    by (simp add: sim_pos)
-qed
-
-lemma "(HML_simulation \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0))"
-  using simulation_left simulation_right by blast
-
-lemma expr_2_fail:
-  assumes A1: "HML_failure (HML_conj [] x2)"
-  shows "expr_2 (HML_conj [] x2) \<le> 2"
-proof-
-  from assms have "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-    using HML_failure.simps
-    by fastforce
-  have "expr_2 (HML_conj [] x2) = 1 + Sup ((expr_2 ` (set x2)))"
-    using expr_2.simps
-    by simp
-  have "\<forall>\<alpha>. expr_2 (HML_poss \<alpha> (HML_conj [] [])) = 1"
-    using expr_2.simps Sup_enat_def 
-    by auto
-  with \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> have "Sup ((expr_2 ` (set x2))) \<le> 1"
-    using Sup_enat_def image_iff
-    by fastforce
-  hence "1 + Sup ((expr_2 ` (set x2))) \<le> 1 + 1"
-    using add_left_mono
-    by blast
-  hence "1 + Sup ((expr_2 ` (set x2))) \<le> 2"
-    using one_add_one
-    by auto
-  thus ?thesis 
-    using \<open>expr_2 (HML_conj [] x2) = 1 + Sup ((expr_2 ` (set x2)))\<close> 
-    by simp
-qed
-
-lemma expr_3_fail:
-  assumes "HML_failure (HML_conj [] x2)" 
-  shows "expr_3 (HML_conj [] x2) \<le> 0"
-proof-
-  from assms have "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-    using HML_failure.simps
-    by fastforce
-  have e3: "expr_3 (HML_conj [] x2) = Sup (expr_3 ` (set x2))"
-    using expr_3.simps
-    by simp
-  have "\<forall>\<alpha>. expr_3 (HML_poss \<alpha> (HML_conj [] [])) = 0"
-    using expr_3.simps Sup_enat_def 
-    by auto
-  with \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> have "\<forall>x \<in> (expr_3 ` (set x2)). x \<le> 0"
-    using image_iff
-    by fastforce
-  hence "Sup (expr_3 ` (set x2)) \<le> 0"
-    using Sup_enat_def Sup_le_iff
-    by fastforce
-  with e3 show ?thesis by simp
-qed
-
-lemma expr_4_fail:
-  assumes
-A1: "HML_failure (HML_conj [] x2)" 
-shows "expr_4 (HML_conj [] x2) \<le> 0"
-proof-
-  from assms have "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-    using HML_failure.simps
-    by fastforce
-  have e4: "expr_4 (HML_conj [] x2) = Sup (expr_4 ` (set x2))"
-    using expr_4.simps
-    by simp
-  have "\<forall>\<alpha>. expr_4 (HML_poss \<alpha> (HML_conj [] [])) = 0"
-    using expr_4.simps Sup_enat_def
-    by auto
-  with \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> have "\<forall>x \<in> (expr_4 ` (set x2)). x \<le> 0"
-    using image_iff
-    by fastforce
-  hence "Sup (expr_4 ` (set x2)) \<le> 0"
-    using Sup_le_iff Sup_enat_def
-    by fastforce
-  with e4 show ?thesis
-    by simp
-qed
-
-lemma expr_5_fail:
-assumes "HML_failure (HML_conj [] x2)" 
-shows "expr_5 (HML_conj [] x2) \<le> 1"
-proof-
-  from assms have "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-    using HML_failure.simps
-    by fastforce 
-  have e5: "expr_5 (HML_conj [] x2) = (Sup ((expr_5 ` (set x2)) \<union> (expr_1 ` (set x2))))"
-    using expr_5.simps
-    by simp
-  have "\<forall>\<alpha>. expr_5 (HML_poss \<alpha> (HML_conj [] [])) = 0"
-    using expr_5.simps Sup_enat_def
-    by fastforce
-  with \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> have "\<forall>x \<in> set x2. expr_5 x = 0"
-    by fastforce 
-  have "\<forall>\<alpha>. expr_1 (HML_poss \<alpha> (HML_conj [] [])) = 1"
-    using expr_1.simps Sup_enat_def
-    by fastforce
-  with \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> have "\<forall>x \<in> set x2. expr_1 x = 1"
-    by fastforce
-  hence "(Sup ((expr_5 ` (set x2)) \<union> (expr_1 ` (set x2)))) \<le> 1" using \<open>\<forall>x \<in> set x2. expr_5 x = 0\<close>
-    using Sup_enat_def image_iff Sup_le_iff
-    by fastforce
-  then show ?thesis using e5 by simp
-qed
-
-lemma expr_6_fail:
-assumes "HML_failure (HML_conj [] x2)"
-shows "expr_6 (HML_conj [] x2) \<le> 1"
-proof-
-  from assms have "\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-    using HML_failure.simps
-    by fastforce
-  have e6: "expr_6 (HML_conj [] x2) = (Sup ((eSuc \<circ> expr_6) ` (set x2)))"
-    using expr_6.simps
-    by simp
-  have "\<forall>\<alpha>. expr_6 (HML_poss \<alpha> (HML_conj [] [])) = 0"
-    using expr_6.simps Sup_enat_def
-    by fastforce
-  find_theorems eSuc
-  hence "(Sup ((eSuc \<circ> expr_6) ` (set x2))) \<le> 1" 
-    using \<open>\<forall>y\<in>set x2.\<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])\<close> Sup_enat_def image_iff Sup_le_iff one_eSuc
-    by fastforce
-  then show ?thesis using e6 by simp
+  case (hml_pos x1 \<phi>)
+  then show ?case using sim_pos by simp 
+next
+  case (hml_conj I \<Phi> J \<Psi>)
+  have "\<forall>x \<in> (\<Phi> ` I). less_eq_t (expr x) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0)"
+"\<forall>x \<in> (\<Psi> ` J). less_eq_t (expr x) (\<infinity>, \<infinity>, \<infinity>, \<infinity>, 0, 0)"
+    using hml_conj mon_conj
+    by metis+
+  hence "\<forall>x \<in> (\<Phi> ` I). HML_simulation x"
+"\<forall>x \<in> (\<Psi> ` J).HML_simulation x"
+    using hml_conj
+    by (metis image_iff range_eqI)+
+  have "\<Psi> ` J = {}" using x2_empty
+    using hml_conj.prems by blast
+  with \<open>\<forall>x \<in> (\<Phi> ` I). HML_simulation x\<close> show ?case using sim_conj by blast
 qed
 
 lemma failure_right:
@@ -562,16 +449,53 @@ lemma failure_right:
   shows "(less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
   using A1
 proof(induction \<phi> rule:HML_failure.induct)
-  case (trace \<psi> \<alpha>)
-  then show ?case
-    by simp
+  case failure_tt
+  then show ?case by force
 next
-  case (neg x2)
-  assume "\<forall>y\<in>set x2. \<exists>\<alpha>. y = HML_poss \<alpha> (HML_conj [] [])"
-  hence "(HML_failure (HML_conj ([]::'a formula_list list) x2))"
-    using HML_failure.neg by blast
-  then show ?case using expr_2_fail expr_3_fail expr_4_fail expr_5_fail expr_6_fail
-less_eq_t.simps expr.simps
+  case (failure_pos \<phi> \<alpha>)
+  then show ?case by force
+next
+  case (failure_conj \<Phi> I J \<Psi>)
+  hence e2_eq: "expr_2 (hml_conj I \<Phi> J \<Psi>) = 1 + Sup ((expr_2 \<circ> \<Psi>) ` J)"
+and e3_eq: "expr_3 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_3 \<circ> \<Psi>) ` J))"
+and e4_eq: "expr_4 (hml_conj I \<Phi> J \<Psi>) = Sup ((expr_4 \<circ> \<Psi>) ` J)"
+and e5_eq: "expr_5 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_5 \<circ> \<Psi>) ` J \<union> (expr_1 \<circ> \<Psi>) ` J))"
+and e6_eq: "expr_6 (hml_conj I \<Phi> J \<Psi>) = (Sup (((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J)))"
+    by simp+
+
+  have e2_tt: "\<forall>\<alpha>. expr_2 (hml_pos \<alpha> TT) = 1"
+and e3_tt: "\<forall>\<alpha>. expr_3 (hml_pos \<alpha> TT) = 0"
+and e4_tt: "\<forall>\<alpha>. expr_4 (hml_pos \<alpha> TT) = 0"
+and e5_tt: "\<forall>\<alpha>. expr_5 (hml_pos \<alpha> TT) = 0"
+and e6_tt: "\<forall>\<alpha>. expr_6 (hml_pos \<alpha> TT) = 0"
+    by simp+
+
+  have e2_tt_2: "\<forall>\<alpha> K \<chi>s L n\<chi>s. (\<chi>s ` K = {} \<and> n\<chi>s ` L = {}) \<longrightarrow> expr_2 (hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s)) = 1"
+and e3_tt_2: "\<forall>\<alpha> K \<chi>s L n\<chi>s. (\<chi>s ` K = {} \<and> n\<chi>s ` L = {}) \<longrightarrow> expr_3 (hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s)) = 0"
+and e4_tt_2: "\<forall>\<alpha> K \<chi>s L n\<chi>s. (\<chi>s ` K = {} \<and> n\<chi>s ` L = {}) \<longrightarrow> expr_4 (hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s)) = 0"
+and e5_tt_2: "\<forall>\<alpha> K \<chi>s L n\<chi>s. (\<chi>s ` K = {} \<and> n\<chi>s ` L = {}) \<longrightarrow> expr_5 (hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s)) = 0"
+and e6_tt_2: "\<forall>\<alpha> K \<chi>s L n\<chi>s. (\<chi>s ` K = {} \<and> n\<chi>s ` L = {}) \<longrightarrow> expr_6 (hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s)) = 0"
+    by (simp add: bot_enat_def)+
+
+  from e2_eq e2_tt e2_tt_2 have e2: "expr_2 (hml_conj I \<Phi> J \<Psi>) \<le> 2"
+    using Sup_le_iff local.failure_conj one_add_one 
+    by (smt (verit) add_left_mono image_iff linorder_not_le o_apply order_less_imp_le)
+  from e3_eq e3_tt e3_tt_2 have e3: "expr_3 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+    using Sup_le_iff local.failure_conj
+    by (smt (verit, ccfv_SIG) SUP_bot_conv(2) bot_enat_def comp_apply le_zero_eq)
+  from e4_eq e4_tt e4_tt_2 have e4: "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+    using Sup_le_iff local.failure_conj
+    by (smt (verit) SUP_bot_conv(2) bot_enat_def comp_apply le_zero_eq)
+  from e5_eq e5_tt e5_tt_2 have e5: "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+    using Sup_le_iff local.failure_conj by fastforce
+  from e6_eq e6_tt e6_tt_2 have "Sup((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
+    using Sup_le_iff local.failure_conj
+    by (smt (verit, best) comp_apply image_iff le_zero_eq)
+  hence e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+    using eSuc_def e6_eq
+    by (metis eSuc_Sup image_comp image_is_empty le_zero_eq nle_le one_eSuc)
+  from e2 e3 e4 e5 e6 show ?case
+    using less_eq_t.simps expr.simps 
     by fastforce
 qed
 

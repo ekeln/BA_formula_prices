@@ -9,9 +9,6 @@ TT |
 hml_pos \<open>'a\<close> \<open>('a, 'i)hml\<close> |
 hml_conj "'i set" "'i \<Rightarrow> ('a, 'i) hml" "'i set" "'i \<Rightarrow> ('a, 'i) hml" 
 
-(*datatype ('a)formula_list =
-HML_conj \<open>('a)formula_list list\<close>  \<open>('a)formula_list list\<close>
-| HML_poss \<open>'a\<close> \<open>('a)formula_list\<close>*)
 
 context lts begin
 
@@ -22,14 +19,6 @@ hml_sem_tt: \<open>(_ \<Turnstile> TT) = True\<close> |
 hml_sem_pos: \<open>(p \<Turnstile> (hml_pos \<alpha> \<phi>)) = (\<exists> q. (p \<mapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close> |
 hml_sem_conj: \<open>(p \<Turnstile> (hml_conj I \<psi>s J n\<psi>s)) = ((\<forall>i \<in> I. p \<Turnstile> (\<psi>s i)) \<and> (\<forall>j \<in> J. \<not>(p \<Turnstile> (n\<psi>s j))))\<close>
 
-(*
-fun HML_semantics :: \<open>'s \<Rightarrow> ('a)formula_list \<Rightarrow> bool\<close> 
-(\<open>_ \<Turnstile> _\<close> [50, 50] 50)
-  where
-HML_sem_conj: \<open>(p \<Turnstile> HML_conj \<Phi> \<Psi>) = 
-(\<forall>\<phi>. (\<phi> \<in> set \<Phi> \<longrightarrow> HML_semantics p  \<phi>) \<and> (\<phi> \<in> set \<Psi> \<longrightarrow> \<not>(HML_semantics p \<phi>)))\<close>
-| HML_sem_poss: \<open>(HML_semantics p (HML_poss \<alpha> \<phi>)) = (\<exists> q. (p \<mapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close>
-*)
 
 text \<open>Two states are HML equivalent if they satisfy the same formula.\<close>
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
@@ -111,21 +100,27 @@ fun trace_to_formula :: "'a list \<Rightarrow> ('a, 's)hml"
 "trace_to_formula [] = TT" |
 "trace_to_formula (a#xs) = hml_pos a (trace_to_formula xs)"
 
-(*
+
 
 inductive HML_failure :: "('a, 's)hml \<Rightarrow> bool"
   where
-trace: "HML_failure (hml_pos \<alpha> \<phi>)" if "HML_failure \<phi>" |
-neg: "HML_failure (hml_conj {} \<psi>s J n\<psi>s)" 
-    if "\<forall>j \<in> J. \<exists>\<alpha>. ((n\<psi>s j) = hml_pos \<alpha> TT \<or> (\<exists>\<chi>s n\<chi>s. (n\<psi>s j) = hml_pos \<alpha> (hml_conj {} \<chi>s {} n\<chi>s)))" 
+failure_tt: "HML_failure TT" |
+failure_pos: "HML_failure (hml_pos \<alpha> \<phi>)" if "HML_failure \<phi>" |
+failure_conj: "HML_failure (hml_conj I \<psi>s J n\<psi>s)" 
+if "(\<psi>s ` I = {}) \<and> (\<forall>j \<in> J. \<exists>\<alpha>. ((n\<psi>s j) = hml_pos \<alpha> TT \<or> 
+                                  (\<exists>K \<chi>s L n\<chi>s. (\<chi>s ` K = {}) \<and> (n\<chi>s ` L = {}) \<and> 
+                                                  (n\<psi>s j) = hml_pos \<alpha> (hml_conj K \<chi>s L n\<chi>s))))" 
 
 inductive HML_simulation :: "('a, 's)hml \<Rightarrow> bool"
   where
+sim_tt: "HML_simulation TT" |
 sim_pos: "HML_simulation (hml_pos \<alpha> \<phi>)" if "HML_simulation \<phi>"|
-sim_conj: "HML_simulation (hml_conj xs [])" if "\<forall>x \<in> (set xs). HML_simulation x"
+sim_conj: "HML_simulation (hml_conj I \<psi>s J n\<psi>s) " if "(\<forall>x \<in> (\<psi>s ` I). HML_simulation x) \<and> (n\<psi>s ` J = {})"
 
 definition HML_simulation_formulas where
 "HML_simulation_formulas \<equiv> {\<phi>. HML_simulation \<phi>}"
+
+(*
 
 inductive HML_readiness :: "('a, 's)hml \<Rightarrow> bool"
   where
