@@ -137,7 +137,7 @@ inductive HML_readiness :: "('a, 's)hml \<Rightarrow> bool"
 read_tt: "HML_readiness TT" |
 read_pos: "HML_readiness (hml_pos \<alpha> \<phi>)" if "HML_readiness \<phi>"|
 read_conj: "HML_readiness (hml_conj I \<Phi> J \<Psi>)" 
-if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). \<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>)"
+if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). TT_like x \<or> (\<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>))"
 
 
 inductive HML_impossible_futures ::  "('a, 's)hml \<Rightarrow> bool"
