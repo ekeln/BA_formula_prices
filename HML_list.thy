@@ -134,6 +134,7 @@ definition HML_simulation_formulas where
 
 inductive HML_readiness :: "('a, 's)hml \<Rightarrow> bool"
   where
+read_tt: "HML_readiness TT" |
 read_pos: "HML_readiness (hml_pos \<alpha> \<phi>)" if "HML_readiness \<phi>"|
 read_conj: "HML_readiness (hml_conj I \<Phi> J \<Psi>)" 
 if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). \<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>)"
@@ -141,12 +142,14 @@ if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). \<exists>\<alpha> \<ch
 
 inductive HML_impossible_futures ::  "('a, 's)hml \<Rightarrow> bool"
   where
+  if_tt: "HML_impossible_futures TT" |
   if_pos: "HML_impossible_futures (hml_pos \<alpha> \<phi>)" if "HML_impossible_futures \<phi>" |
 if_conj: "HML_impossible_futures (hml_conj I \<Phi> J \<Psi>)"
 if "\<Phi> ` I = {}" "\<forall>x \<in> (\<Psi> ` J). (HML_trace x)"
 
 inductive HML_possible_futures :: "('a, 's)hml \<Rightarrow> bool"
   where
+pf_tt: "HML_possible_futures TT" |
 pf_pos: "HML_possible_futures (hml_pos \<alpha> \<phi>)" if "HML_possible_futures \<phi>" |
 pf_conj: "HML_possible_futures (hml_conj I \<Phi> J \<Psi>)" 
 if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). (HML_trace x))"
@@ -156,39 +159,49 @@ definition HML_possible_futures_formulas where
 
 inductive HML_failure_trace :: "('a, 's)hml \<Rightarrow> bool"
   where
+f_trace_tt: "HML_failure_trace TT" |
 f_trace_pos: "HML_failure_trace (hml_pos \<alpha> \<phi>)" if "HML_failure_trace \<phi>"|
 f_trace_conj: "HML_failure_trace (hml_conj I \<Phi> J \<Psi>)" 
 if "(\<exists>x. HML_failure_trace x \<and> (\<Phi> ` I) = {x}) \<and> 
 (\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
 
-(*
+(*TODO: überprüfen*)
 inductive HML_ready_trace :: "('a, 's)hml \<Rightarrow> bool"
-where
+  where
+r_trace_tt: "HML_ready_trace TT" |
 r_trace_pos: "HML_ready_trace (hml_pos \<alpha> \<phi>)" if "HML_ready_trace \<phi>"|
 r_trace_conj: "HML_ready_trace (hml_conj I \<Phi> J \<Psi>)" 
+if "(\<exists>x \<in> (\<Phi> ` I). HML_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> (\<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)))"
+"(\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>))"
+(*
 if "\<forall>x \<in> (\<Phi> ` I). \<forall>y \<in> (\<Phi> ` I). \<forall>\<alpha> \<chi>. TT_like \<chi> \<and> x \<noteq> hml_pos \<alpha> \<chi>"
 "(\<Phi> ` I) = {x. HML_ready_trace x} \<union> {(hml_pos \<alpha> \<chi>)| \<alpha> \<chi>. TT_like \<chi>}" 
 "\<forall>x \<in> (\<Phi> ` I). \<nexists>\<alpha> \<chi>. (TT_like \<chi> \<and> x = hml_pos \<alpha> \<chi>) \<longrightarrow> HML_ready_trace x"
 "(\<forall>x \<in> (\<Phi> ` I). \<forall>y \<in> (\<Phi> ` I) . (\<exists>\<alpha> \<beta>. x \<noteq> HML_poss \<alpha> (HML_conj [] []) \<and> y \<noteq> HML_poss \<beta> (HML_conj [] [])) \<longrightarrow> (x = y \<and> HML_ready_trace x))
 \<and> (\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>))"
-
-
-inductive HML_ready_sim :: "('a) formula_list \<Rightarrow> bool"
-  where
-"HML_ready_sim (HML_poss \<alpha> \<phi>)" if "HML_ready_sim \<phi>" |
-"HML_ready_sim (HML_conj xs ys)" if 
-"(\<forall>x \<in> set xs. HML_ready_sim x) \<and> (\<forall>y \<in> set ys. \<exists>\<alpha>. y = (HML_poss \<alpha> (HML_conj [] [])))" 
-
-inductive HML_2_nested_sim :: "('a) formula_list \<Rightarrow> bool" 
-  where
-"HML_2_nested_sim (HML_poss \<alpha> \<phi>)" if "HML_2_nested_sim \<phi>" |
-"HML_2_nested_sim (HML_conj xs ys)" if "(\<forall>x \<in> set xs. HML_2_nested_sim x) \<and> (\<forall>y \<in> set ys. HML_simulation y)"
-
-(*TODO: überprüfen*)
-inductive HML_revivals :: "('a) formula_list \<Rightarrow> bool" 
-  where
-revivals_pos: "HML_revivals (HML_poss \<alpha> \<phi>)" if "HML_revivals \<phi>" |
-revivals_conj: "HML_revivals (HML_conj xs ys)" if "\<exists>\<alpha>. \<forall>x \<in> set xs. x = HML_poss \<alpha> (HML_conj [] []) \<and>
-(\<forall>x \<in> set ys. \<exists>\<alpha>. x = HML_poss \<alpha> (HML_conj [] []))"
 *)
+
+
+inductive HML_ready_sim :: "('a, 's) hml \<Rightarrow> bool"
+  where
+"HML_ready_sim TT" |
+"HML_ready_sim (hml_pos \<alpha> \<phi>)" if "HML_ready_sim \<phi>" |
+"HML_ready_sim (hml_conj I \<Phi> J \<Psi>)" if 
+"(\<forall>x \<in> (\<Phi> ` I). HML_ready_sim x) \<and> (\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. TT_like \<chi> \<and> (y = (hml_pos \<alpha> \<chi>)))" 
+
+
+inductive HML_2_nested_sim :: "('a, 's) hml \<Rightarrow> bool" 
+  where
+"HML_2_nested_sim TT" |
+"HML_2_nested_sim (hml_pos \<alpha> \<phi>)" if "HML_2_nested_sim \<phi>" |
+"HML_2_nested_sim (hml_conj I \<Phi> J \<Psi>)" 
+if "(\<forall>x \<in> (\<Phi> ` I). HML_2_nested_sim x) \<and> (\<forall>y \<in> (\<Psi> ` J). HML_simulation y)"
+
+inductive HML_revivals :: "('a, 's) hml \<Rightarrow> bool" 
+  where
+revivals_tt: "HML_revivals TT" |
+revivals_pos: "HML_revivals (hml_pos \<alpha> \<phi>)" if "HML_revivals \<phi>" |
+revivals_conj: "HML_revivals (hml_conj I \<Phi> J \<Psi>)" if "(\<forall>x \<in> (\<Phi> ` I). \<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
+"(\<forall>x \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
+
 end
