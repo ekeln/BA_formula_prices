@@ -156,7 +156,7 @@ Max({0} \<union> {expr_6 x | x. x \<in> set \<Phi>} \<union> {1 + expr_6 y | y. 
 fun expr :: "('a, 's)hml \<Rightarrow> enat \<times> enat \<times> enat \<times>  enat \<times> enat \<times> enat" 
   where
 \<open>expr \<phi> = (expr_1 \<phi>, expr_2 \<phi>, expr_3 \<phi>, expr_4 \<phi>, expr_5 \<phi>, expr_6 \<phi>)\<close>
-
+                                 
 find_theorems expr
 thm Sup
 thm Max_def

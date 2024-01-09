@@ -14,7 +14,47 @@ inductive TT_like :: "('a, 'i) hml \<Rightarrow> bool"
 "TT_like TT" |
 "TT_like (hml_conj I \<Phi> J \<Psi>)" if "(\<Phi> `I) = {}" "(\<Psi> ` J) = {}"
 
-find_theorems TT_like
+inductive nested_empty_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"nested_empty_pos_conj TT" |
+"nested_empty_pos_conj (hml_conj I \<Phi> J \<Psi>)" 
+if "\<forall>x \<in> (\<Phi> `I). nested_empty_pos_conj x" "(\<Psi> ` J) = {}"
+
+(*stack of Conjunctions, with hml_pos \<alpha> in the deepest one, for failure_trace ff.*)
+inductive stacked_pos_conj_pos :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"stacked_pos_conj_pos TT" |
+"stacked_pos_conj_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
+"stacked_pos_conj_pos (hml_conj I \<Phi> J \<Psi>)"
+if "(\<forall>\<phi> \<in> (\<Phi> ` I). (\<exists>\<alpha> \<psi>. \<phi> = (hml_pos \<alpha> \<psi>) \<and> nested_empty_pos_conj \<psi>) \<or> 
+(stacked_pos_conj_pos \<phi>))"
+"(\<Psi> ` J) = {}"
+
+inductive flattened :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"flattened TT" |
+"flattened (hml_pos _ \<psi>)" if "flattened \<psi>"|
+"flattened (hml_conj I \<Phi> J \<Psi>)"
+if "\<forall>x \<in> (\<Phi> ` I). flattened x \<and> (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>))"
+"\<forall>y \<in> (\<Psi> ` J). flattened y"
+
+(*sanity checks?*)
+(*f.a. \<phi> gibt es \<psi> mit flattened \<psi> und \<phi> \<equiv> \<psi>*)
+
+(*nicht benötigt?*)
+inductive even_nested_pos_conjuncts :: "('a, 'i) hml \<Rightarrow> bool"
+  where 
+"even_nested_pos_conjuncts TT" |
+"even_nested_pos_conjuncts (hml_pos \<alpha> \<psi>)" |
+"even_nested_pos_conjuncts (hml_conj I \<Phi> J \<Psi>)"
+if "(
+      ((\<exists>\<psi> \<in> (\<Phi> ` I). (\<exists>I \<Phi> J \<Psi>. \<psi> = (hml_conj I \<Phi> J \<Psi>) \<and> 
+                      ((\<exists>\<psi> \<in> (\<Phi> ` I). even_nested_pos_conjuncts \<psi> \<and> 
+                      (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<and>
+                      (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n)))
+        \<and> (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<or> 
+      (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>)) \<and>
+    (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n))"
 
 context lts begin
 
@@ -31,6 +71,13 @@ lemma
   using assms
   apply (induction \<phi> rule: TT_like.induct)
   by simp+
+
+lemma
+  assumes "nested_empty_pos_conj \<phi>"
+  shows "p \<Turnstile> \<phi>"
+  using assms
+  apply (induction \<phi> rule: nested_empty_pos_conj.induct)
+  by (simp, force)
 
 text \<open>Two states are HML equivalent if they satisfy the same formula.\<close>
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
@@ -145,7 +192,7 @@ inductive HML_impossible_futures ::  "('a, 's)hml \<Rightarrow> bool"
   if_tt: "HML_impossible_futures TT" |
   if_pos: "HML_impossible_futures (hml_pos \<alpha> \<phi>)" if "HML_impossible_futures \<phi>" |
 if_conj: "HML_impossible_futures (hml_conj I \<Phi> J \<Psi>)"
-if "\<Phi> ` I = {}" "\<forall>x \<in> (\<Psi> ` J). (HML_trace x)"
+if "\<forall>x \<in> (\<Phi> ` I). TT_like x" "\<forall>x \<in> (\<Psi> ` J). (HML_trace x)"
 
 inductive HML_possible_futures :: "('a, 's)hml \<Rightarrow> bool"
   where
@@ -157,13 +204,28 @@ if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). (HML_trace x))"
 definition HML_possible_futures_formulas where
 "HML_possible_futures_formulas \<equiv> {\<phi>. HML_possible_futures \<phi>}"
 
+(*korrespondenz zu expr nur wenn flattened*)
 inductive HML_failure_trace :: "('a, 's)hml \<Rightarrow> bool"
   where
 f_trace_tt: "HML_failure_trace TT" |
 f_trace_pos: "HML_failure_trace (hml_pos \<alpha> \<phi>)" if "HML_failure_trace \<phi>"|
-f_trace_conj: "HML_failure_trace (hml_conj I \<Phi> J \<Psi>)" 
-if "(\<exists>x. HML_failure_trace x \<and> (\<Phi> ` I) = {x}) \<and> 
-(\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
+f_trace_conj: "HML_failure_trace (hml_conj I \<Phi> J \<Psi>)"
+if "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_pos_conj y)) \<or> 
+(\<forall>y \<in> (\<Phi> ` I). nested_empty_pos_conj y)) \<and>
+(\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
+
+
+(* Falsch, \<psi> muss 2 (gerade anzahl an) Konjunktionen sein 
+"(
+      ((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi> \<or> (\<exists>I \<Phi> J \<Psi>. \<psi> = (hml_conj I \<Phi> J \<Psi>) \<and> 
+                      ((\<exists>\<psi> \<in> (\<Phi> ` I). HML_failure_trace \<psi> \<and> 
+                      (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<and>
+                      (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n))))
+        \<and> (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<or> 
+      (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>)) \<and>
+    (\<forall>y \<in> (\<Psi> ` J). nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> nested_empty_pos_conj \<chi>)))"
+*)
+
 
 (*TODO: überprüfen*)
 inductive HML_ready_trace :: "('a, 's)hml \<Rightarrow> bool"
@@ -171,8 +233,9 @@ inductive HML_ready_trace :: "('a, 's)hml \<Rightarrow> bool"
 r_trace_tt: "HML_ready_trace TT" |
 r_trace_pos: "HML_ready_trace (hml_pos \<alpha> \<phi>)" if "HML_ready_trace \<phi>"|
 r_trace_conj: "HML_ready_trace (hml_conj I \<Phi> J \<Psi>)" 
-if "(\<exists>x \<in> (\<Phi> ` I). HML_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> (\<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)))"
-"(\<forall>y \<in> (\<Psi> ` J). \<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>))"
+if "(\<exists>x \<in> (\<Phi> ` I). HML_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> stacked_pos_conj_pos y))
+\<or> (\<forall>y \<in> (\<Phi> ` I).stacked_pos_conj_pos y)"
+"(\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
 (*
 if "\<forall>x \<in> (\<Phi> ` I). \<forall>y \<in> (\<Phi> ` I). \<forall>\<alpha> \<chi>. TT_like \<chi> \<and> x \<noteq> hml_pos \<alpha> \<chi>"
 "(\<Phi> ` I) = {x. HML_ready_trace x} \<union> {(hml_pos \<alpha> \<chi>)| \<alpha> \<chi>. TT_like \<chi>}" 
