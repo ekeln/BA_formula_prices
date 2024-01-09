@@ -20,6 +20,14 @@ inductive nested_empty_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
 "nested_empty_pos_conj (hml_conj I \<Phi> J \<Psi>)" 
 if "\<forall>x \<in> (\<Phi> `I). nested_empty_pos_conj x" "(\<Psi> ` J) = {}"
 
+inductive nested_empty_conj :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"nested_empty_conj TT" |
+"nested_empty_conj (hml_conj I \<Phi> J \<Psi>)"
+if "\<forall>x \<in> (\<Phi> `I). nested_empty_conj x" "\<forall>x \<in> (\<Psi> `J). nested_empty_conj x"
+
+(*sanity check: nested_empty_conj ist equiv zu TT oder zu FF (nie true)*)
+
 (*stack of Conjunctions, with hml_pos \<alpha> in the deepest one, for failure_trace ff.*)
 inductive stacked_pos_conj_pos :: "('a, 'i) hml \<Rightarrow> bool"
   where
@@ -204,14 +212,13 @@ if "(\<forall>x \<in> (\<Phi> ` I) \<union> (\<Psi> ` J). (HML_trace x))"
 definition HML_possible_futures_formulas where
 "HML_possible_futures_formulas \<equiv> {\<phi>. HML_possible_futures \<phi>}"
 
-(*korrespondenz zu expr nur wenn flattened*)
 inductive HML_failure_trace :: "('a, 's)hml \<Rightarrow> bool"
   where
 f_trace_tt: "HML_failure_trace TT" |
 f_trace_pos: "HML_failure_trace (hml_pos \<alpha> \<phi>)" if "HML_failure_trace \<phi>"|
 f_trace_conj: "HML_failure_trace (hml_conj I \<Phi> J \<Psi>)"
-if "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_pos_conj y)) \<or> 
-(\<forall>y \<in> (\<Phi> ` I). nested_empty_pos_conj y)) \<and>
+if "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
+(\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y)) \<and>
 (\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
 
 
