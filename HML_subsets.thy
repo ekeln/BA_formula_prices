@@ -286,6 +286,212 @@ and "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
     by (metis enat_ord_code(3) expr.simps less_eq_t.simps)
 qed
 
+lemma expr_nested_empty_conj:
+  assumes "nested_empty_conj \<phi>"
+  shows "less_eq_t (expr \<phi>) (0, \<infinity>, 0, 0, 0, 1)"
+  using assms
+proof(induction rule: nested_empty_conj.induct)
+  case 1
+  then show ?case 
+    by simp
+next
+  case (2 \<Phi> I \<Psi> J)
+  hence fa_\<psi>: "\<forall>x\<in>\<Psi> ` J. 
+        expr_1 x \<le> 0 \<and> expr_2 x \<le> \<infinity> \<and> expr_3 x \<le> 0 \<and> expr_4 x \<le> 0 \<and> expr_5 x \<le> 0 \<and> expr_6 x \<le> 0"
+    using expr_nested_empty_pos_conj less_eq_t.simps expr.simps 
+    by auto
+  have sup_\<psi>: "Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 0"
+"Sup ((expr_2 \<circ> \<Psi>) ` J) \<le> \<infinity>"
+"Sup ((expr_3 \<circ> \<Psi>) ` J) \<le> 0"
+"Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
+"Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0"
+"Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
+    using fa_\<psi> 
+    by (metis SUP_image SUP_least)+
+  hence "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
+    using eSuc_def 
+    by (smt (verit, best) SUP_le_iff comp_apply dual_order.eq_iff le_zero_eq one_eSuc)
+  from 2 have fa_\<psi>: "\<forall>x\<in>\<Phi> ` I. expr_1 x \<le> 0 \<and> expr_2 x \<le> \<infinity> \<and> expr_3 x \<le> 0 \<and>
+              expr_4 x \<le> 0 \<and> expr_5 x \<le> 0 \<and> expr_6 x \<le> 1"
+    using less_eq_t.simps expr.simps
+    by force
+  have sup_\<phi>: "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> \<infinity>"
+"Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1"
+    using fa_\<psi>
+    by (metis SUP_image SUP_least)+
+  hence "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
+    by (metis image_comp le_zero_eq mon_expr_1_pos_r)
+  then show ?case using sup_\<psi> sup_\<phi> Sup_union_distrib
+expr_1_conj expr_2_conj expr_3_conj expr_4_conj expr_5_conj expr_6_conj
+less_eq_t.simps expr.simps
+    by (smt (z3) \<open>Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1\<close> enat_ord_code(3) sup.bounded_iff)
+qed
+
+lemma expr_stacked_pos_conj_pos:
+  assumes "stacked_pos_conj_pos \<phi>"
+  shows "less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0)"
+  using assms
+proof(induction \<phi> rule: stacked_pos_conj_pos.induct)
+  case 1
+  then show ?case 
+    by simp
+next
+  case (2 \<psi> uu)
+  then show ?case 
+    using expr_nested_empty_pos_conj by fastforce
+next
+  case (3 \<Phi> I \<Psi> J)
+  from 3 have fa_\<psi>: "Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 0"
+ "Sup ((expr_2 \<circ> \<Psi>) ` J) \<le> 0"
+ "Sup ((expr_3 \<circ> \<Psi>) ` J) \<le> 0"
+ "Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
+ "Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0"
+ "Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
+    using "3.hyps" Sup_enat_def by force+
+  have case_pos: "(\<exists>\<phi>\<in>\<Phi> ` I.
+           (stacked_pos_conj_pos \<phi> \<and> less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0)) \<and>
+           (\<forall>\<psi> \<in> \<Phi> ` I. \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>)) \<longrightarrow> 
+less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (1, \<infinity>, 1, 0, 0, 0)"
+  proof
+  assume "(\<exists>\<phi>\<in>\<Phi> ` I.
+           (stacked_pos_conj_pos \<phi> \<and> less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0)) \<and>
+           (\<forall>\<psi> \<in> \<Phi> ` I. \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>))"
+  with 3 obtain \<phi> where "\<phi> \<in> \<Phi> ` I" 
+"(stacked_pos_conj_pos \<phi> \<and> less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0))"
+    "(\<forall>\<psi>\<in>\<Phi> ` I. \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>)"
+    by blast
+  have expr_\<phi>: "expr_1 \<phi> \<le> 1"
+"expr_2 \<phi> \<le> \<infinity>"
+"expr_3 \<phi> \<le> 1"
+"expr_4 \<phi> \<le> 0"
+"expr_5 \<phi> \<le> 0"
+"expr_6 \<phi> \<le> 0"
+    using expr_nested_empty_pos_conj
+    using \<open>stacked_pos_conj_pos \<phi> \<and> less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0)\<close> one_eSuc by fastforce+
+  have expr_\<psi>: "(\<forall>\<psi>\<in>\<Phi> ` I. \<psi> \<noteq> \<phi> \<longrightarrow> 
+expr_1 \<psi> \<le> 0 \<and> expr_1 \<psi> \<le> \<infinity> \<and> expr_3 \<psi> \<le> 0 \<and> expr_4 \<psi> \<le> 0 \<and> expr_5 \<psi> \<le> 0 \<and> expr_6 \<psi> \<le> 0)"
+    using expr_nested_empty_pos_conj
+    using \<open>\<forall>\<psi>\<in>\<Phi> ` I. \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>\<close> by auto
+  hence fa_\<psi>: "\<forall>\<psi>\<in> (\<Phi> ` I) - {\<phi>}.
+expr_1 \<psi> \<le> 0 \<and> expr_1 \<psi> \<le> \<infinity> \<and> expr_3 \<psi> \<le> 0 \<and> expr_4 \<psi> \<le> 0 \<and> expr_5 \<psi> \<le> 0 \<and> expr_6 \<psi> \<le> 0"
+    by blast
+
+  have expr_1_pos_r: "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
+  proof(cases "expr_1 \<phi> \<ge> 1")
+    case True
+    hence "pos_r (\<Phi> ` I) = (\<Phi> ` I) - {\<phi>}"
+  proof-
+    have "\<forall>x\<in> (\<Phi> ` I) - {\<phi>}. expr_1 x < expr_1 \<phi>"
+      using expr_\<psi> expr_\<phi> \<open>\<phi> \<in> \<Phi> ` I\<close> fa_\<psi>
+      using \<open>stacked_pos_conj_pos \<phi> \<and> less_eq_t (expr \<phi>) (1, \<infinity>, 1, 0, 0, 0)\<close> iless_eSuc0
+      by (metis True dual_order.strict_trans1 le_zero_eq one_eSuc)
+    then show ?thesis 
+      using pos_r_del_max \<open>\<phi> \<in> \<Phi> ` I\<close>
+      by (metis (no_types, opaque_lifting) Un_insert_right insert_Diff_single insert_absorb sup_bot_right)
+  qed
+  then show ?thesis
+    using expr_\<psi> 
+    by (metis Diff_iff SUP_least singletonI)
+  next
+    case False
+    hence "\<forall>\<psi> \<in>(\<Phi> ` I). expr_1 \<psi> \<le> 0"
+      using fa_\<psi> 
+      using iless_eSuc0 one_eSuc by fastforce
+    then show ?thesis 
+      by (meson SUP_least mon_expr_1_pos_r order.trans)
+  qed
+
+  have fa_\<phi>: "\<forall>\<phi> \<in> \<Phi> ` I. 
+expr_1 \<phi> \<le> 1 \<and> expr_2 \<phi> \<le> \<infinity> \<and> expr_3 \<phi> \<le> 1 \<and> expr_4 \<phi> \<le> 0 \<and> expr_5 \<phi> \<le> 0 \<and> expr_6 \<phi> \<le> 0"
+    using expr_\<phi> expr_\<psi>
+    by auto
+  hence sup_\<phi>: "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 1"
+"Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> \<infinity>"
+"Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 1"
+"Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
+         apply (simp add: Sup_le_iff)
+    using Sup_le_iff
+    using enat_ord_code(3) apply presburger
+         apply (simp add: Sup_le_iff)
+    apply auto
+    by (metis (mono_tags, lifting) SUP_bot_conv(2) bot_enat_def fa_\<phi> image_eqI le_zero_eq)+
+
+  hence "expr_1 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+"expr_2 (hml_conj I \<Phi> J \<Psi>) \<le> \<infinity>"
+"expr_3 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+"expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+
+      prefer 3
+  using expr_3_conj fa_\<psi> "3.hyps" SUP_least sup_\<phi> SUP_image Sup_union_distrib bot.extremum_uniqueI
+bot_enat_def le_sup_iff zero_less_one_class.zero_le_one
+  apply (smt (verit, del_insts) image_is_empty sup_bot_right)
+    prefer 3
+using expr_4_conj fa_\<psi> "3.hyps" SUP_least sup_\<phi> SUP_image Sup_union_distrib bot.extremum_uniqueI
+bot_enat_def le_sup_iff zero_less_one_class.zero_le_one expr_1_pos_r
+
+  apply (smt (verit, del_insts) image_is_empty sup_bot_right)
+
+  using expr_1_conj fa_\<psi> "3.hyps" SUP_image Sup_union_distrib bot.extremum_uniqueI
+expr_2_conj sup_\<phi> expr_1_pos_r expr_4_conj
+  by force+
+
+  then show "less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (1, \<infinity>, 1, 0, 0, 0)"
+    using expr.simps less_eq_t.simps
+    by metis
+qed
+
+  have case_nested: "(\<forall>\<psi>\<in>\<Phi> ` I. nested_empty_pos_conj \<psi>) \<longrightarrow> 
+  less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (1, \<infinity>, 1, 0, 0, 0)"
+  proof
+    assume "(\<forall>\<psi>\<in>\<Phi> ` I. nested_empty_pos_conj \<psi>)"
+    hence sup_\<phi>: "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> \<infinity>"
+"Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
+      using expr_nested_empty_pos_conj
+      using fa_\<psi>(1) 
+      by (metis SUP_image SUP_least expr.simps less_eq_t.simps)+
+
+      have "expr_1 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_2 (hml_conj I \<Phi> J \<Psi>) \<le> \<infinity>"
+"expr_3 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+"expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+        prefer 2
+        using enat_ord_code(3) apply blast
+        using fa_\<psi> sup_\<phi> Sup_union_distrib
+        apply (smt (verit) complete_linorder_sup_max expr_1_conj max_def)
+        using fa_\<psi> sup_\<phi> Sup_union_distrib
+           apply (smt (verit) expr_3_conj max_def sup_max)
+        using fa_\<psi> sup_\<phi> Sup_union_distrib expr_4_conj mon_expr_1_pos_r
+          apply (metis (no_types, lifting) SUP_image le_zero_eq sup.absorb2)
+        using fa_\<psi> sup_\<phi> Sup_union_distrib
+         apply (smt (verit) expr_5_conj max_def sup_max)
+        using fa_\<psi> sup_\<phi> Sup_union_distrib expr_6.expr_6_conj 
+        using "3.hyps" by force
+
+        then show "less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (1, \<infinity>, 1, 0, 0, 0)"
+          using "3.hyps" 
+          by force
+      qed
+      with case_pos show ?case
+        using "3.hyps" 
+        using "3.IH" by fastforce
+    qed
+
+
+
 lemma assumes "TT_like \<chi>"
 shows e1_tt: "expr_1 (hml_pos \<alpha> \<chi>) = 1"
 and e2_tt: "expr_2 (hml_pos \<alpha> \<chi>) = 1"
@@ -1527,133 +1733,144 @@ next
     by simp
 next
   case (f_trace_conj \<Phi> I \<Psi> J)
-  then show ?case
-  proof(safe)
-  assume " \<forall>y\<in>\<Phi> ` I. nested_empty_pos_conj y" 
-and "\<forall>y\<in>\<Psi> ` J. nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. y = hml_pos \<alpha> \<chi> \<and> nested_empty_pos_conj \<chi>)"
-  hence fa_pos: "\<forall>y\<in>\<Phi> ` I. expr_1 y = 0"
- "\<forall>y\<in>\<Phi> ` I. expr_2 y \<le> \<infinity>"
- "\<forall>y\<in>\<Phi> ` I. expr_3 y = 0"
- "\<forall>y\<in>\<Phi> ` I. expr_4 y = 0"
- "\<forall>y\<in>\<Phi> ` I. expr_5 y = 0"
- "\<forall>y\<in>\<Phi> ` I. expr_6 y = 0"
-    using expr_nested_empty_pos_conj expr.simps
-    by auto
-  hence "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
-and "Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> \<infinity>"
-and "Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
-and "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
-and "Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
-and "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
-         prefer 2 apply (simp add: SUP_least)
-    using fa_pos
-    by (metis SUP_image SUP_least le_zero_eq)+
-  have fa_neg: "\<forall>y\<in>\<Psi> ` J. expr_1 y \<le> 1" 
- "\<forall>y\<in>\<Psi> ` J. expr_2 y \<le> \<infinity>" 
- "\<forall>y\<in>\<Psi> ` J. expr_3 y \<le> 0" 
- "\<forall>y\<in>\<Psi> ` J. expr_4 y \<le> 0" 
- "\<forall>y\<in>\<Psi> ` J. expr_5 y \<le> 0" 
- "\<forall>y\<in>\<Psi> ` J. expr_6 y \<le> 0" 
-    using expr_nested_empty_pos_conj expr.simps 
-\<open>\<forall>y\<in>\<Psi> ` J. nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. y = hml_pos \<alpha> \<chi> \<and> nested_empty_pos_conj \<chi>)\<close>
-    by fastforce+
-  hence "Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1"
-and "Sup ((expr_2 \<circ> \<Psi>) ` J) \<le> \<infinity>"
-and "Sup ((expr_3 \<circ> \<Psi>) ` J) \<le> 0"
-and "Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
-and "Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0"
-and "Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
-         apply (simp add: SUP_least)
-    using fa_neg apply (simp add: SUP_least)
-    using fa_neg
-    by (metis SUP_image SUP_least)+
-
-  
-  have "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
-    using \<open>Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0\<close> sorry
-    by (metis SUP_image le_zero_eq mon_expr_1_pos_r)
-  hence e4: "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
-    using \<open>Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0\<close> expr_4_conj
-    by (simp add: Sup_union_distrib)
-  have "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
-    using \<open>Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0\<close> eSuc_def  SUP_image
-    by (metis (no_types, opaque_lifting) dual_order.refl eSuc_Sup i0_lb image_empty le_zero_eq one_eSuc)
-  hence e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
-    using \<open>Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0\<close> Sup_union_distrib expr_6.expr_6_conj 
-    by (smt (verit, best) ile0_eq le_sup_iff linordered_nonzero_semiring_class.zero_le_one)
-  have e5: "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
-    using \<open>Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close> \<open>Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0\<close>
-expr_5_conj 
-    by (simp add: Sup_union_distrib complete_linorder_sup_max max_def)
-  show ?case using e4 e5 e6 expr.simps less_eq_t.simps
-    by fastforce
-next
-  fix x xa
-  assume "xa \<in> I"
-and "\<forall>y\<in>\<Psi> ` J. nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. y = hml_pos \<alpha> \<chi> \<and> nested_empty_pos_conj \<chi>)"
-and "\<forall>y\<in>\<Phi> ` I. \<Phi> xa \<noteq> y \<longrightarrow> nested_empty_pos_conj y"
-and "HML_failure_trace (\<Phi> xa)"
-and "less_eq_t (expr (\<Phi> xa)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)"
-
-  have fa_pos: "\<forall>x \<in> \<Phi> ` I. expr_4 x \<le> 0"
- "\<forall>x \<in> \<Phi> ` I. expr_5 x \<le> 1"
- "\<forall>x \<in> \<Phi> ` I. expr_6 x \<le> 1"
-    using \<open>xa \<in> I\<close> \<open>\<forall>y\<in>\<Phi> ` I. \<Phi> xa \<noteq> y \<longrightarrow> nested_empty_pos_conj y\<close> \<open>less_eq_t (expr (\<Phi> xa)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)\<close>
-expr_nested_empty_pos_conj expr.simps
-    by force+
-
-  hence "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
-and "Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 1"
-and "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1"
-    by (metis SUP_image SUP_least)+
-
-  have "\<forall>y\<in>\<Phi> ` I. \<Phi> xa \<noteq> y \<longrightarrow> expr_1 y \<le> 0"
-    using expr_nested_empty_pos_conj expr.simps \<open>\<forall>y\<in>\<Phi> ` I. \<Phi> xa \<noteq> y \<longrightarrow> nested_empty_pos_conj y\<close>
-    by fastforce
-  hence "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
-    using \<open>xa \<in> I\<close> pos_r_bounded
-    by metis
 
 have fa_neg: "\<forall>y\<in>\<Psi> ` J. expr_1 y \<le> 1" 
  "\<forall>y\<in>\<Psi> ` J. expr_2 y \<le> \<infinity>" 
- "\<forall>y\<in>\<Psi> ` J. expr_3 y \<le> 0" 
+ "\<forall>y\<in>\<Psi> ` J. expr_3 y \<le> 1" 
  "\<forall>y\<in>\<Psi> ` J. expr_4 y \<le> 0" 
  "\<forall>y\<in>\<Psi> ` J. expr_5 y \<le> 0" 
  "\<forall>y\<in>\<Psi> ` J. expr_6 y \<le> 0" 
-  using expr_nested_empty_pos_conj expr.simps 
-\<open>\<forall>y\<in>\<Psi> ` J. nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. y = hml_pos \<alpha> \<chi> \<and> nested_empty_pos_conj \<chi>)\<close>
+    using expr_stacked_pos_conj_pos expr.simps f_trace_conj
     by fastforce+
   hence "Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1"
 and "Sup ((expr_2 \<circ> \<Psi>) ` J) \<le> \<infinity>"
-and "Sup ((expr_3 \<circ> \<Psi>) ` J) \<le> 0"
+and "Sup ((expr_3 \<circ> \<Psi>) ` J) \<le> 1"
 and "Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
 and "Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0"
 and "Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
          apply (simp add: SUP_least)
     using fa_neg apply (simp add: SUP_least)
     using fa_neg
-    by (metis SUP_image SUP_least le_zero_eq)+
+    by (metis SUP_image SUP_least)+
+  hence "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
+    by (metis SUP_image dual_order.eq_iff eSuc_Sup i0_lb image_empty one_eSuc)
 
-  have e4: "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
-    using \<open>Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0\<close> expr_4_conj 
-\<open>Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0\<close>
-    by (simp add: Sup_union_distrib)
-have e5: "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
-    using \<open>Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 1\<close> \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close> \<open>Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0\<close>
-expr_5_conj 
-    by (simp add: Sup_union_distrib complete_linorder_sup_max max_def)
-have "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
-    using \<open>Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0\<close> eSuc_def  SUP_image
-    by (metis (no_types, opaque_lifting) dual_order.refl eSuc_Sup i0_lb image_empty le_zero_eq one_eSuc)
-  hence e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
-    using \<open>Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1\<close> Sup_union_distrib expr_6.expr_6_conj
-    by (simp add: Sup_union_distrib complete_linorder_sup_max max_def)
-  show ?case using e4 e5 e6 expr.simps less_eq_t.simps
-    by fastforce
-qed
-qed
+  have case_ft: "(\<exists>\<psi>\<in>\<Phi> ` I.
+         (HML_failure_trace \<psi> \<and> less_eq_t (expr \<psi>) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)) \<and>
+         (\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y))
+\<longrightarrow> less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)"
+  proof
+    assume case_ft: "(\<exists>\<psi>\<in>\<Phi> ` I.
+       (HML_failure_trace \<psi> \<and> less_eq_t (expr \<psi>) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)) \<and>
+       (\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y))"
+    then obtain \<psi> where "\<psi> \<in> \<Phi> ` I" and
+\<psi>_ft: "(HML_failure_trace \<psi> \<and> less_eq_t (expr \<psi>) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1))"
+"(\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)"
+      by blast
+    hence "expr_4 \<psi> \<le> 0" "expr_5 \<psi> \<le> 1" "expr_6 \<psi> \<le> 1"
+      by simp+
+    have fa_y: "(\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> less_eq_t (expr y) (0, \<infinity>, 0, 0, 0, 1))"
+      using expr_nested_empty_conj
+      using \<psi>_ft(2) by blast
+    hence "(\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> expr_1 y \<le> 0)"
+      by simp 
+    hence expr_1_y :"(\<forall>y\<in>(\<Phi> ` I) - {\<psi>}. expr_1 y \<le> 0)"
+      by auto
+    have sup_wo_\<psi>: "Sup (expr_1 ` ((\<Phi> ` I) - {\<psi>})) \<le> 0"
+"Sup (expr_2 ` ((\<Phi> ` I) - {\<psi>})) \<le> \<infinity>"
+"Sup (expr_3 ` ((\<Phi> ` I) - {\<psi>})) \<le> 0"
+"Sup (expr_4 ` ((\<Phi> ` I) - {\<psi>})) \<le> 0"
+"Sup (expr_5 ` ((\<Phi> ` I) - {\<psi>})) \<le> 0"
+"Sup (expr_6 ` ((\<Phi> ` I) - {\<psi>})) \<le> 1"
+using fa_y
+  by (metis Diff_iff SUP_least expr.simps insertCI less_eq_t.simps)+
 
-  oops
+  hence "Sup (expr_5 ` (\<Phi> ` I)) \<le> 1"
+"Sup (expr_6 ` (\<Phi> ` I)) \<le> 1"
+    using sup_wo_\<psi>(5) \<open>\<psi> \<in> \<Phi> ` I\<close> \<open>expr_5 \<psi> \<le> 1\<close>
+     apply (metis Sup_insert bot.extremum_uniqueI iless_eSuc0 image_insert insert_Diff 
+linorder_le_cases linorder_not_le sup_bot.right_neutral)
+    using \<open>expr_6 \<psi> \<le> 1\<close> sup_wo_\<psi>(6)  \<open>\<psi> \<in> \<Phi> ` I\<close>
+    by (metis (no_types, lifting) SUP_least Sup_le_iff image_eqI insert_Diff insert_iff)
+
+
+  have "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
+    proof(cases "expr_1 \<psi> \<ge> 1")
+      case True
+      have "pos_r (\<Phi> ` I) = (\<Phi> ` I) - {\<psi>}"
+      proof-
+        have "\<forall>x\<in> (\<Phi> ` I) - {\<psi>}. expr_1 x < expr_1 \<psi>"
+          using expr_1_y iless_eSuc0 True
+          by (metis dual_order.strict_trans1 le_zero_eq less_numeral_extra(1))
+        then show ?thesis 
+          using pos_r_del_max \<open>\<psi> \<in> \<Phi> ` I\<close>
+          by (metis (no_types, opaque_lifting) Un_insert_right insert_Diff_single insert_absorb sup_bot_right)
+      qed
+      then show ?thesis using sup_wo_\<psi>(1) 
+        by presburger
+    next
+      case False
+      then have "expr_1 \<psi> \<le> 0"
+        using iless_eSuc0 one_eSuc by fastforce
+      then show ?thesis using sup_wo_\<psi>  \<open>\<forall>y\<in>\<Phi> ` I. \<psi> \<noteq> y \<longrightarrow> expr_1 y \<le> 0\<close>
+        by (metis (no_types, lifting) DiffD1 SUP_least pos_r.simps)
+    qed
+    have "Sup (expr_4 ` (\<Phi> ` I)) \<le> 0"
+      using  \<open>\<psi> \<in> \<Phi> ` I\<close> \<open>expr_4 \<psi> \<le> 0\<close>
+      by (metis Sup_insert ile0_eq image_insert insert_Diff sup.orderE sup_wo_\<psi>(4))
+    hence "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+      using \<open>Sup (expr_1 ` pos_r (\<Phi> ` I)) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    have "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+      using \<open>Sup (expr_5 ` (\<Phi> ` I)) \<le> 1\<close> \<open>Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0\<close> \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    have "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+      using \<open>Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1\<close> \<open>Sup (expr_6 ` (\<Phi> ` I)) \<le> 1\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    then show ?case using \<open>expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1\<close> \<open>expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0\<close>
+      by simp
+  qed
+
+  have case_empty: " (\<forall>y\<in>\<Phi> ` I. nested_empty_conj y) \<longrightarrow> less_eq_t (expr (hml_conj I \<Phi> J \<Psi>)) (\<infinity>, \<infinity>, \<infinity>, 0, 1, 1)"
+  proof
+    assume "\<forall>y\<in>\<Phi> ` I. nested_empty_conj y"
+    hence fa_y: "\<forall>y\<in>\<Phi> ` I. expr_1 y \<le> 0"
+"\<forall>y\<in>\<Phi> ` I. expr_3 y \<le> 0"
+"\<forall>y\<in>\<Phi> ` I. expr_4 y \<le> 0"
+"\<forall>y\<in>\<Phi> ` I. expr_5 y \<le> 0"
+"\<forall>y\<in>\<Phi> ` I. expr_6 y \<le> 1"
+      using expr_nested_empty_conj less_eq_t.simps expr.simps
+      by force+
+
+    hence "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1"
+      prefer 5
+      using expr_nested_empty_pos_conj
+      apply (simp add: SUP_least)
+      using fa_y
+      by (metis SUP_image SUP_least)+
+
+    hence "Sup (expr_1 ` pos_r (\<Phi> ` I)) \<le> 0"
+      by (metis SUP_image le_zero_eq mon_expr_1_pos_r)
+
+    hence "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
+      using \<open>Sup (expr_1 ` pos_r (\<Phi> ` I)) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    have "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+      using \<open>Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_5 \<circ> \<Psi>) ` J) \<le> 0\<close> \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    have "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+      using \<open>Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1\<close> \<open>Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1\<close>
+      by (simp add: SUP_image Sup_union_distrib)
+    then show ?case using \<open>expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1\<close> \<open>expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0\<close>
+      by simp
+  qed
+  then show ?case using case_ft f_trace_conj
+    by linarith
+qed
 
 lemma expr_1_expr_6_le_0_is_nested_empty_pos_conj:
   assumes "expr_1 \<phi> \<le> 0" "expr_6 \<phi> \<le> 0"
@@ -1735,21 +1952,30 @@ next
 i0_lb imageE le_zero_eq nested_empty_conj.intros(2) rangeI)
 qed
 
+thm expr_stacked_pos_conj_pos
+
 lemma expr_5_restict_negations: 
-  assumes "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1" "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1" 
+  assumes "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1" "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
+"expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0"
   shows "(\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
 proof                                
   fix y 
   assume "y \<in>\<Psi> ` J"
   from assms have "Sup ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
 "Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1"
-    by (simp add: Sup_union_distrib)+
+"Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
+      apply (simp add: Sup_union_distrib)
+    using assms Sup_union_distrib
+     apply (simp add: Sup_union_distrib)
+    using assms Sup_union_distrib
+    by (metis expr_4_conj le_sup_iff)
   hence "Sup ((expr_6 \<circ> \<Psi>) ` J) \<le> 0"
     using eSuc_def
     by (metis Sup_enat_def eSuc_Sup eSuc_ile_mono image_comp le_zero_eq one_eSuc)
   hence "expr_6 y \<le> 0"
 "expr_1 y \<le> 1"
-    using \<open>y \<in> \<Psi> ` J\<close> Sup_le_iff \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close>
+"expr_4 y \<le> 0"
+    using \<open>y \<in> \<Psi> ` J\<close> Sup_le_iff \<open>Sup ((expr_1 \<circ> \<Psi>) ` J) \<le> 1\<close> \<open>Sup ((expr_4 \<circ> \<Psi>) ` J) \<le> 0\<close>
     by (metis comp_apply image_iff)+
   then show "stacked_pos_conj_pos y"
   proof(induction y)
@@ -1769,37 +1995,83 @@ proof
       by (simp add: stacked_pos_conj_pos.intros(2))
   next
     case (hml_conj x31 x32 x33 x34)
+    thm expr_nested_empty_pos_conj
+
     have "(Sup ((expr_1 \<circ> x32) ` x31) \<le> 1)"
 "(Sup ((expr_6 \<circ> x32) ` x31) \<le> 0)"
-      using hml_conj(3, 4) Sup_union_distrib expr_1_conj expr_6.expr_6_conj
+"(Sup ((expr_4 \<circ> x32) ` x31) \<le> 0)"
+      using hml_conj Sup_union_distrib expr_1_conj expr_6.expr_6_conj expr_4_conj
       by (metis le_supE)+
-    hence "\<forall>x \<in> (x32 ` x31). expr_1 x \<le> 1 \<and> expr_6 x \<le> 0"
+    hence "\<forall>x \<in> (x32 ` x31). expr_1 x \<le> 1 \<and> expr_6 x \<le> 0 \<and> expr_4 x \<le> 0"
       by (metis SUP_image SUP_upper dual_order.trans)
     hence "\<forall>x \<in> (x32 ` x31). stacked_pos_conj_pos x"
-      using hml_conj(1) 
+      using hml_conj
       by blast
-    from hml_conj(3) have "x34 ` x33 = {}"
-      using expr_6_conj eSuc_def
-      by (metis not_one_le_zero order.trans)
+    have "((\<exists>\<phi> \<in> (x32 ` x31). ((stacked_pos_conj_pos \<phi>) \<and> 
+                     (\<forall>\<psi> \<in> (x32 ` x31). \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>))) \<or>
+   (\<forall>\<psi> \<in> (x32 ` x31). nested_empty_pos_conj \<psi>))"
+    proof(cases "\<exists>\<phi> \<in> (x32 ` x31). expr_1 \<phi> \<ge> 1")
+      case True
+      then obtain \<phi> where "\<phi> \<in> (x32 ` x31)" "expr_1 \<phi> \<ge> 1"
+        by blast
+      hence "expr_1 \<phi> = 1"
+        using \<open>\<forall>x\<in>x32 ` x31. expr_1 x \<le> 1 \<and> expr_6 x \<le> 0 \<and> expr_4 x <= 0\<close> antisym by blast
+      have "stacked_pos_conj_pos \<phi>"
+        using \<open>\<forall>x\<in>x32 ` x31. stacked_pos_conj_pos x\<close> \<open>\<phi> \<in> x32 ` x31\<close> by blast
+      have "\<forall>\<psi> \<in> (x32 ` x31). \<psi> \<noteq> \<phi> \<longrightarrow> expr_1 \<psi> \<le> 0"
+      proof(rule ccontr)
+        assume "\<not> (\<forall>\<psi>\<in>x32 ` x31. \<psi> \<noteq> \<phi> \<longrightarrow> expr_1 \<psi> \<le> 0)"
+        then obtain \<psi> where "\<psi> \<in> x32 ` x31" "\<psi> \<noteq> \<phi>" "expr_1 \<psi> \<ge> 1"
+          by (metis ileI1 not_le_imp_less one_eSuc)
+        hence "Sup (expr_1 ` (pos_r (x32 ` x31))) >= 1"
+          using \<open>expr_1 \<phi> = 1\<close>
+          using \<open>\<forall>x\<in>x32 ` x31. expr_1 x \<le> 1 \<and> expr_6 x \<le> 0 \<and> expr_4 x \<le> 0\<close> \<open>\<phi> \<in> x32 ` x31\<close> antisym
+          by (smt (verit) Diff_iff Diff_insert_absorb SUP_upper insertE mk_disjoint_insert pos_r.simps)
+        hence "expr_4 (hml_conj x31 x32 x33 x34) \<ge> 1"
+          using expr_4_conj HML_subsets.expr_6_conj Sup_union_distrib 
+\<open>Sup ((expr_4 \<circ> x32) ` x31) \<le> 0\<close> bot_enat_def
+          by (metis hml_conj.prems(1) image_is_empty le_iff_sup not_one_le_zero sup_bot_right)
+        then show False using hml_conj(5) 
+          using dual_order.trans not_one_le_zero by blast
+      qed
+      hence "\<forall>\<psi>\<in>x32 ` x31. \<psi> \<noteq> \<phi> \<longrightarrow> expr_1 \<psi> \<le> 0 \<and> expr_6 \<psi> \<le> 0"
+        using \<open>\<forall>x\<in>x32 ` x31. expr_1 x \<le> 1 \<and> expr_6 x \<le> 0 \<and> expr_4 x \<le> 0\<close> by blast
+      hence "\<forall>\<psi>\<in>x32 ` x31. \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>"
+        using expr_1_expr_6_le_0_is_nested_empty_pos_conj
+        by blast
+      then show ?thesis using \<open>stacked_pos_conj_pos \<phi>\<close> \<open>\<phi> \<in> (x32 ` x31)\<close>
+        by blast
+    next
+      case False
+      then have "\<forall>x \<in> (x32 ` x31). expr_1 x \<le> 0"
+        using iless_eSuc0 one_eSuc by fastforce
+      have "\<forall>x \<in> (x32 ` x31). expr_6 x \<le> 0"
+        using \<open>\<forall>x\<in>x32 ` x31. expr_1 x \<le> 1 \<and> expr_6 x \<le> 0 \<and> expr_4 x \<le> 0\<close> by blast
+      with \<open>\<forall>x \<in> (x32 ` x31). expr_1 x \<le> 0\<close> have "(\<forall>\<psi> \<in> (x32 ` x31). nested_empty_pos_conj \<psi>)"
+        using expr_1_expr_6_le_0_is_nested_empty_pos_conj
+        by blast
+      then show ?thesis by blast
+    qed
     then show ?case 
-      using \<open>\<forall>x \<in> (x32 ` x31). stacked_pos_conj_pos x\<close> stacked_pos_conj_pos.simps 
-      by fastforce
+      using HML_subsets.expr_6_conj hml_conj.prems(1)
+      by (metis le_zero_eq not_one_le_zero stacked_pos_conj_pos.intros(3))
   qed
 qed
 
+thm expr_stacked_pos_conj_pos
 
 lemma expr_4_expr_6_ft_to_recursive_ft: 
-  assumes "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0" "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
-"\<forall>x \<in> (\<Phi> ` I). HML_failure_trace x"
+  assumes "expr_4 (hml_conj I \<Phi> J \<Psi>) \<le> 0" "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1" 
+"expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1" "\<forall>\<phi> \<in> (\<Phi> ` I). HML_failure_trace \<phi>"
   shows "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
 (\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y))"
 proof(cases "(\<exists>\<psi> \<in> (\<Phi> ` I). expr_1 \<psi> \<ge> 1)")
   case True
   then obtain \<psi> where "\<psi> \<in> \<Phi> ` I" "expr_1 \<psi> \<ge> 1"
     by blast
-  with assms(1) have "HML_failure_trace \<psi>"
-    using assms(3) by blast 
-  from assms(2) have "(\<forall>y \<in> (\<Phi> ` I). expr_6 y \<le> 1)"
+  hence "HML_failure_trace \<psi>"
+    using assms(4) by blast 
+  from assms(3) have "(\<forall>y \<in> (\<Phi> ` I). expr_6 y \<le> 1)"
     using expr_6.expr_6_conj 
     by (smt (verit, ccfv_threshold) Sup_le_iff Un_iff comp_apply image_iff)
   have "(\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> expr_1 y \<le> 0)"
@@ -1845,8 +2117,8 @@ next
     
     by (simp add: linorder_not_le one_eSuc)
       from assms(2) have "(\<forall>y \<in> (\<Phi> ` I). expr_6 y \<le> 1)"
-    using expr_6.expr_6_conj 
-    by (smt (verit, ccfv_threshold) Sup_le_iff Un_iff comp_apply image_iff)
+        using expr_6.expr_6_conj Sup_le_iff Un_iff comp_apply image_iff
+        by (smt (verit, del_insts) assms(3))
   hence "(\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y)"
     using \<open>(\<forall>y \<in> (\<Phi> ` I). expr_6 y \<le> 1)\<close> expr_1_0_expr_6_1_nested_empty_conj 
 \<open>\<forall>\<psi>\<in>\<Phi> ` I. expr_1 \<psi> \<le> 0\<close>
@@ -1873,29 +2145,17 @@ and e5: "expr_5 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
 and e6: "expr_6 (hml_conj I \<Phi> J \<Psi>) \<le> 1"
     using expr.simps less_eq_t.simps
     by metis+
-  have fa: "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0" "Sup((expr_4 \<circ> \<Psi>) ` J) \<le> 0"
-"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 1" "Sup((expr_5 \<circ> \<Psi>) ` J) \<le> 1" "Sup((expr_1 \<circ> \<Psi>) ` J) \<le> 1"
-"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 1" "Sup((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J) \<le> 1"
-    using hml_conj(3) Sup_union_distrib expr.simps
-          apply (smt (verit, del_insts) expr_4_conj le_sup_iff le_zero_eq less_eq_t.simps)
-    using hml_conj(3) expr.simps Sup_union_distrib expr_5.simps(3) expr_6.simps(3) expr_4.simps
-    by (metis le_sup_iff less_eq_t.simps)+
-
-  hence "Sup((expr_6 \<circ> \<Psi>) ` J) \<le> 1"
-    by (metis (no_types, lifting) SUP_image Sup_bot_conv(2) bot.extremum_uniqueI 
-dual_order.strict_trans eSuc_Sup empty_iff ile_eSuc leD leI order.strict_trans2)
-  hence "\<forall>x \<in> (\<Phi> ` I). HML_failure_trace x"
-    by (metis (mono_tags, lifting) hml_conj(1) hml_conj(3) image_iff mon_conj(1) rangeI)
-    
-  from this have "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
-(\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y))"
-    using expr_4_expr_6_ft_to_recursive_ft e4 e6 assms
-    by (metis)
-  have "(\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
-    using e5 e6 expr_5_restict_negations by blast
-  then show ?case 
-    using \<open>((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
-(\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y))\<close>
+  hence "\<forall>y\<in>\<Psi> ` J. stacked_pos_conj_pos y"
+    using expr_5_restict_negations
+    by blast
+  from hml_conj have "\<forall>x2a \<in> (\<Phi> ` I). HML_failure_trace x2a"
+    using mon_conj 
+    by (metis (mono_tags, lifting) image_iff rangeI)
+  then have "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
+(\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y)) "
+    using expr_4_expr_6_ft_to_recursive_ft e4 e5 e6
+    by metis
+  then show ?case using \<open>\<forall>y\<in>\<Psi> ` J. stacked_pos_conj_pos y\<close>
     by (simp add: f_trace_conj)
 qed
 

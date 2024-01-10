@@ -24,20 +24,23 @@ inductive nested_empty_conj :: "('a, 'i) hml \<Rightarrow> bool"
   where
 "nested_empty_conj TT" |
 "nested_empty_conj (hml_conj I \<Phi> J \<Psi>)"
-if "\<forall>x \<in> (\<Phi> `I). nested_empty_conj x" "\<forall>x \<in> (\<Psi> `J). nested_empty_conj x"
+if "\<forall>x \<in> (\<Phi> `I). nested_empty_conj x" "\<forall>x \<in> (\<Psi> `J). nested_empty_pos_conj x"
 
 (*sanity check: nested_empty_conj ist equiv zu TT oder zu FF (nie true)*)
 
 (*stack of Conjunctions, with hml_pos \<alpha> in the deepest one, for failure_trace ff.*)
+
 inductive stacked_pos_conj_pos :: "('a, 'i) hml \<Rightarrow> bool"
   where
 "stacked_pos_conj_pos TT" |
 "stacked_pos_conj_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
 "stacked_pos_conj_pos (hml_conj I \<Phi> J \<Psi>)"
-if "(\<forall>\<phi> \<in> (\<Phi> ` I). (\<exists>\<alpha> \<psi>. \<phi> = (hml_pos \<alpha> \<psi>) \<and> nested_empty_pos_conj \<psi>) \<or> 
-(stacked_pos_conj_pos \<phi>))"
+if "((\<exists>\<phi> \<in> (\<Phi> ` I). ((stacked_pos_conj_pos \<phi>) \<and> 
+                     (\<forall>\<psi> \<in> (\<Phi> ` I). \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>))) \<or>
+   (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>))"
 "(\<Psi> ` J) = {}"
 
+(*benötigt?*)
 inductive flattened :: "('a, 'i) hml \<Rightarrow> bool"
   where
 "flattened TT" |
@@ -48,21 +51,6 @@ if "\<forall>x \<in> (\<Phi> ` I). flattened x \<and> (\<exists>\<alpha> \<psi>.
 
 (*sanity checks?*)
 (*f.a. \<phi> gibt es \<psi> mit flattened \<psi> und \<phi> \<equiv> \<psi>*)
-
-(*nicht benötigt?*)
-inductive even_nested_pos_conjuncts :: "('a, 'i) hml \<Rightarrow> bool"
-  where 
-"even_nested_pos_conjuncts TT" |
-"even_nested_pos_conjuncts (hml_pos \<alpha> \<psi>)" |
-"even_nested_pos_conjuncts (hml_conj I \<Phi> J \<Psi>)"
-if "(
-      ((\<exists>\<psi> \<in> (\<Phi> ` I). (\<exists>I \<Phi> J \<Psi>. \<psi> = (hml_conj I \<Phi> J \<Psi>) \<and> 
-                      ((\<exists>\<psi> \<in> (\<Phi> ` I). even_nested_pos_conjuncts \<psi> \<and> 
-                      (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<and>
-                      (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n)))
-        \<and> (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<or> 
-      (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>)) \<and>
-    (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n))"
 
 context lts begin
 
@@ -220,18 +208,6 @@ f_trace_conj: "HML_failure_trace (hml_conj I \<Phi> J \<Psi>)"
 if "((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi>) \<and> (\<forall>y \<in> (\<Phi> ` I). \<psi> \<noteq> y \<longrightarrow> nested_empty_conj y)) \<or> 
 (\<forall>y \<in> (\<Phi> ` I). nested_empty_conj y)) \<and>
 (\<forall>y \<in> (\<Psi> ` J). stacked_pos_conj_pos y)"
-
-
-(* Falsch, \<psi> muss 2 (gerade anzahl an) Konjunktionen sein 
-"(
-      ((\<exists>\<psi> \<in> (\<Phi> ` I). (HML_failure_trace \<psi> \<or> (\<exists>I \<Phi> J \<Psi>. \<psi> = (hml_conj I \<Phi> J \<Psi>) \<and> 
-                      ((\<exists>\<psi> \<in> (\<Phi> ` I). HML_failure_trace \<psi> \<and> 
-                      (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<and>
-                      (\<forall>\<psi>n \<in> \<Psi> ` J. nested_empty_pos_conj \<psi>n))))
-        \<and> (\<forall>\<psi>r \<in> (\<Phi> ` I). \<psi> \<noteq> \<psi>r \<longrightarrow> nested_empty_pos_conj \<psi>r)) \<or> 
-      (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>)) \<and>
-    (\<forall>y \<in> (\<Psi> ` J). nested_empty_pos_conj y \<or> (\<exists>\<alpha> \<chi>. (y = hml_pos \<alpha> \<chi>) \<and> nested_empty_pos_conj \<chi>)))"
-*)
 
 
 (*TODO: überprüfen*)
