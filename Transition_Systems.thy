@@ -1,5 +1,6 @@
 theory Transition_Systems
   imports Main
+"HOL-Library.Countable_Set"
 begin
 
 
@@ -14,6 +15,18 @@ abbreviation derivatives :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's set\<clo
   where
 \<open>derivatives p \<alpha> \<equiv> {p'. p \<mapsto>\<alpha> p'}\<close>
 
+text \<open>Transition System is image-finite\<close>
+
+definition image_finite where
+\<open>image_finite \<equiv> (\<forall>p \<alpha>. finite (derivatives p \<alpha>))\<close>
+
+definition image_countable :: \<open>bool\<close>
+  where \<open>image_countable \<equiv> (\<forall> p \<alpha>. countable (derivatives p \<alpha>))\<close>
+
+(*TODO: stimmt definition?*)
+definition lts_finite where
+\<open>lts_finite \<equiv> (finite (UNIV :: 's set))\<close>
+
 abbreviation initial_actions:: \<open>'s \<Rightarrow> 'a set\<close>
   where
 \<open>initial_actions p \<equiv> {\<alpha>|\<alpha>. (\<exists>p'. p \<mapsto>\<alpha> p')}\<close>
@@ -21,12 +34,20 @@ abbreviation initial_actions:: \<open>'s \<Rightarrow> 'a set\<close>
 abbreviation deadlock :: \<open>'s \<Rightarrow> bool\<close> where
 \<open>deadlock p \<equiv> (\<forall>a. derivatives p a = {})\<close>
 
+(*TODO: sinnvoll?*)
+abbreviation relevant_actions :: \<open>'a set\<close>
+  where
+\<open>relevant_actions \<equiv> {a. \<exists>p p'. p \<mapsto>a p'}\<close>
+
 inductive step_sequence :: \<open>'s \<Rightarrow> 'a list \<Rightarrow> 's \<Rightarrow> bool\<close> (\<open>_ \<mapsto>$ _ _\<close>[70,70,70] 80) where
 \<open>p \<mapsto>$ [] p\<close> |
 \<open>p \<mapsto>$ (a#rt) p''\<close> if \<open>\<exists>p'. p \<mapsto> a p' \<and> p' \<mapsto>$ rt p''\<close>
 
 abbreviation traces :: \<open>'s \<Rightarrow> 'a list set\<close> where
 \<open>traces p \<equiv> {tr. \<exists>p'. p \<mapsto>$ tr p'}\<close>
+
+abbreviation all_traces :: "'a list set" where
+"all_traces \<equiv>{tr. \<exists>p p'. p \<mapsto>$ tr p'}"
 
 inductive paths:: \<open>'s \<Rightarrow> 's list \<Rightarrow> 's \<Rightarrow> bool\<close> where
 \<open>paths p [] p\<close> |
@@ -84,7 +105,7 @@ abbreviation trace_equivalent (infix \<open>\<simeq>T\<close> 60) where
 
 text \<open>Trace preorder is transitive\<close>
 
-lemma
+lemma T_trans:
   shows \<open>transp (\<lesssim>T)\<close>
   unfolding transp_def trace_preordered_def by blast
 
@@ -104,9 +125,16 @@ abbreviation failure_equivalent (infix \<open>\<simeq>F\<close> 60) where
 
 text \<open>Possible future sets\<close>
 
-abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a list set) set\<close>
+abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a list list) set\<close>
   where
-\<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X}\<close>
+\<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = (set X)}\<close>
+
+definition possible_futures_equivalent (infix \<open>\<simeq>PF\<close> 60) where
+\<open>p \<simeq>PF q \<equiv> (possible_future_pairs p = possible_future_pairs q)\<close>
+
+lemma PF_trans: "transp (\<simeq>PF)"
+  unfolding possible_futures_equivalent_def
+  by (simp add: transp_def)
 
 text \<open>isomorphism\<close>
 
@@ -137,10 +165,6 @@ lemma bisim_sim:
   shows \<open>simulation (\<simeq>B)\<close>
   unfolding bisimilar_def simulation_def by blast
 
-text \<open>Transition System is image-finite\<close>
-
-definition image_finite where
-\<open>image_finite \<equiv> (\<forall>p \<alpha>. finite (derivatives p \<alpha>))\<close>
 
 (*TODO: relationale definition der anderen äquivalenzen*)
 end
