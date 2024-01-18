@@ -1,11 +1,21 @@
+(*<*)
 theory Transition_Systems
   imports Main
 "HOL-Library.Countable_Set"
 begin
+(*>*)
 
+section \<open>Labelled Transition Systems\<close>
 
-(* Zustände: \<open>'s\<close> und Aktionen \<open>'a\<close>, Transitionsrelation ist locale trans. Ein LTS wird dann durch
-seine Transitionsrelation definiert.*)
+text \<open>A LTS ...
+
+- examples (to reuse later?)???
+- Definitions (w\o isabelle)?\<close>
+
+subsection \<open>Isabelle\<close>
+
+text \<open>Zustände: \<open>'s\<close> und Aktionen \<open>'a\<close>, Transitionsrelation ist locale trans. Ein LTS wird dann durch
+seine Transitionsrelation definiert.\<close>
 locale lts = 
   fixes tran :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close>
     ("_ \<mapsto>_ _" [70, 70, 70] 80)
@@ -23,7 +33,7 @@ definition image_finite where
 definition image_countable :: \<open>bool\<close>
   where \<open>image_countable \<equiv> (\<forall> p \<alpha>. countable (derivatives p \<alpha>))\<close>
 
-(*TODO: stimmt definition?*)
+text \<open>stimmt definition? definition benötigt nach umstieg auf sets?\<close>
 definition lts_finite where
 \<open>lts_finite \<equiv> (finite (UNIV :: 's set))\<close>
 
@@ -34,7 +44,7 @@ abbreviation initial_actions:: \<open>'s \<Rightarrow> 'a set\<close>
 abbreviation deadlock :: \<open>'s \<Rightarrow> bool\<close> where
 \<open>deadlock p \<equiv> (\<forall>a. derivatives p a = {})\<close>
 
-(*TODO: sinnvoll?*)
+text \<open>nötig?\<close>
 abbreviation relevant_actions :: \<open>'a set\<close>
   where
 \<open>relevant_actions \<equiv> {a. \<exists>p p'. p \<mapsto>a p'}\<close>
@@ -42,6 +52,8 @@ abbreviation relevant_actions :: \<open>'a set\<close>
 inductive step_sequence :: \<open>'s \<Rightarrow> 'a list \<Rightarrow> 's \<Rightarrow> bool\<close> (\<open>_ \<mapsto>$ _ _\<close>[70,70,70] 80) where
 \<open>p \<mapsto>$ [] p\<close> |
 \<open>p \<mapsto>$ (a#rt) p''\<close> if \<open>\<exists>p'. p \<mapsto> a p' \<and> p' \<mapsto>$ rt p''\<close>
+
+text \<open>Introduce these definitions later?\<close>
 
 abbreviation traces :: \<open>'s \<Rightarrow> 'a list set\<close> where
 \<open>traces p \<equiv> {tr. \<exists>p'. p \<mapsto>$ tr p'}\<close>
@@ -166,6 +178,5 @@ lemma bisim_sim:
   unfolding bisimilar_def simulation_def by blast
 
 
-(*TODO: relationale definition der anderen äquivalenzen*)
 end
 end

@@ -8,8 +8,7 @@ begin
 primrec expr_1 :: "('a, 's)hml \<Rightarrow> enat"
   where
 expr_1_tt: \<open>expr_1 TT = 0\<close> |
-expr_1_conj: \<open>expr_1 (hml_conj I \<Phi> J \<Psi>) = Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_1 \<circ> \<Psi>) ` J)\<close> |
-(*(Sup ((expr_1 ` (set \<Phi>)) \<union> (expr_1 ` (set \<Psi>))))\<close> *)
+expr_1_conj: \<open>expr_1 (hml_conj I J \<Phi>) = Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_1 \<circ> \<Phi>) ` J)\<close> |
 expr_1_pos: \<open>expr_1 (hml_pos \<alpha> \<phi>) = 
   1 + (expr_1 \<phi>)\<close>
 (*
@@ -71,7 +70,7 @@ qed
 primrec expr_2 :: "('a, 's)hml \<Rightarrow> enat"
   where
 expr_2_tt: \<open>expr_2 TT = 1\<close> |
-expr_2_conj: \<open>expr_2 (hml_conj I \<Phi> J \<Psi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Psi>) ` J)\<close> |
+expr_2_conj: \<open>expr_2 (hml_conj I J \<Phi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J)\<close> |
 expr_2_pos: \<open>expr_2 (hml_pos \<alpha> \<phi>) = expr_2 \<phi>\<close>
 
 (*
@@ -92,7 +91,7 @@ primrec expr_3 :: "('a, 's) hml \<Rightarrow> enat"
   where
 expr_3_tt: \<open>expr_3 TT = 0\<close> |
  expr_3_pos: \<open>expr_3 (hml_pos \<alpha> \<phi>) = expr_3 \<phi>\<close> | 
-expr_3_conj: \<open>expr_3 (hml_conj I \<Phi> J \<Psi>) = (Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Psi>) ` J))\<close>
+expr_3_conj: \<open>expr_3 (hml_conj I J \<Phi>) = (Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` J))\<close>
 
 (*
 (*TODO*)
@@ -115,7 +114,7 @@ primrec expr_4 :: "('a, 's)hml \<Rightarrow> enat"
   where
 expr_4_tt: "expr_4 TT = 0" |
 expr_4_pos: "expr_4 (hml_pos a \<phi>) = expr_4 \<phi>" |
-expr_4_conj: "expr_4 (hml_conj I \<Phi> J \<Psi>) = Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Psi>) ` J)"
+expr_4_conj: "expr_4 (hml_conj I J \<Phi>) = Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Phi>) ` J)"
 
 (*
 (*Done*)
@@ -128,8 +127,8 @@ primrec expr_5 :: "('a, 's)hml \<Rightarrow> enat"
   where
 expr_5_tt: \<open>expr_5 TT = 0\<close> |
 expr_5_pos:\<open>expr_5 (hml_pos \<alpha> \<phi>) = expr_5 \<phi>\<close>|
-expr_5_conj: \<open>expr_5 (hml_conj I \<Phi> J \<Psi>) = 
-(Sup ((expr_5 \<circ> \<Phi>) ` I \<union> (expr_5 \<circ> \<Psi>) ` J \<union> (expr_1 \<circ> \<Psi>) ` J))\<close>
+expr_5_conj: \<open>expr_5 (hml_conj I J \<Phi>) = 
+(Sup ((expr_5 \<circ> \<Phi>) ` I \<union> (expr_5 \<circ> \<Phi>) ` J \<union> (expr_1 \<circ> \<Phi>) ` J))\<close>
 
 (*
 lemma expr_5_set: "expr_5 (HML_conj \<Phi> \<Psi>) = 
@@ -143,8 +142,8 @@ primrec expr_6 :: "('a, 's)hml \<Rightarrow> enat"
   where
 expr_6_tt: \<open>expr_6 TT = 0\<close> |
 expr_6_pos: \<open>expr_6 (hml_pos \<alpha> \<phi>) = expr_6 \<phi>\<close>|
-expr_6_conj: \<open>expr_6 (hml_conj I \<Phi> J \<Psi>) = 
-(Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Psi>) ` J)))\<close>
+expr_6_conj: \<open>expr_6 (hml_conj I J \<Phi>) = 
+(Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J)))\<close>
 
 (*
 (*TODO*)
