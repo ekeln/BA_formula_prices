@@ -40,6 +40,14 @@ if "((\<exists>\<phi> \<in> (\<Phi> ` I). ((stacked_pos_conj_pos \<phi>) \<and>
    (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>))"
 "(\<Phi> ` J) = {}"
 
+inductive single_pos_pos :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"single_pos_pos TT" |
+"single_pos_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
+"single_pos_pos (hml_conj I J \<Phi>)" if 
+"(\<forall>\<phi> \<in> (\<Phi> `I). (single_pos_pos \<phi>))"
+"(\<Phi> ` J) = {}"
+
 inductive stacked_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
   where 
 "stacked_pos_conj TT" |
@@ -253,7 +261,7 @@ r_trace_pos: "HML_ready_trace (hml_pos \<alpha> \<phi>)" if "HML_ready_trace \<p
 r_trace_conj: "HML_ready_trace (hml_conj I J \<Phi>)" 
 if "(\<exists>x \<in> (\<Phi> ` I). HML_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> single_pos y))
 \<or> (\<forall>y \<in> (\<Phi> ` I).single_pos y)"
-"(\<forall>y \<in> (\<Phi> ` J). stacked_pos_conj y)"
+"(\<forall>y \<in> (\<Phi> ` J). stacked_pos_conj_pos y)"
 
 inductive HML_ready_sim :: "('a, 's) hml \<Rightarrow> bool"
   where

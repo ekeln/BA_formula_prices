@@ -492,7 +492,7 @@ qed
 
 lemma expr_stacked_pos_conj:
   assumes "stacked_pos_conj \<phi>"
-  shows "less_eq_t (expr \<phi>) (1, \<infinity>, 1, 1, 1, 1)"
+  shows "less_eq_t (expr \<phi>) (1, \<infinity>, 1, 1, 1, 2)"
   using assms
 proof(induction \<phi> rule: stacked_pos_conj.induct)
   case 1
