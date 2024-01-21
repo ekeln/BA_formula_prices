@@ -40,14 +40,6 @@ if "((\<exists>\<phi> \<in> (\<Phi> ` I). ((stacked_pos_conj_pos \<phi>) \<and>
    (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>))"
 "(\<Phi> ` J) = {}"
 
-inductive single_pos_pos :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"single_pos_pos TT" |
-"single_pos_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
-"single_pos_pos (hml_conj I J \<Phi>)" if 
-"(\<forall>\<phi> \<in> (\<Phi> `I). (single_pos_pos \<phi>))"
-"(\<Phi> ` J) = {}"
-
 inductive stacked_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
   where 
 "stacked_pos_conj TT" |
@@ -63,13 +55,21 @@ inductive stacked_pos_conj_J_empty :: "('a, 'i) hml \<Rightarrow> bool"
 "stacked_pos_conj_J_empty (hml_conj I J \<Phi>)"
 if "\<forall>\<phi> \<in> (\<Phi> ` I). (stacked_pos_conj_J_empty \<phi>)" "\<Phi> ` J = {}"
 
+inductive single_pos_pos :: "('a, 'i) hml \<Rightarrow> bool"
+  where
+"single_pos_pos TT" |
+"single_pos_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
+"single_pos_pos (hml_conj I J \<Phi>)" if 
+"(\<forall>\<phi> \<in> (\<Phi> `I). (single_pos_pos \<phi>))"
+"(\<Phi> ` J) = {}"
 
 inductive single_pos :: "('a, 'i) hml \<Rightarrow> bool"
   where
 "single_pos TT" |
 "single_pos (hml_pos _ \<psi>)" if "nested_empty_conj \<psi>" |
 "single_pos (hml_conj I J \<Phi>)"
-if "\<forall>\<phi> \<in> (\<Phi> ` (I \<union> J)). (single_pos \<phi>)"
+if "\<forall>\<phi> \<in> (\<Phi> ` I). (single_pos \<phi>)"
+"\<forall>\<phi> \<in> (\<Phi> ` J). single_pos_pos \<phi>"
 
 (*primrec flatten*)
 primrec flatten :: "('a, 'i) hml \<Rightarrow> ('a, 'i) hml" where
@@ -89,14 +89,16 @@ auf ... abbilde ändert auch I und J
 (* (\<forall>x \<in> (\<Phi> ` I). ((\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<longrightarrow> flatten \<psi>)))"*)
 
 
-(*benötigt?*)
+(*überprüfen*)
 inductive flattened :: "('a, 'i) hml \<Rightarrow> bool"
   where
 "flattened TT" |
 "flattened (hml_pos _ \<psi>)" if "flattened \<psi>"|
 "flattened (hml_conj I J \<Phi>)"
-if "\<forall>x \<in> (\<Phi> ` I). flattened x \<and> (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>))"
-"\<forall>y \<in> (\<Phi> ` J). flattened y"
+if "\<forall>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>)"
+"\<forall>y \<in> (\<Phi> ` J). (\<exists>\<alpha> \<psi>. y = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>) \<or> 
+(\<exists>I' J' \<Phi>'. y = (hml_conj I' J' \<Phi>') \<and> (\<forall>x \<in> \<Phi>' ` I'. (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>))
+                                     \<and> (\<Phi>' ` J' = {}))"
 
 (*sanity checks?*)
 (*f.a. \<phi> gibt es \<psi> mit flattened \<psi> und \<phi> \<equiv> \<psi>*)
@@ -127,6 +129,31 @@ lemma
 text \<open>Two states are HML equivalent if they satisfy the same formula.\<close>
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
   \<open>HML_equivalent p q \<equiv> (\<forall> \<phi>::('a, 's) hml. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))\<close>
+
+text \<open> An HML formula \<open>\<phi>l\<close> implies another (\<open>\<phi>r\<close>) if the fact that some process \<open>p\<close> satisfies \<open>\<phi>l\<close>
+implies that \<open>p\<close> must also satisfy \<open>\<phi>r\<close>, no matter the process \<open>p\<close>. \<close>
+
+definition hml_impl :: "('a, 's) hml \<Rightarrow> ('a, 's) hml \<Rightarrow> bool" (infix "\<Rrightarrow>" 60)  where
+  "\<phi>l \<Rrightarrow> \<phi>r \<equiv> (\<forall>p. (p \<Turnstile> \<phi>l) \<longrightarrow> (p \<Turnstile> \<phi>r))"
+
+lemma hml_impl_iffI: "\<phi>l \<Rrightarrow> \<phi>r = (\<forall>p. (p \<Turnstile> \<phi>l) \<longrightarrow> (p \<Turnstile> \<phi>r))"
+  using hml_impl_def by force
+
+subsection \<open> Equivalence \<close>
+
+text \<open>
+A HML formula \<open>\<phi>l\<close> is said to be equivalent to some other HML formula \<open>\<phi>r\<close> (written \<open>\<phi>l \<Lleftarrow>\<Rrightarrow> \<phi>r\<close>)
+iff process \<open>p\<close> satisfies \<open>\<phi>l\<close> iff it also satisfies \<open>\<phi>r\<close>, no matter the process \<open>p\<close>.
+
+We have chosen to define this equivalence by appealing to HML formula implication (c.f. pre-order).
+\<close>
+
+definition hml_formula_eq :: "('a, 's) hml \<Rightarrow> ('a, 's) hml \<Rightarrow> bool" (infix "\<Lleftarrow>\<Rrightarrow>" 60)  where
+  "\<phi>l \<Lleftarrow>\<Rrightarrow> \<phi>r \<equiv> \<phi>l \<Rrightarrow> \<phi>r \<and> \<phi>r \<Rrightarrow> \<phi>l"
+
+text \<open> \<open>\<Lleftarrow>\<Rrightarrow>\<close> is truly an equivalence relation. \<close>
+lemma hml_eq_equiv: "equivp (\<Lleftarrow>\<Rrightarrow>)"
+  by (smt (verit, del_insts) equivpI hml_formula_eq_def hml_impl_def reflpI sympI transpI)
 
 lemma equiv_der:
   assumes "HML_equivalent p q" "\<exists>p'. p \<mapsto>\<alpha> p'"
@@ -261,14 +288,14 @@ r_trace_pos: "HML_ready_trace (hml_pos \<alpha> \<phi>)" if "HML_ready_trace \<p
 r_trace_conj: "HML_ready_trace (hml_conj I J \<Phi>)" 
 if "(\<exists>x \<in> (\<Phi> ` I). HML_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> single_pos y))
 \<or> (\<forall>y \<in> (\<Phi> ` I).single_pos y)"
-"(\<forall>y \<in> (\<Phi> ` J). stacked_pos_conj_pos y)"
+"(\<forall>y \<in> (\<Phi> ` J). single_pos_pos y)"
 
 inductive HML_ready_sim :: "('a, 's) hml \<Rightarrow> bool"
   where
 "HML_ready_sim TT" |
 "HML_ready_sim (hml_pos \<alpha> \<phi>)" if "HML_ready_sim \<phi>" |
 "HML_ready_sim (hml_conj I J \<Phi>)" if 
-"(\<forall>x \<in> (\<Phi> ` I). HML_ready_sim x) \<and> (\<forall>y \<in> (\<Phi> ` J). stacked_pos_conj_J_empty y)"
+"(\<forall>x \<in> (\<Phi> ` I). HML_ready_sim x) \<and> (\<forall>y \<in> (\<Phi> ` J). single_pos_pos y)"
 
 inductive HML_2_nested_sim :: "('a, 's) hml \<Rightarrow> bool" 
   where

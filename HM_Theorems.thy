@@ -25,7 +25,7 @@ proof
     from Cons obtain p'' p' where "p'' \<mapsto>$ t p'" "p \<mapsto>a p''" 
       using step_sequence.simps list.distinct(1) list.sel(1) list.sel(3)
       by (smt (verit) mem_Collect_eq)
-    then show ?case using trace_to_formula.simps HML_semantics.cases Cons
+    then show ?case using trace_to_formula.simps Cons
       by fastforce
     qed
 next
@@ -47,36 +47,52 @@ qed
 
 lemma ttf_in_HML_trace:
   shows "(trace_to_formula t) \<in> HML_trace_formulas"
-  by ((induction t), (simp add: HML_trace_formulas_def trace_conj trace_pos)+)
+proof(induction t)
+  case Nil
+  then show ?case 
+    using HML_trace.simps HML_trace_formulas_def trace_to_formula.simps(1) by blast
+next
+  case (Cons a t)
+  then show ?case 
+    using HML_trace_formulas_def trace_pos by fastforce
+qed
 
 lemma HM_trace_aux_theorem:
   fixes p \<phi>
   assumes "(\<phi> \<in> HML_trace_formulas \<and> (p \<Turnstile> \<phi>))"  
-  shows "\<exists>t. t \<in> traces p \<and> (\<phi> = (trace_to_formula t))"
+  shows "\<exists>t. t \<in> traces p \<and> (\<phi> \<Lleftarrow>\<Rrightarrow> (trace_to_formula t))"
   using assms
 proof(induction \<phi> arbitrary: p)
-  case (HML_conj x1 x2)
-  then have "x1 = [] \<and> x2 = []"
-    using HML_trace.simps HML_trace_formulas_def formula_list.simps(4) by blast
-  then show ?case
-    using step_sequence.intros(1) by fastforce
-next
-  case (HML_poss \<alpha> \<phi>)  
-  then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
-    using HML_trace.simps HML_trace_formulas_def by fastforce
-  from HML_poss HML_sem_poss obtain q where "p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>"
-    by blast
-  with HML_poss \<phi>_trace have "\<exists>t. t \<in> traces q \<and> \<phi> = trace_to_formula t" by blast
+  case TT
   then show ?case 
-    using \<open>p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>\<close> step_sequence.intros(2) by fastforce
+    using lts.step_sequence.intros(1) equivp_reflp hml_eq_equiv
+    by fastforce
+next
+  case (hml_pos \<alpha> \<phi>)
+then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
+    using HML_trace.simps HML_trace_formulas_def 
+    by (metis hml.distinct(1) hml.distinct(5) hml.inject(1) mem_Collect_eq)
+  from hml_pos obtain q where "p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>"
+    by auto
+  with hml_pos \<phi>_trace have "\<exists>t. t \<in> traces q \<and> \<phi> \<Lleftarrow>\<Rrightarrow> trace_to_formula t" by blast
+  then show ?case 
+    using \<open>p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>\<close> step_sequence.intros(2) sorry (*Irgendwie sagen, das equivalente Formeln Kongruent sind
+\<rightarrow> das sie eingesetzt im Kontext imernoch gleich sind (s.h. MTV? , wie zitieren?)*)
+next
+  case (hml_conj I J \<Phi>)
+  hence "I = {}" "J = {}"
+    by (metis CollectD HML_trace.simps HML_trace_formulas_def hml.distinct(3) hml.distinct(5) hml.inject(2))+
+  then show ?case
+    using step_sequence.intros(1) hml_formula_eq_def hml_impl_iffI 
+    by fastforce
 qed
 
 lemma state_satisfies_trace:
   assumes "t \<in> traces p"
   shows "p \<Turnstile> trace_to_formula t"
   using \<open>t \<in> traces p\<close>
-  by ((induction t arbitrary: p), simp, 
-(smt (verit, best) formula_list.distinct(1) list.inject local.HML_sem_poss mem_Collect_eq step_sequence.cases trace_to_formula.simps(1, 2)))
+  apply ((induction t arbitrary: p), simp)
+  using ttf by blast
 
 text \<open>HM Theorem for Traces\<close>
 
@@ -88,7 +104,7 @@ proof
   assume trace_eq: "traces p = traces q"
   show "HML_trace_equivalent p q"
     unfolding HML_trace_equivalent_def using HM_trace_aux_theorem state_satisfies_trace trace_eq 
-    by blast
+    using hml_formula_eq_def hml_impl_iffI by blast
 next
   assume assm: "HML_trace_equivalent p q"
   then show "traces p = traces q"
