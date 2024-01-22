@@ -77,7 +77,7 @@ then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
   with hml_pos \<phi>_trace have "\<exists>t. t \<in> traces q \<and> \<phi> \<Lleftarrow>\<Rrightarrow> trace_to_formula t" by blast
   then show ?case 
     using \<open>p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>\<close> step_sequence.intros(2) sorry (*Irgendwie sagen, das equivalente Formeln Kongruent sind
-\<rightarrow> das sie eingesetzt im Kontext imernoch gleich sind (s.h. MTV? , wie zitieren?)*)
+\<rightarrow> das sie eingesetzt im Kontext imernoch gleich sind (s.h. RAW? , wie zitieren?)*)
 next
   case (hml_conj I J \<Phi>)
   hence "I = {}" "J = {}"

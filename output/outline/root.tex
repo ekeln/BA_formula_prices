@@ -2,29 +2,42 @@
 \usepackage[T1]{fontenc}
 \usepackage{isabelle,isabellesym}
 
-% further packages required for unusual symbols (see also
-% isabellesym.sty), use only when needed
-
-%\usepackage{amssymb}
-  %for \<leadsto>, \<box>, \<diamond>, \<sqsupset>, \<mho>, \<Join>,
-  %\<lhd>, \<lesssim>, \<greatersim>, \<lessapprox>, \<greaterapprox>,
-  %\<triangleq>, \<yen>, \<lozenge>
-
-%\usepackage{eurosym}
-  %for \<euro>
-
-%\usepackage[only,bigsqcap,bigparallel,fatsemi,interleave,sslash]{stmaryrd}
-  %for \<Sqinter>, \<Parallel>, \<Zsemi>, \<Parallel>, \<sslash>
-
-%\usepackage{eufrak}
-  %for \<AA> ... \<ZZ>, \<aa> ... \<zz> (also included in amssymb)
-
-%\usepackage{textcomp}
-  %for \<onequarter>, \<onehalf>, \<threequarters>, \<degree>, \<cent>,
-  %\<currency>
-
-% this should be the last package used
+\usepackage[UKenglish]{babel}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[mathscr]{euscript}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[explicit]{titlesec}
+\usepackage{tocbibind}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata,shapes,positioning}
 \usepackage{pdfsetup}
+\usepackage[nameinlink]{cleveref}
+\usepackage{graphicx}
+\usepackage[pass]{geometry}
+\usepackage{pdfpages}
+
+\urlstyle{rm}
+\isabellestyle{tt}
+\def\isachardoublequoteopen{}%
+\def\isachardoublequoteclose{}%
+
+\renewcommand{\isamarkupsubsection}[1]{\subsection*{#1}}
+\renewcommand{\isamarkupsubsubsection}[1]{\subsubsection*{#1}}
+\renewcommand{\isamarkupparagraph}[1]{\paragraph{#1}}
+\providecommand*{\code}[1]{\texttt{#1}}
+
+\def\headline#1{\hbox to \hsize{\hrulefill\quad\lower.3em\hbox{#1}\quad\hrulefill}}
+\titleformat{\section}
+  {\vspace{1.5em}\normalfont\Large\bfseries}{\thesection}{1em}{#1\hrule height 1pt\vspace{-1.5em}}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{}{0}{\headline{#1}}
+
+\newcommand{\example}[1]{\bigbreak\textbf{Example}\quad {#1}\bigbreak}
+
 
 % urls in roman style, theory text in math-similar italics
 \urlstyle{rm}
