@@ -8,5 +8,6 @@ sessions
   theories
     Introduction
     Foundations
+    Transition_Systems
   document_files
     "root.tex"

@@ -5,9 +5,20 @@ theory Transition_Systems
 begin
 (*>*)
 
-section \<open>Labelled Transition Systems\<close>
+subsection \<open>Labelled Transition Systems\<close>
 
-text \<open>A LTS ...
+text \<open>A Labelled Transition System (LTS) is a tuple S = (P, E, ->) where P is the set of processes, 
+E is the set fo actions and -> $\subseteq \Proc \times \Act \times \Proc$ is the transition relation.\\
+
+In concurrency theory it is customary that the semantics of Reactive Systems are given in terms of labelled transition systems.
+The processes represent the states a reactive system can be in. A transition of one state into another, 
+caused by performing an action, can be understood as moving along the corresponding edge in the transition relation. \\
+
+\\
+- Example?
+\\
+
+The $\alpha$-derivatives of a process are the processes that can be reached with one $\alpha$-transitions:
 
 - examples (to reuse later?)???
 - Definitions (w\o isabelle)?\<close>
