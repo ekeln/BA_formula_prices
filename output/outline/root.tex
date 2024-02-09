@@ -1,5 +1,4 @@
-\documentclass[11pt,a4paper]{article}
-\usepackage[T1]{fontenc}
+\documentclass[11pt,a4paper,openany]{book}
 \usepackage{isabelle,isabellesym}
 
 \usepackage[UKenglish]{babel}
@@ -21,7 +20,14 @@
 \usepackage{pdfpages}
 
 \urlstyle{rm}
+\isabellestyle{it}
+
+\definecolor{keyword}{RGB}{0,153,102}
+\definecolor{command}{RGB}{0,102,153}
 \isabellestyle{tt}
+\renewcommand{\isacommand}[1]{\textcolor{command}{\textbf{#1}}}
+\renewcommand{\isakeyword}[1]{\textcolor{keyword}{\textbf{#1}}}
+
 \def\isachardoublequoteopen{}%
 \def\isachardoublequoteclose{}%
 
@@ -38,33 +44,44 @@
 
 \newcommand{\example}[1]{\bigbreak\textbf{Example}\quad {#1}\bigbreak}
 
+\newcommand{\LTSt}{LTS\textsubscript{t}}
+\newcommand{\HMLt}{HML\textsubscript{t}}
 
-% urls in roman style, theory text in math-similar italics
-\urlstyle{rm}
-\isabellestyle{it}
+\newcommand{\Proc}{\mathit{Proc}}
+\newcommand{\Act}{\mathit{Act}}
 
-% for uniform font size
-%\renewcommand{\isastyle}{\isastyleminor}
+\newcommand{\lts}[1]{%
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,every node/.style={scale=.85},node distance=1.8cm]
+\tikzstyle{every state}=[ellipse]
+{#1}
+\end{tikzpicture}
+\end{center}
+}
 
 
 \begin{document}
 
-\title{Document-preparation}
-\author{karl}
+\title{Measuring expressive power of HML formulas in Isabelle/HOL}
+\author{Karl Mattes}
 \maketitle
 
+\newpage\null\thispagestyle{empty}\newpage
+
 \tableofcontents
+\newpage\null\thispagestyle{empty}\newpage
+
 
 % sane default for proof documents
 \parindent 0pt\parskip 0.5ex
-
-\tableofcontents
 
 % generated text of all theories
 \input{Introduction}
 \input{Foundations}
 \input{Transition_Systems}
-
+\input{Relational_Equivalences}
+\input{HML_list}
+\input{formula_prices_list}
 
 % optional bibliography
 %\bibliographystyle{abbrv}

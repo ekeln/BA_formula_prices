@@ -77,29 +77,63 @@ qed
 
 subsection \<open>lemmas to handle the pos_r function\<close>
 
-lemma expr_mon_wrt_pos_r: 
-"less_eq_t (e_sup (expr ` (pos_r xs))) (e_sup (expr ` (pos_r (xs \<union> {a}))))"
-  sorry
-
 lemma expr_1_mon_wrt_pos_r: 
-"Sup (expr_1 ` (pos_r xs)) \<le> Sup (expr_1 ` (pos_r (xs \<union> {a})))"
+  assumes "xs \<noteq> {}"
+  shows "Sup (expr_1 ` (pos_r xs)) \<le> Sup (expr_1 ` (pos_r (xs \<union> {a})))"
 proof-
-  from expr_mon_wrt_pos_r have 
-1: "(Sup (fst ` (expr ` (pos_r xs)))) \<le> (Sup (fst ` (expr ` (pos_r (xs \<union> {a})))))"
-    using less_eq_t.simps
-    unfolding e_sup_def
-    by blast
-  fix \<phi>:: "('a, 's)hml"
-  have "\<forall>S. (fst ` expr ` S) = {fst(expr s)|s. s \<in> S}" 
-    by blast
-  hence "\<forall>S. (fst ` expr ` S) = expr_1 ` S"
-    by auto
-  hence "(fst ` (expr ` (pos_r xs))) = expr_1 ` (pos_r xs)" 
-"(fst ` (expr ` (pos_r (xs \<union> {a})))) = expr_1 ` (pos_r (xs \<union> {a}))"
-    by blast+
-  with 1 show ?thesis 
-    by simp
+  define max_val where "max_val \<equiv> (Sup (expr_1 ` xs))"
+  define max_val_a where "max_val_a = (Sup (expr_1 ` (xs \<union> {a})))"
+  define max_elem where "max_elem = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+  define max_elem_a where "max_elem_a = (SOME \<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)"
+  consider "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) < \<infinity>" | 
+    "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |
+    "Sup (expr_1 ` (xs \<union> {a})) \<ge> \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |
+    "Sup (expr_1 ` (xs \<union> {a})) \<ge> \<infinity> \<and> Sup (expr_1 ` xs) < \<infinity>" 
+    using linorder_not_le by blast
+  then show ?thesis
+  proof(cases)
+    case 1
+      from 1 have "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
+        unfolding max_val_def
+      by (metis (mono_tags, opaque_lifting) Max_in Sup_enat_def assms empty_is_image image_iff less_le_not_le)
+    with 1 have "\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = (Sup (expr_1 ` (xs \<union> {a})))" 
+      unfolding max_val_a_def 
+      by (metis SUP_insert Un_insert_right complete_linorder_sup_max insert_iff max_def max_val_def sup_bot_right)
+    hence "expr_1 max_elem \<le> expr_1 max_elem_a"
+      by (metis (mono_tags, lifting) SUP_upper Un_iff \<open>\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val\<close> max_elem_a_def max_elem_def max_val_a_def verit_sko_ex_indirect2)
+
+    hence "Sup (expr_1 ` (xs - {max_elem})) \<le> Sup (expr_1 ` (xs - {max_elem_a}))" 
+      by (smt (verit, ccfv_SIG) DiffI SUP_insert \<open>\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val\<close> insert_Diff_single insert_absorb le_sup_iff max_elem_def max_val_def nle_le singletonD someI_ex)
+    hence "Sup (expr_1 ` (xs - {max_elem})) \<le> Sup (expr_1 ` ((xs \<union> {a}) - {max_elem_a}))"
+      by (smt (verit, del_insts) SUP_union Un_Diff le_sup_iff nle_le)
+    then show ?thesis unfolding max_elem_def max_elem_a_def max_val_def max_val_a_def 
+      by simp
+  next
+    case 2
+    hence False 
+      using sup_enat_def by fastforce
+    then show ?thesis by simp
+  next
+    case 3
+    hence "max_val = \<infinity>" "max_val_a = \<infinity>" 
+      unfolding max_val_def max_val_a_def enat_ord_simps(5) by blast+
+    then show ?thesis
+  proof(cases "\<exists>\<phi> \<in> xs. expr_1 \<phi> = \<infinity>")
+    case True
+    then show ?thesis sorry
+  next
+    case False
+    hence "(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" 
+      using \<open>max_val = \<infinity>\<close> by blast
+    hence "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) = undefined" sorry
+    then show ?thesis sorry
+  qed
+next
+  case 4
+  then show ?thesis sorry
 qed
+qed
+  
 
 lemma mon_expr_1_pos_r: 
   "Sup (expr_1 ` (pos_r xs)) \<le> Sup (expr_1 ` xs)"
@@ -2179,8 +2213,8 @@ proof
   fix y 
   assume "y \<in>\<Phi> ` J"
   from assms have "Sup ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J) \<le> 1"
-"Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> 1"
-"Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> 0"
+  "Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> 1"
+  "Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> 0"
       apply (simp add: Sup_union_distrib)
     using assms Sup_union_distrib
      apply (simp add: Sup_union_distrib)

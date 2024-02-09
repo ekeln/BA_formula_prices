@@ -8,5 +8,7 @@ sessions
   theories
     Introduction
     Foundations
+    Transition_Systems
+    Relational_Equivalences
   document_files
     "root.tex"

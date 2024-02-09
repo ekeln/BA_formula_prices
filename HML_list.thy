@@ -112,19 +112,43 @@ hml_sem_tt: \<open>(_ \<Turnstile> TT) = True\<close> |
 hml_sem_pos: \<open>(p \<Turnstile> (hml_pos \<alpha> \<phi>)) = (\<exists> q. (p \<mapsto>\<alpha> q) \<and> q \<Turnstile> \<phi>)\<close> |
 hml_sem_conj: \<open>(p \<Turnstile> (hml_conj I J \<psi>s)) = ((\<forall>i \<in> I. p \<Turnstile> (\<psi>s i)) \<and> (\<forall>j \<in> J. \<not>(p \<Turnstile> (\<psi>s j))))\<close>
 
+lemma index_sets_conj_disjunct:
+  assumes "I \<inter> J \<noteq> {}"
+  shows "\<forall>s. \<not> (s \<Turnstile> (hml_conj I J \<Phi>))"
+proof(safe)
+  fix s
+  assume "s \<Turnstile> hml_conj I J \<Phi>"
+  from assms obtain i where "i \<in> I \<inter> J" by blast
+  with \<open>s \<Turnstile> hml_conj I J \<Phi>\<close> have "((s \<Turnstile> (\<Phi> i)) \<and> (\<not>(s \<Turnstile> (\<Phi> i))))"
+    by auto
+  then show False by blast
+qed
+
+definition HML_true where
+"HML_true \<phi> \<equiv> \<forall>s. s \<Turnstile> \<phi>"
+
 lemma 
+  fixes s::'s
+  assumes "HML_true (hml_conj I J \<Phi>)"
+  shows "\<forall>\<phi> \<in> \<Phi> ` I. HML_true \<phi>"
+  using HML_true_def assms by auto
+
+lemma HML_true_TT_like:
   assumes "TT_like \<phi>"
-  shows "p \<Turnstile> \<phi>"
+  shows "HML_true \<phi>"
   using assms
+  unfolding HML_true_def
   apply (induction \<phi> rule: TT_like.induct)
   by simp+
 
-lemma
+lemma HML_true_nested_empty_pos_conj:
   assumes "nested_empty_pos_conj \<phi>"
-  shows "p \<Turnstile> \<phi>"
+  shows "HML_true \<phi>"
   using assms
+  unfolding HML_true_def
   apply (induction \<phi> rule: nested_empty_pos_conj.induct)
   by (simp, force)
+
 
 text \<open>Two states are HML equivalent if they satisfy the same formula.\<close>
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> where
@@ -163,7 +187,6 @@ lemma equiv_der:
   by metis
 
 
-text \<open>HML_equivalency is transitive\<close>
 lemma equiv_trans: "transp HML_equivalent"
   by (simp add: HML_equivalent_def transp_def)
 
