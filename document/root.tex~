@@ -80,6 +80,8 @@
 \input{Foundations}
 \input{Transition_Systems}
 \input{Relational_Equivalences}
+\input{HML_list}
+\input{formula_prices_list}
 
 % optional bibliography
 %\bibliographystyle{abbrv}

@@ -72,9 +72,24 @@ abbreviation trace_equivalent (infix \<open>\<simeq>T\<close> 60) where
 
 text \<open>Trace preorder is transitive\<close>
 
-lemma T_trans:
+lemma trace_preorder_transitive:
   shows \<open>transp (\<lesssim>T)\<close>
   unfolding transp_def trace_preordered_def by blast
+
+lemma empty_trace_trivial:
+  fixes p
+  shows \<open>[] \<in> traces p\<close>
+  using step_sequence.intros by blast
+
+lemma \<open>equivp (\<simeq>T)\<close>
+proof (rule equivpI)
+  show \<open>reflp (\<simeq>T)\<close>
+    unfolding reflp_def trace_preordered_def by blast
+  show \<open>symp (\<simeq>T)\<close>
+    unfolding symp_def by blast
+  show \<open>transp (\<simeq>T)\<close>
+    unfolding transp_def trace_preordered_def by blast
+qed
 
 text \<open>Failure Pairs\<close>
 
@@ -120,6 +135,36 @@ definition simulation
 
 definition simulated_by (infix \<open>\<lesssim>S\<close> 60)
   where \<open>p \<lesssim>S q \<equiv> \<exists>R. R p q \<and> simulation R\<close>
+
+text \<open>Simulation preorder implies trace preorder\<close>
+
+lemma sim_implies_trace_preord:
+  assumes \<open>p \<lesssim>S q\<close>
+  shows \<open>p \<lesssim>T q\<close>
+  using assms unfolding trace_preordered_def
+proof safe
+  fix p'' tr
+  assume \<open>p \<lesssim>S q\<close> and \<open>p \<mapsto>$ tr p''\<close>
+  thus \<open>\<exists>q'. q \<mapsto>$ tr q'\<close>
+  proof (induct tr arbitrary: p q)
+    case Nil
+    show ?case using step_sequence.intros(1) by blast
+  next
+    case (Cons a tr)
+    obtain p' where \<open>p \<mapsto> a p'\<close> \<open>p' \<mapsto>$ tr p''\<close>
+      using Cons.prems(2) step_sequence.simps
+      by blast
+    obtain q' where \<open>q \<mapsto> a q'\<close> \<open>p' \<lesssim>S q'\<close>
+      using Cons.prems(1) \<open>p \<mapsto> a p'\<close> unfolding simulated_by_def simulation_def
+      by blast
+    obtain q'' where \<open>q' \<mapsto>$ tr q''\<close>
+      using Cons.hyps \<open>p' \<lesssim>S q'\<close> \<open>p' \<mapsto>$ tr p''\<close>
+      by blast
+    then show ?case
+      using \<open>q \<mapsto> a q'\<close> step_sequence.intros(2)
+      by blast
+  qed
+qed
 
 text \<open>Two states are bisimilar if they can be related by a symmetric simulation.\<close>
 

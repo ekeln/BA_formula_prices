@@ -11,6 +11,8 @@ sessions
     Transition_Systems
     Relational_Equivalences
     HML_list
+    HML_definitions
+    HML_equivalences
     formula_prices_list
   document_files
     "root.tex"

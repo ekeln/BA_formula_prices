@@ -6,7 +6,7 @@ begin
 (*>*)
 
 chapter \<open>Introduction\<close>
-text \<open>In this thesis, I show the corrspondence between various equivalences popular in the reactive
+text \<open>In this thesis, I show the correspondence between various equivalences popular in the reactive
 systems community and coordinates of a price function, as introduced by Benjamin Bisping (citation).
 I formalised the concepts and proofs discussed in this thesis in the interactive proof assistant Isabelle (citation).
 

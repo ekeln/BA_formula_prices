@@ -85,6 +85,78 @@ proof-
   define max_val_a where "max_val_a = (Sup (expr_1 ` (xs \<union> {a})))"
   define max_elem where "max_elem = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
   define max_elem_a where "max_elem_a = (SOME \<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)"
+  have "max_val \<le> max_val_a"
+    unfolding max_val_def max_val_a_def
+    by force
+  consider "\<exists>\<psi> \<in> xs. expr_1 \<psi> = \<infinity> \<and> expr_1 a = \<infinity>" 
+    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> = \<infinity> \<and> expr_1 a \<noteq> \<infinity>"
+    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> \<noteq> \<infinity> \<and> expr_1 a = \<infinity>"
+    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> \<noteq> \<infinity> \<and> expr_1 a \<noteq> \<infinity>"
+    by (meson assms ex_in_conv)
+  then show ?thesis proof(cases)
+    case 1
+    then show ?thesis sorry
+  next
+    case 2
+    then show ?thesis sorry
+  next
+    case 3
+    then show ?thesis sorry
+  next
+    case 4
+    then show ?thesis sorry
+  qed
+  consider "(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> (\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" 
+    | "(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> \<not>(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+    | "\<not>(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> (\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+    | "\<not>(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> \<not>(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+    by blast
+then show ?thesis proof(cases)
+  case 1
+  then show ?thesis sorry
+next
+  case 2
+  then show ?thesis sorry
+next
+  case 3
+  hence False 
+    unfolding max_val_def max_val_a_def
+    by (metis SUP_insert Un_insert_right complete_linorder_sup_max insert_iff max_def sup_bot_right)
+  then show ?thesis by blast
+next
+  case 4
+  hence "(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" by blast
+  have "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) = undefined"
+  proof(rule ccontr)
+    assume "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) \<noteq> undefined"
+    hence "\<exists>x. x \<noteq> undefined \<and> x = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" by blast
+    then obtain x where "x \<noteq> undefined" "x = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+      by blast
+    hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
+       sledgehammer sorry
+    then obtain \<psi> where "\<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
+      using someI_ex sledgehammer sorry
+    hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
+      u
+      sledgehammer sorry
+      sorry
+  hence "max_elem = undefined" 
+    unfolding max_elem_def sledgehammer sorry
+  then show ?thesis sorry
+qed
+  case True
+  hence "(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
+    using \<open>max_val \<le> max_val_a\<close>
+    unfolding max_val_def max_val_a_def 
+proof-
+  then show ?thesis sorry
+next
+  case False
+  then show ?thesis sorry
+qed
+  hence "expr_1 max_elem \<le> expr_1 max_elem_a"
+    unfolding max_elem_def max_elem_a_def
+    sorry
   consider "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) < \<infinity>" | 
     "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |
     "Sup (expr_1 ` (xs \<union> {a})) \<ge> \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |

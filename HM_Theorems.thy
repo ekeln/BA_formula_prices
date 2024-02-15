@@ -1,5 +1,5 @@
 theory HM_Theorems
-imports Main HML_list HML_equivalences
+imports Main HML_list HML_equivalences Relational_Equivalences
 begin
 
 context lts
@@ -69,15 +69,25 @@ proof(induction \<phi> arbitrary: p)
     by fastforce
 next
   case (hml_pos \<alpha> \<phi>)
-then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
+  then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
     using HML_trace.simps HML_trace_formulas_def 
     by (metis hml.distinct(1) hml.distinct(5) hml.inject(1) mem_Collect_eq)
   from hml_pos obtain q where "p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>"
     by auto
   with hml_pos \<phi>_trace have "\<exists>t. t \<in> traces q \<and> \<phi> \<Lleftarrow>\<Rrightarrow> trace_to_formula t" by blast
+  then obtain \<psi> t where "t \<in> traces q" "\<phi> \<Lleftarrow>\<Rrightarrow> trace_to_formula t" "trace_to_formula t = (\<psi>::('a, 's)hml)"
+    by blast
+  define \<chi> where "\<chi> \<equiv> (hml_pos \<alpha> \<psi>)"
+  have "(\<alpha>#t) \<in> traces p" 
+    using \<open>p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>\<close> \<open>t \<in> traces q\<close> ttf by auto
+  have "trace_to_formula (\<alpha>#t) = \<chi>"
+    unfolding \<chi>_def
+    by (simp add: \<open>trace_to_formula t = \<psi>\<close>)
+  have "hml_pos \<alpha> \<phi> \<Lleftarrow>\<Rrightarrow> \<chi>"
+    unfolding hml_formula_eq_def hml_impl_def \<chi>_def
+    using \<open>\<phi> \<Lleftarrow>\<Rrightarrow> trace_to_formula t\<close> \<open>trace_to_formula t = \<psi>\<close> lts.hml_formula_eq_def lts.hml_impl_iffI by fastforce
   then show ?case 
-    using \<open>p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>\<close> step_sequence.intros(2) sorry (*Irgendwie sagen, das equivalente Formeln Kongruent sind
-\<rightarrow> das sie eingesetzt im Kontext imernoch gleich sind (s.h. RAW? , wie zitieren?)*)
+    using \<open>\<alpha> # t \<in> traces p\<close> \<open>trace_to_formula (\<alpha> # t) = \<chi>\<close> by blast
 next
   case (hml_conj I J \<Phi>)
   hence "I = {}" "J = {}"
@@ -122,15 +132,19 @@ lemma hml_bisim_invariant:
     \<open>q \<Turnstile> \<phi>\<close>
   using assms
 proof (induct \<phi> arbitrary: p q)
-  case (HML_conj x1 x2)
+  case TT
   then show ?case 
-    using bisimilar_def sympD by fastforce
+    using hml_sem_tt by blast
 next
-  case (HML_poss x1 \<phi>)
-  then show ?case using simulation_def
-    by (metis bisim_sim local.HML_sem_poss)
+  case (hml_pos x1 \<phi>)
+  then show ?case 
+    using bisim_sim hml_sem_pos
+    unfolding simulation_def 
+    by meson
+next
+  case (hml_conj x1 x2 x3)
+  then show ?case using bisimilar_def sympD by fastforce
 qed
-
 
 definition set_to_list :: "'s set \<Rightarrow> 's list"
 where \<open>set_to_list s \<equiv> (SOME l. (set l) = s)\<close>

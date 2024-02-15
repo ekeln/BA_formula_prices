@@ -1,13 +1,45 @@
+(*<*)
 theory HML_list
   imports
  Main
  Transition_Systems
 
 begin
+(*>*)
+subsection \<open>Hennessy--Milner logic\<close>
+text \<open>Hennessy--Milner logic, first introduced by Matthew Hennessy and Robin Milner (citation), is a modal logic for expressing properties of systems described by LTS.
+Intuitively, HML describes observations on an LTS and two processes are considered equivalent under HML when there exists no observation that distinguishes between them.
+(citation) defined the modal-logical language as consisting of (finite) conjunctions, negations and a (modal) possibility operator:
+$$\varphi ::= t\!t \mid \varphi_1 \;\wedge\; \varphi_2 \mid \neg\varphi \mid \langle\alpha\rangle\varphi$$
+(where $\alpha$ ranges over the set of actions. The paper also proves that this characterization of strong bisimilarity
+corresponds to a relational definition that is effectively the same as in (...). Their result can be expressed as follows:
+for image-finite LTSs, two processes are strongly bisimilar iff they satisfy the same set of HML formulas. We call this the modal characterisation of
+strong bisimilarity. By allowing for conjunction of arbitrary width (infinitary HML), the modal characterization of strong bisimilarity can be proved for arbitrary LTS. This is done in (...)\<close>
+
+text \<open>\textbf{Hennessy--Milner logic}
+The syntax of Hennessy--Milner logic over a set $\Sigma$ of actions, (HML) - richtige font!!!!![$\Sigma$], is defined by the grammar:
+\begin{align*}
+    \varphi &::= \langle a \rangle \varphi && \text{with } a \in \Sigma \\
+            &\quad | \, \bigwedge_{i \in I} \psi_i \\
+    \psi &::= \neg \varphi \, | \, \varphi.
+\end{align*}\<close>
+
+text \<open>The data type \<open>('a, 'i)hml\<close> formalizes the definition of HML formulas above. It is parameterized by the type of actions \<open>'a\<close> for $\Sigma$
+and an index type \<open>'i\<close>. We use an index sets of arbitrary type \<open>I :: 'i set\<close> and a mapping \<open>F :: 'i \<Rightarrow> ('a, 'i) hml\<close> to formalize
+conjunctions so that each element of \<open>I\<close> is mapped to a formula%
+\footnote{Note that the formalization via an arbitrary set (...) does not yield a valid type, since \<open>set\<close> is not a bounded natural functor.}%.
+\<close>
+
 datatype ('a, 'i)hml =
 TT |
 hml_pos \<open>'a\<close> \<open>('a, 'i)hml\<close> |
 hml_conj "'i set" "'i set" "'i \<Rightarrow> ('a, 'i) hml" 
+
+text \<open>Note that in canonical definitions of HML @{term "TT"} is not usually part of the syntax,
+but is instead synonymous to \<open>\<And>{}\<close>.
+We include @{term "TT"} in the definition to enable Isabelle to infer that the type @{term "hml"} is not empty..
+This formalization allows for conjunctions of arbitrary - even of infinite - width and has been
+taken from \cite{Pohlmann2021ReducingReactive} (Appendix B).\<close>
 
 inductive TT_like :: "('a, 'i) hml \<Rightarrow> bool"
   where
@@ -25,10 +57,6 @@ inductive nested_empty_conj :: "('a, 'i) hml \<Rightarrow> bool"
 "nested_empty_conj TT" |
 "nested_empty_conj (hml_conj I J \<Phi>)"
 if "\<forall>x \<in> (\<Phi> `I). nested_empty_conj x" "\<forall>x \<in> (\<Phi> `J). nested_empty_pos_conj x"
-
-(*sanity check: nested_empty_conj ist equiv zu TT oder zu FF (nie true)*)
-
-(*stack of Conjunctions, with hml_pos \<alpha> in the deepest one, for failure_trace ff.*)
 
 inductive stacked_pos_conj_pos :: "('a, 'i) hml \<Rightarrow> bool"
   where
@@ -70,38 +98,6 @@ inductive single_pos :: "('a, 'i) hml \<Rightarrow> bool"
 "single_pos (hml_conj I J \<Phi>)"
 if "\<forall>\<phi> \<in> (\<Phi> ` I). (single_pos \<phi>)"
 "\<forall>\<phi> \<in> (\<Phi> ` J). single_pos_pos \<phi>"
-
-(*primrec flatten*)
-primrec flatten :: "('a, 'i) hml \<Rightarrow> ('a, 'i) hml" where
-"flatten TT = TT" |
-"flatten (hml_pos \<alpha> \<psi>) = (hml_pos \<alpha> (flatten \<psi>))" |
-"flatten (hml_conj I J \<Phi>) = (hml_conj I J \<Phi>)"
-(*|
-"flatten (hml_conj I J \<Phi>) = (hml_conj I J 
-                              (\<lambda>x. if x \<in> I then (if \<exists>\<alpha> \<psi>. (\<Phi> x) = hml_pos \<alpha> \<psi> 
-                                                    then (hml_pos \<alpha> (flatten \<psi>)) 
-                                                  else )
-                                    else TT))"
-TODO: wenn \<Phi> geändert werden soll müssen auch I und J geändert werden? Also zb \<And>\<And>{a} {b}
-auf ... abbilde ändert auch I und J 
-*)
-
-(* (\<forall>x \<in> (\<Phi> ` I). ((\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<longrightarrow> flatten \<psi>)))"*)
-
-
-(*überprüfen*)
-inductive flattened :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"flattened TT" |
-"flattened (hml_pos _ \<psi>)" if "flattened \<psi>"|
-"flattened (hml_conj I J \<Phi>)"
-if "\<forall>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>)"
-"\<forall>y \<in> (\<Phi> ` J). (\<exists>\<alpha> \<psi>. y = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>) \<or> 
-(\<exists>I' J' \<Phi>'. y = (hml_conj I' J' \<Phi>') \<and> (\<forall>x \<in> \<Phi>' ` I'. (\<exists>\<alpha> \<psi>. x = (hml_pos \<alpha> \<psi>) \<and> flattened \<psi>))
-                                     \<and> (\<Phi>' ` J' = {}))"
-
-(*sanity checks?*)
-(*f.a. \<phi> gibt es \<psi> mit flattened \<psi> und \<phi> \<equiv> \<psi>*)
 
 context lts begin
 

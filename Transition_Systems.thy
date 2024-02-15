@@ -5,8 +5,13 @@ theory Transition_Systems
 begin
 (*>*)
 
-section \<open>Labelled Transition Systems\<close>
+section \<open>Labeled Transition Systems\<close>
 text \<open>\label{sec:LTS}\<close>
+
+text \<open>Labeled Transition Systems (LTS) serve as models for representing the behavior of systems (Kel76). 
+An LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. Actions denote the events or operations that can occur within the system.
+The outgoing transitions of each process correspond to the actions the system can perform in that state, yielding a subsequent state.
+\<close>
 
 subsubsection \<open>Definition 1 (Labeled transition Systems)\<close>
 
@@ -41,7 +46,7 @@ subsection \<open>Isabelle\<close>
 text \<open>Zustände: \<open>'s\<close> und Aktionen \<open>'a\<close>, Transitionsrelation ist locale trans. Ein LTS wird dann durch
 seine Transitionsrelation definiert.\<close>
 locale lts = 
-  fixes tran :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close>
+  fixes tran :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> 
     ("_ \<mapsto>_ _" [70, 70, 70] 80)
 begin
 
