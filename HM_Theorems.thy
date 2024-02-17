@@ -1,5 +1,5 @@
 theory HM_Theorems
-imports Main HML_list HML_equivalences Relational_Equivalences
+imports Main HML_list HML_equivalences Relational_Equivalences HML_definitions
 begin
 
 context lts
@@ -134,206 +134,184 @@ lemma hml_bisim_invariant:
 proof (induct \<phi> arbitrary: p q)
   case TT
   then show ?case 
-    using hml_sem_tt by blast
+    by simp
 next
-  case (hml_pos x1 \<phi>)
+  case (hml_pos \<alpha> \<phi>)
+  then obtain p' q' where \<open>p \<mapsto> \<alpha> p'\<close> \<open>p' \<Turnstile> \<phi>\<close> \<open>q \<mapsto> \<alpha> q'\<close> \<open>p' \<simeq>B q'\<close>
+    using bisim_sim unfolding simulation_def
+    by (meson hml_sem_pos)
+  with hml_pos show ?case 
+    using hml_sem_pos by blast
+next
+  case (hml_conj x1 x2 x3) 
   then show ?case 
-    using bisim_sim hml_sem_pos
-    unfolding simulation_def 
-    by meson
-next
-  case (hml_conj x1 x2 x3)
-  then show ?case using bisimilar_def sympD by fastforce
-qed
-
-definition set_to_list :: "'s set \<Rightarrow> 's list"
-where \<open>set_to_list s \<equiv> (SOME l. (set l) = s)\<close>
-
-lemma set_to_list_eq:
-  assumes \<open>finite s\<close>
-  shows \<open>set (set_to_list s) = s\<close>
-  unfolding set_to_list_def
-  using someI_ex[OF finite_list[OF assms]] .
-
-lemma map_SOME:
-  assumes "\<forall>q' \<in> set der_list. \<exists>\<phi>. distinguishes \<phi> p' q'"
-  shows "\<forall>\<psi> \<in> set (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list). p' \<Turnstile> \<psi>"
-proof-
-  define \<psi>_list where "\<psi>_list \<equiv> (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list)"
-  then show "\<forall>\<psi> \<in> set \<psi>_list. p' \<Turnstile> \<psi>"
-    using assms
-  proof(induction \<psi>_list arbitrary: der_list)
-    case Nil
-    then show ?case
-      by fastforce
-  next
-    case (Cons a \<psi>_tail) 
-    have \<psi>_head: "\<exists>\<phi>. distinguishes \<phi> p' (hd der_list)"
-      using local.Cons(2, 3) by force
-    then have dist: "distinguishes (SOME \<phi>. distinguishes \<phi> p' (hd der_list)) p' (hd der_list)"
-      using someI_ex
-      by (metis (no_types, lifting))
-    from Cons(3) have a_eq: "a = (SOME \<psi>. distinguishes \<psi> p' (hd der_list))"
-      using Cons.hyps(2) by force
-    with dist have a_dist: "distinguishes a p' (hd der_list)"
-      by blast
-    from Cons have "\<forall>\<psi>\<in>set \<psi>_tail. p' \<Turnstile> \<psi>"
-      by auto
-    with a_eq a_dist show ?case
-      by simp
-  qed
-qed
-
-lemma dist_junctor_implies_dist_conjunction:
-  assumes "\<forall>q' \<in> set der_list. \<exists>\<phi>. distinguishes \<phi> p' q'"
-  shows "(\<forall>q' \<in> set der_list. \<not>q' \<Turnstile> HML_conj (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list) [])"
-proof
-  fix q'
-  assume q'_fix: "q' \<in> set der_list"
-  define \<psi>d_list where \<open>\<psi>d_list \<equiv> (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list)\<close>
-  then show "(\<not>q' \<Turnstile> HML_conj \<psi>d_list [])"
-    using assms q'_fix
-  proof(induction der_list arbitrary: \<psi>d_list)
-    case Nil
-    then show ?case
-      by force
-  next
-    case (Cons a \<psi>d_list)
-    from Cons(3) have "q' = a \<or> q' \<in> set \<psi>d_list"
-      by auto
-    then show ?case
-    proof
-      assume "q' = a"
-      with Cons obtain \<phi> where "distinguishes \<phi> p' q'"
-        by fastforce
-      thus ?thesis using \<open>q' = a\<close> Cons(2) someI_ex HML_sem_conj
-        by (metis (no_types, lifting) list.set_intros(1) list.simps(9))
-    next
-      assume "q' \<in> set \<psi>d_list"
-      with Cons have "\<not> q' \<Turnstile> HML_conj (map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') \<psi>d_list) []"
-        by simp
-      then show ?thesis
-        by auto
-    qed
-  qed
+    using bisimilar_def sympD by fastforce
 qed
 
 lemma HML_equiv_sim:
-  assumes "image_finite"
-  shows \<open>simulation HML_equivalent\<close>
+  \<open>simulation HML_equivalent\<close>
   unfolding simulation_def
 proof (safe, rule ccontr)
   fix p q a p'
-  define der where \<open>der \<equiv> derivatives q a\<close>
-  define der_list where \<open>der_list \<equiv> set_to_list der\<close>
-  from assms have "finite der" unfolding image_finite_def der_def by simp
-  with set_to_list_eq have "\<forall>q' \<in> set der_list. q' \<in> der" unfolding der_list_def der_def set_to_list_def
-    by blast
-  define \<phi>d_list where \<open>\<phi>d_list \<equiv> map (\<lambda>q'. SOME \<psi>. distinguishes \<psi> p' q') der_list\<close>
-  define \<phi>d where \<open>\<phi>d \<equiv> HML_poss a (HML_conj \<phi>d_list [])\<close>
+  define der_q where "der_q \<equiv> (derivatives q a)"
+  define \<phi>d where
+    \<open>\<phi>d \<equiv> hml_conj der_q {} (\<lambda>q'. (if q' \<in> der_q then SOME \<phi>. distinguishes \<phi> p' q' else undefined))\<close>
   assume contra_assms:
     \<open>p \<mapsto> a p'\<close> \<open>HML_equivalent p q\<close> \<open>\<nexists>q'. q \<mapsto> a q' \<and>  HML_equivalent p' q'\<close>
-  hence dist_exists: \<open>\<forall>q' \<in> der. \<exists>\<phi>. distinguishes \<phi> p' q'\<close>
-    unfolding der_def using hml_distinctions by simp
-  hence dist: "\<forall>q' \<in> set (set_to_list der). \<exists>\<phi>. distinguishes \<phi> p' q'"
-    using \<open>\<forall>q'\<in>set der_list. q' \<in> der\<close> der_list_def by blast
-  hence "\<forall>\<psi> \<in> set \<phi>d_list. p' \<Turnstile> \<psi>"
-    using map_SOME
-    unfolding \<phi>d_list_def der_list_def
-    by blast
-  hence p'_sat: "p' \<Turnstile> (HML_conj \<phi>d_list [])"
-    using HML_semantics.simps(1) by simp
-  with contra_assms(1) have "p \<Turnstile> \<phi>d" unfolding \<phi>d_def
-    using local.HML_sem_poss by blast
-  have \<open>(\<forall>q' \<in> der. \<not>q' \<Turnstile> HML_conj \<phi>d_list [])\<close> 
-    using dist_junctor_implies_dist_conjunction dist_exists
-    unfolding \<phi>d_list_def der_def
-    using \<open>finite der\<close> der_def der_list_def set_to_list_eq by blast
-  with contra_assms(1) \<open>p' \<Turnstile> HML_conj \<phi>d_list []\<close> have \<open>distinguishes \<phi>d p q\<close>
-    unfolding \<phi>d_def der_def by auto
+  hence \<open>\<forall>q' \<in> derivatives q a. \<exists>\<phi>. distinguishes \<phi> p' q'\<close>
+    using hml_distinctions by simp
+  hence \<open>p' \<Turnstile> \<phi>d \<and> (\<forall>q' \<in> derivatives q a. \<not>q' \<Turnstile> \<phi>d)\<close>
+    unfolding \<phi>d_def der_q_def by auto (smt (verit, best) someI2_ex)+
+  with contra_assms(1) have \<open>distinguishes (hml_pos a \<phi>d) p q\<close> by auto
   thus False using contra_assms unfolding HML_equivalent_def by blast
 qed
 
 theorem Hennessy_Milner_theorem:
-  assumes "image_finite"
   shows
     \<open>HML_equivalent p q = (p \<simeq>B q)\<close>
   using hml_bisim_invariant hml_equiv_sym HML_equiv_sim hml_distinctions
-  unfolding bisimilar_def HML_equivalent_def
-  using assms by blast
+  unfolding bisimilar_def HML_equivalent_def by blast
 
 theorem HM_simulation_theorem:
-  assumes "image_finite"
   shows "HML_simulation_equivalent p q = (p \<simeq>F q)"
+  using HML_equiv_sim
+  unfolding HML_simulation_formulas_def HML_simulation_equivalent_def HML_equivalent_def failure_preordered_def
   oops
 
   section \<open>HM PF Theorem\<close>
 
-lemma 
-  assumes "\<phi> \<in> HML_possible_futures_formulas" "p \<simeq>PF q" "p \<Turnstile> \<phi>"
+lemma trace_formula_is_pf_formula:
+  assumes "hml_trace \<phi>"
+  shows "hml_possible_futures \<phi>"
+  using assms hml_possible_futures.pf_tt hml_possible_futures.simps
+by((induction \<phi> rule: hml_trace.induct), blast+)
+
+lemma step_seq: "p \<mapsto>$ (a#xs) p' \<longleftrightarrow> (\<exists>p''. p \<mapsto> a p'' \<and> p'' \<mapsto>$ xs p')"
+  using step_sequence.cases step_sequence.intros
+  by fastforce
+
+lemma replace_ex: 
+  fixes p
+  assumes "(\<exists>p. P p) \<longleftrightarrow> (\<exists>q. Q q)" "P p"
+  shows "P p \<longleftrightarrow> (\<exists>q. Q q)" 
+  using assms(1) assms(2) by blast
+
+lemma pf_trace_shortening:
+  fixes p' a tr
+  assumes "p \<simeq>PF q" "p \<mapsto> a p'"
+  shows "\<exists>q'. p' \<simeq>PF q' \<and> q \<mapsto> a q'"
+proof-
+  from assms(1) have subs: "{(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X} = {(xs, X)|xs X. \<exists>p'. q \<mapsto>$ xs p' \<and> traces p' = X}"
+    unfolding possible_futures_preordered_def possible_futures_equivalent_def by blast
+  hence "\<forall>xs X. (\<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X) \<longleftrightarrow> (\<exists>q'. q \<mapsto>$ xs q' \<and> traces q' = X)" 
+    by (smt (verit, best) CollectD CollectI Pair_inject)
+  hence "\<forall>xs X. (\<exists>p'. p \<mapsto>$ (a#xs) p' \<and> traces p' = X) \<longleftrightarrow> (\<exists>q'. q \<mapsto>$ (a#xs) q' \<and> traces q' = X)" by blast
+  hence impl: "\<forall>xs X. (\<exists>p''. (\<exists>p'. p \<mapsto> a p' \<and> p' \<mapsto>$ xs p'') \<and> traces p'' = X) \<longleftrightarrow> (\<exists>q''. (\<exists>q'. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'') \<and> traces q'' = X)"
+    using step_seq by auto
+  hence impl: "\<forall>xs X. (\<exists>p' p''. p \<mapsto> a p' \<and> p' \<mapsto>$ xs p'' \<and> traces p'' = X) \<longleftrightarrow> (\<exists>q' q''. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'' \<and> traces q'' = X)"
+    by metis
+  hence impl: "\<forall>xs X. (\<exists>p'. (\<exists>p''. p \<mapsto> a p' \<and> p' \<mapsto>$ xs p'' \<and> traces p'' = X)) \<longleftrightarrow> (\<exists>q'. (\<exists>q''. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'' \<and> traces q'' = X))"
+    by fastforce
+  hence impl: "\<forall>xs X. (\<exists>p''. p \<mapsto> a p' \<and> p' \<mapsto>$ xs p'' \<and> traces p'' = X) \<longleftrightarrow> (\<exists>q' q''. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'' \<and> traces q'' = X)"
+    using assms(2) replace_ex
+    sorry
+  then obtain q' where "\<forall>xs X. (\<exists>p''. p \<mapsto> a p' \<and> p' \<mapsto>$ xs p'' \<and> traces p'' = X) \<longleftrightarrow> (\<exists>q''. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'' \<and> traces q'' = X)"
+    sorry
+  with assms have "\<forall>xs X. (\<exists>p''. p' \<mapsto>$ xs p'' \<and> traces p'' = X) \<longrightarrow> (\<exists>q' q''. q \<mapsto> a q' \<and> q' \<mapsto>$ xs q'' \<and> traces q'' = X)"
+    sorry
+  hence "\<exists>q'. {(xs, X)|xs X. \<exists>p''. p' \<mapsto>$ xs p'' \<and> traces p'' = X} \<subseteq> {(xs, X)|xs X. \<exists>p''. q' \<mapsto>$ xs p'' \<and> traces p'' = X} \<and> q \<mapsto> a q'"
+    sorry
+    by blast
+  then show ?thesis
+    using possible_futures_preordered_def by presburger
+qed
+
+lemma pf_aux:
+  assumes "\<phi> \<in> hml_possible_futures_formulas" "p \<simeq>PF q" "p \<Turnstile> \<phi>"
   shows "q \<Turnstile> \<phi>"
   using assms
 proof(induction \<phi> arbitrary: p q)
-  case (HML_conj x1 x2 p q)
-  from this(3) have "\<forall>x1a \<in> set x1. HML_trace x1a"
-    using HML_list.HML_possible_futures_formulas_def HML_possible_futures.simps
-    by fastforce
-  hence "\<forall>x1a \<in> set x1. HML_possible_futures x1a" 
-    using HML_possible_futures.simps HML_trace.simps
-  then show ?case sorry
+  case TT
+  then show ?case
+    using hml_sem_tt by blast
 next
-  case (HML_poss \<alpha> \<psi>)
-  then have "\<psi> \<in> HML_possible_futures_formulas"
-    using HML_possible_futures_formulas_def HML_possible_futures.simps
-    by (metis formula_list.distinct(1) formula_list.inject(2) mem_Collect_eq)
-  from HML_poss obtain p' X where "p \<mapsto>\<alpha> p'" "p' \<Turnstile> \<psi>" "traces p' = X"
-    using HML_semantics.simps(2)
-    by blast
+  case (hml_pos \<alpha> \<psi>)
+  hence "\<psi> \<in> hml_possible_futures_formulas" 
+    by (metis CollectD CollectI hml.distinct(1) hml.distinct(5) hml.inject(1) hml_possible_futures.simps hml_possible_futures_formulas_def)
+  from hml_pos obtain p' X where "p \<mapsto>\<alpha> p'" "p' \<Turnstile> \<psi>" "traces p' = X"
+    using hml_sem_pos by blast
   hence "p \<mapsto>$ [\<alpha>] p'"
     using step_sequence.simps
     by metis 
-  obtain q' where "p' \<simeq>PF q'"
-    using possible_futures_equivalent_def 
-    by blast
-
-  have "q \<mapsto>$ [\<alpha>] q'" using \<open>p \<mapsto>$ [\<alpha>] p'\<close> \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def
-    sorry
-  have "q \<mapsto>\<alpha> q'" using \<open>p  \<mapsto>\<alpha> p'\<close> \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def sorry
-  then obtain q' where "q \<mapsto>$[\<alpha>] q'" "traces q' = X"
-    using \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def sorry
-    by auto+
-  hence "q \<mapsto>\<alpha> q'"
-    using step_sequence.simps
-    by (metis list.distinct(1) list.sel(1) list.sel(3))
-  hence "p' \<simeq>PF q'"
-  hence "possible_future_pairs p' = possible_future_pairs q'"
-    using \<open>p \<simeq>PF q\<close> \<open>traces p' = X\<close> \<open>traces q' = X\<close> \<open>p  \<mapsto>\<alpha> p'\<close> 
-    unfolding possible_futures_equivalent_def 
-  then have "p' \<simeq>PF q'" sorry
-    using \<open>p \<simeq>PF q\<close> possible_futures_equivalent_def \<open>traces p' = X\<close> \<open>traces q' = X\<close> \<open>p  \<mapsto>\<alpha> p'\<close> 
-      step_sequence.simps PF_trans
-  from \<open>p  \<mapsto>\<alpha> p'\<close> HML_poss obtain q' where "p' \<simeq>PF q'" 
-    using possible_futures_equivalent_def by blast
-  with HML_poss \<open>p' \<Turnstile> \<psi>\<close> \<open>\<psi> \<in> HML_possible_futures_formulas\<close> have "q' \<Turnstile> \<psi>"
-    by blast
-  then show ?case 
-    using possible_futures_equivalent_def sorry
+  then obtain q' where "p' \<simeq>PF q'" "q \<mapsto> \<alpha> q'"
+    using possible_futures_equivalent_def pf_trace_shortening hml_pos(3) 
+    by (meson \<open>p \<mapsto>\<alpha> p'\<close>)
+  hence "q' \<Turnstile> \<psi>" using hml_pos 
+    using \<open>\<psi> \<in> hml_possible_futures_formulas\<close> \<open>p' \<Turnstile> \<psi>\<close> by blast
+  then show ?case using \<open>q \<mapsto> \<alpha> q'\<close> 
+    using hml_sem_pos by blast
+next
+  case (hml_conj I J \<Phi> p q)
+  from this(3) have "\<forall>x1a \<in> \<Phi> ` (I \<union> J). hml_trace x1a"
+    using hml_possible_futures.simps hml.distinct(3) hml.distinct(5) hml.inject(2) hml_conj.prems(1)
+    by (metis hml_possible_futures_formulas_def mem_Collect_eq)  
+  hence "\<forall>x1a \<in> \<Phi> ` (I \<union> J).  hml_possible_futures x1a"
+    using trace_formula_is_pf_formula by blast
+  have "\<forall>x1a \<in> \<Phi> ` I. p \<Turnstile> x1a" using hml_conj 
+    by simp
+  hence "\<forall>x1a \<in> \<Phi> ` I. q \<Turnstile> x1a" using hml_conj \<open>\<forall>x1a \<in> \<Phi> ` (I \<union> J).  hml_possible_futures x1a\<close> 
+    by (simp add: hml_possible_futures_formulas_def)
+  from hml_conj(4) have "\<forall>x1a \<in> \<Phi> ` J. \<not>p \<Turnstile> x1a" by simp
+  have "\<forall>x1a \<in> \<Phi> ` J. \<not>q \<Turnstile> x1a" proof((rule ccontr), simp)
+    assume "\<exists>x1a\<in>J. q \<Turnstile> \<Phi> x1a"
+    then obtain x1a where "x1a \<in> J" "q \<Turnstile> \<Phi> x1a" by blast
+    have "hml_trace (\<Phi> x1a)" 
+      using \<open>\<forall>x1a\<in>\<Phi> ` (I \<union> J). hml_trace x1a\<close> \<open>x1a \<in> J\<close> by auto
+    then obtain tr q' where "q \<mapsto>$ tr q'" using \<open>\<forall>x1a \<in> \<Phi> ` (I \<union> J). hml_trace x1a\<close>
+      using step_sequence.intros(1) by blast
+    have "\<nexists>p'. p \<mapsto>$ tr p'" using \<open>\<forall>x1a \<in> \<Phi> ` J. \<not>p \<Turnstile> x1a\<close> 
+      by (metis (no_types, lifting) CollectI \<open>hml_trace (\<Phi> x1a)\<close> \<open>q \<Turnstile> \<Phi> x1a\<close> \<open>x1a \<in> J\<close> hml_conj(1) hml_conj(3) hml_conj(4) hml_possible_futures_formulas_def hml_sem_conj lts.possible_futures_equivalent_def rangeI trace_formula_is_pf_formula)
+    then show False 
+      by (metis (no_types, lifting) CollectI \<open>hml_trace (\<Phi> x1a)\<close> \<open>q \<Turnstile> \<Phi> x1a\<close> \<open>x1a \<in> J\<close> hml_conj.IH hml_conj.prems(2) hml_conj.prems(3) hml_possible_futures_formulas_def hml_sem_conj possible_futures_equivalent_def rangeI trace_formula_is_pf_formula)
+  qed
+  then show ?case using \<open>\<forall>x1a \<in> \<Phi> ` I. q \<Turnstile> x1a\<close> by simp
 qed
-  oops
+
+fun 
 
 (*TODO*)
 fun pf_pair_to_formula where
 "pf_pair_to_formula ([], X) = HML_conj [] []" |
-"pf_pair_to_formula ((a#tail), X) = HML_poss a (pf_pair_to_formula (tail, X))"
+"pf_pair_to_formula ((a#tail), X) = hml_pos a (pf_pair_to_formula (tail, X))"
 
 theorem pf_auxillary:
-  assumes "image_finite" "\<phi> \<in> HML_possible_futures_formulas" "p \<Turnstile> \<phi>"
+  assumes "\<phi> \<in> HML_possible_futures_formulas" "p \<Turnstile> \<phi>"
   shows "\<exists>t X. (t, X) \<in> possible_future_pairs p \<and> p \<Turnstile> pf_pair_to_formula (t, X)"
   oops
 
+lemma
+  fixes p q a b xs X p'
+  assumes "hml_possible_futures_equivalent p q" "p \<mapsto>$ xs p'"
+  shows "\<exists>xsa X. (xs, traces p') = (xsa, X) \<and> (\<exists>p'. q \<mapsto>$ xsa p' \<and> traces p' = X)"
+proof(rule ccontr, simp)
+  assume " \<forall>q'. q \<mapsto>$ xs q' \<longrightarrow> traces q' \<noteq> traces p'"
+  obtain \<Phi> I where "\<Phi> ` (I::'s set) = traces p'" sorry
+
+  obtain X where "X = traces p'" by blast
+  oops
+
 theorem HM_possible_futures_theorem:
-  assumes "image_finite"
-  shows "HML_possible_futures_equivalent p q = (p \<simeq>PF q)"
+  shows "hml_possible_futures_equivalent p q = (p \<simeq>PF q)"
+  unfolding possible_futures_equivalent_def
+proof(safe)
+  show "possible_future_pairs p = possible_future_pairs q \<Longrightarrow> hml_possible_futures_equivalent p q"
+    using pf_aux 
+    unfolding possible_futures_equivalent_def hml_possible_futures_equivalent_def
+    by (metis (no_types, lifting))
+next
+  fix a b xs X p'
+  assume "hml_possible_futures_equivalent p q" "p \<mapsto>$ xs p'"
+
   oops
 
 end

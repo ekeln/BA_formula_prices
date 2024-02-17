@@ -1,6 +1,6 @@
 theory HML_equivalences
 imports Main
-HML_list
+HML_list HML_definitions
 begin
 
 context lts begin
@@ -14,6 +14,9 @@ definition HML_simulation_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow>
 
 definition HML_possible_futures_equivalent where
 "HML_possible_futures_equivalent p q \<equiv> (\<forall> \<phi>. \<phi> \<in> HML_possible_futures_formulas \<longrightarrow> (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))"
+
+definition hml_possible_futures_equivalent where
+"hml_possible_futures_equivalent p q \<equiv> (\<forall> \<phi>. \<phi> \<in> hml_possible_futures_formulas \<longrightarrow> (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))"
 
 end
 end

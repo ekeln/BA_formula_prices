@@ -107,9 +107,12 @@ abbreviation failure_equivalent (infix \<open>\<simeq>F\<close> 60) where
 
 text \<open>Possible future sets\<close>
 
-abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a list list) set\<close>
+abbreviation possible_future_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a list set) set\<close>
   where
-\<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = (set X)}\<close>
+\<open>possible_future_pairs p \<equiv> {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X}\<close>
+
+definition possible_futures_preordered (infix \<open>\<lesssim>PF\<close> 60) where
+\<open>p \<lesssim>PF q \<equiv> (possible_future_pairs p \<subseteq> possible_future_pairs q)\<close>
 
 definition possible_futures_equivalent (infix \<open>\<simeq>PF\<close> 60) where
 \<open>p \<simeq>PF q \<equiv> (possible_future_pairs p = possible_future_pairs q)\<close>
@@ -117,6 +120,28 @@ definition possible_futures_equivalent (infix \<open>\<simeq>PF\<close> 60) wher
 lemma PF_trans: "transp (\<simeq>PF)"
   unfolding possible_futures_equivalent_def
   by (simp add: transp_def)
+
+lemma pf_implies_trace_preord:
+  assumes \<open>p \<lesssim>PF q\<close>
+  shows \<open>p \<lesssim>T q\<close>
+  using assms unfolding trace_preordered_def
+proof safe
+  fix p'' tr
+  assume \<open>p \<lesssim>PF q\<close> and \<open>p \<mapsto>$ tr p''\<close>
+  thus \<open>\<exists>q'. q \<mapsto>$ tr q'\<close>
+  proof (induct tr arbitrary: p q)
+    case Nil
+    show ?case using step_sequence.intros(1) by blast
+  next
+    case (Cons a tr)
+    from Cons have "\<exists>q''. q \<mapsto>$ (a#tr) q''" using Cons(2) 
+      unfolding possible_futures_preordered_def 
+      by (smt (z3) Collect_mono_iff prod.inject)
+    then show ?case 
+      by blast
+  qed
+qed
+
 
 text \<open>isomorphism\<close>
 

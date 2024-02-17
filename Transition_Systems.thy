@@ -8,6 +8,15 @@ begin
 section \<open>Labeled Transition Systems\<close>
 text \<open>\label{sec:LTS}\<close>
 
+text \<open>- modelling (reactive) systems\\
+- model for parallel computation (Kel)\\
+- formalization of deadlock (Kel)\\
+- models "parallelism" - for q there may be many states q' such that q -> q' -> model non determinism\\\<close>
+
+text \<open>Harel:\\
+- reactive systems: continuously respond to external inputs\\
+- doens't perform function but maintains relationship with its environment\<close>
+
 text \<open>Labeled Transition Systems (LTS) serve as models for representing the behavior of systems (Kel76). 
 An LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. Actions denote the events or operations that can occur within the system.
 The outgoing transitions of each process correspond to the actions the system can perform in that state, yielding a subsequent state.
