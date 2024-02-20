@@ -9,8 +9,10 @@ sessions
     Introduction
     Foundations
     Transition_Systems
-    Relational_Equivalences
+    Equivalences
+    HML
     HML_list
+    Relational_Equivalences
     HML_definitions
     HML_equivalences
     formula_prices_list

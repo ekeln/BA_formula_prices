@@ -12,65 +12,9 @@
 {\isafoldtheory}%
 %
 \isadelimtheory
+\isanewline
 %
 \endisadelimtheory
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\isatagdocument
-%
-\isamarkupsubsection{Hennessy--Milner logic%
-}
-\isamarkuptrue%
-%
-\endisatagdocument
-{\isafolddocument}%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\begin{isamarkuptext}%
-Hennessy--Milner logic, first introduced by Matthew Hennessy and Robin Milner (citation), is a modal logic for expressing properties of systems described by LTS.
-Intuitively, HML describes observations on an LTS and two processes are considered equivalent under HML when there exists no observation that distinguishes between them.
-(citation) defined the modal-logical language as consisting of (finite) conjunctions, negations and a (modal) possibility operator:
-$$\varphi ::= t\!t \mid \varphi_1 \;\wedge\; \varphi_2 \mid \neg\varphi \mid \langle\alpha\rangle\varphi$$
-(where $\alpha$ ranges over the set of actions. The paper also proves that this characterization of strong bisimilarity
-corresponds to a relational definition that is effectively the same as in (...). Their result can be expressed as follows:
-for image-finite LTSs, two processes are strongly bisimilar iff they satisfy the same set of HML formulas. We call this the modal characterisation of
-strong bisimilarity. By allowing for conjunction of arbitrary width (infinitary HML), the modal characterization of strong bisimilarity can be proved for arbitrary LTS. This is done in (...)%
-\end{isamarkuptext}\isamarkuptrue%
-%
-\begin{isamarkuptext}%
-\textbf{Hennessy--Milner logic}
-The syntax of Hennessy--Milner logic over a set $\Sigma$ of actions, (HML) - richtige font!!!!![$\Sigma$], is defined by the grammar:
-\begin{align*}
-    \varphi &::= \langle a \rangle \varphi && \text{with } a \in \Sigma \\
-            &\quad | \, \bigwedge_{i \in I} \psi_i \\
-    \psi &::= \neg \varphi \, | \, \varphi.
-\end{align*}%
-\end{isamarkuptext}\isamarkuptrue%
-%
-\begin{isamarkuptext}%
-The data type \isa{{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml} formalizes the definition of HML formulas above. It is parameterized by the type of actions \isa{{\isacharprime}{\kern0pt}a} for $\Sigma$
-and an index type \isa{{\isacharprime}{\kern0pt}i}. We use an index sets of arbitrary type \isa{I\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}i\ set} and a mapping \isa{F\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}i\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml} to formalize
-conjunctions so that each element of \isa{I} is mapped to a formula%
-\footnote{Note that the formalization via an arbitrary set (...) does not yield a valid type, since \isa{set} is not a bounded natural functor.}%.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{datatype}\isamarkupfalse%
-\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml\ {\isacharequal}{\kern0pt}\isanewline
-TT\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}pos\ {\isacartoucheopen}{\isacharprime}{\kern0pt}a{\isacartoucheclose}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}conj\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}i\ set{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}i\ set{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isacharprime}{\kern0pt}i\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml{\isachardoublequoteclose}%
-\begin{isamarkuptext}%
-Note that in canonical definitions of HML \isa{TT} is not usually part of the syntax,
-but is instead synonymous to \isa{{\isasymAnd}{\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}}.
-We include \isa{TT} in the definition to enable Isabelle to infer that the type \isa{hml} is not empty..
-This formalization allows for conjunctions of arbitrary - even of infinite - width and has been
-taken from \cite{Pohlmann2021ReducingReactive} (Appendix B).%
-\end{isamarkuptext}\isamarkuptrue%
 \isacommand{inductive}\isamarkupfalse%
 \ TT{\isacharunderscore}{\kern0pt}like\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{where}\isanewline
@@ -140,14 +84,6 @@ taken from \cite{Pohlmann2021ReducingReactive} (Appendix B).%
 \isacommand{context}\isamarkupfalse%
 \ lts\ \isakeyword{begin}\isanewline
 \isanewline
-\isacommand{primrec}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}semantics\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}hml\ {\isasymRightarrow}\ bool{\isacartoucheclose}\isanewline
-{\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymTurnstile}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{5}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{5}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{5}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
-\isakeyword{where}\isanewline
-hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}tt{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharunderscore}{\kern0pt}\ {\isasymTurnstile}\ TT{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ True{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}pos{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}pos\ {\isasymalpha}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}\ q{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymmapsto}{\isasymalpha}\ q{\isacharparenright}{\kern0pt}\ {\isasymand}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}conj{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasympsi}s{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isasymforall}i\ {\isasymin}\ I{\isachardot}{\kern0pt}\ p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ i{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymforall}j\ {\isasymin}\ J{\isachardot}{\kern0pt}\ {\isasymnot}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ j{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
-\isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ index{\isacharunderscore}{\kern0pt}sets{\isacharunderscore}{\kern0pt}conj{\isacharunderscore}{\kern0pt}disjunct{\isacharcolon}{\kern0pt}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}I\ {\isasyminter}\ J\ {\isasymnoteq}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
@@ -179,32 +115,6 @@ hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}conj{\isacharc
 \ blast\isanewline
 \isacommand{qed}\isamarkupfalse%
 %
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-\isanewline
-%
-\endisadelimproof
-\isanewline
-\isacommand{definition}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}true\ \isakeyword{where}\isanewline
-{\isachardoublequoteopen}HML{\isacharunderscore}{\kern0pt}true\ {\isasymphi}\ {\isasymequiv}\ {\isasymforall}s{\isachardot}{\kern0pt}\ s\ {\isasymTurnstile}\ {\isasymphi}{\isachardoublequoteclose}\isanewline
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ \isanewline
-\ \ \isakeyword{fixes}\ s{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharprime}{\kern0pt}s\isanewline
-\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}HML{\isacharunderscore}{\kern0pt}true\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasymPhi}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isasymforall}{\isasymphi}\ {\isasymin}\ {\isasymPhi}\ {\isacharbackquote}{\kern0pt}\ I{\isachardot}{\kern0pt}\ HML{\isacharunderscore}{\kern0pt}true\ {\isasymphi}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{using}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}true{\isacharunderscore}{\kern0pt}def\ assms\ \isacommand{by}\isamarkupfalse%
-\ auto%
 \endisatagproof
 {\isafoldproof}%
 %
@@ -257,226 +167,6 @@ hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}conj{\isacharc
 \ {\isacharparenleft}{\kern0pt}induction\ {\isasymphi}\ rule{\isacharcolon}{\kern0pt}\ nested{\isacharunderscore}{\kern0pt}empty{\isacharunderscore}{\kern0pt}pos{\isacharunderscore}{\kern0pt}conj{\isachardot}{\kern0pt}induct{\isacharparenright}{\kern0pt}\isanewline
 \ \ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}{\kern0pt}simp{\isacharcomma}{\kern0pt}\ force{\isacharparenright}{\kern0pt}%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\begin{isamarkuptext}%
-Two states are HML equivalent if they satisfy the same formula.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}equivalent\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
-\ \ {\isacartoucheopen}HML{\isacharunderscore}{\kern0pt}equivalent\ p\ q\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}\ {\isasymphi}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isasymlongleftrightarrow}\ {\isacharparenleft}{\kern0pt}q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-An HML formula \isa{{\isasymphi}l} implies another (\isa{{\isasymphi}r}) if the fact that some process \isa{p} satisfies \isa{{\isasymphi}l}
-implies that \isa{p} must also satisfy \isa{{\isasymphi}r}, no matter the process \isa{p}.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}impl\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isachardoublequoteopen}{\isasymRrightarrow}{\isachardoublequoteclose}\ {\isadigit{6}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \ \isakeyword{where}\isanewline
-\ \ {\isachardoublequoteopen}{\isasymphi}l\ {\isasymRrightarrow}\ {\isasymphi}r\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}l{\isacharparenright}{\kern0pt}\ {\isasymlongrightarrow}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}r{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}impl{\isacharunderscore}{\kern0pt}iffI{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymphi}l\ {\isasymRrightarrow}\ {\isasymphi}r\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}l{\isacharparenright}{\kern0pt}\ {\isasymlongrightarrow}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}r{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{using}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}impl{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
-\ force%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\isatagdocument
-%
-\isamarkupsubsection{Equivalence%
-}
-\isamarkuptrue%
-%
-\endisatagdocument
-{\isafolddocument}%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\begin{isamarkuptext}%
-A HML formula \isa{{\isasymphi}l} is said to be equivalent to some other HML formula \isa{{\isasymphi}r} (written \isa{{\isasymphi}l\ {\isasymLleftarrow}{\isasymRrightarrow}\ {\isasymphi}r})
-iff process \isa{p} satisfies \isa{{\isasymphi}l} iff it also satisfies \isa{{\isasymphi}r}, no matter the process \isa{p}.
-
-We have chosen to define this equivalence by appealing to HML formula implication (c.f. pre-order).%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}formula{\isacharunderscore}{\kern0pt}eq\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isachardoublequoteopen}{\isasymLleftarrow}{\isasymRrightarrow}{\isachardoublequoteclose}\ {\isadigit{6}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \ \isakeyword{where}\isanewline
-\ \ {\isachardoublequoteopen}{\isasymphi}l\ {\isasymLleftarrow}{\isasymRrightarrow}\ {\isasymphi}r\ {\isasymequiv}\ {\isasymphi}l\ {\isasymRrightarrow}\ {\isasymphi}r\ {\isasymand}\ {\isasymphi}r\ {\isasymRrightarrow}\ {\isasymphi}l{\isachardoublequoteclose}%
-\begin{isamarkuptext}%
-\isa{{\isasymLleftarrow}{\isasymRrightarrow}} is truly an equivalence relation.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{lemma}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}equiv{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}equivp\ {\isacharparenleft}{\kern0pt}{\isasymLleftarrow}{\isasymRrightarrow}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}{\kern0pt}smt\ {\isacharparenleft}{\kern0pt}verit{\isacharcomma}{\kern0pt}\ del{\isacharunderscore}{\kern0pt}insts{\isacharparenright}{\kern0pt}\ equivpI\ hml{\isacharunderscore}{\kern0pt}formula{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}def\ hml{\isacharunderscore}{\kern0pt}impl{\isacharunderscore}{\kern0pt}def\ reflpI\ sympI\ transpI{\isacharparenright}{\kern0pt}%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-\isanewline
-%
-\endisadelimproof
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ equiv{\isacharunderscore}{\kern0pt}der{\isacharcolon}{\kern0pt}\isanewline
-\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}HML{\isacharunderscore}{\kern0pt}equivalent\ p\ q{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isasymexists}p{\isacharprime}{\kern0pt}\ q{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}equivalent\ p{\isacharprime}{\kern0pt}\ q{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymand}\ q\ {\isasymmapsto}{\isasymalpha}\ q{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{using}\isamarkupfalse%
-\ assms\ hml{\isacharunderscore}{\kern0pt}semantics{\isachardot}{\kern0pt}simps\isanewline
-\ \ \isacommand{unfolding}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ \isanewline
-\ \ \isacommand{by}\isamarkupfalse%
-\ metis%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-\isanewline
-%
-\endisadelimproof
-\isanewline
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ equiv{\isacharunderscore}{\kern0pt}trans{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}transp\ HML{\isacharunderscore}{\kern0pt}equivalent{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}{\kern0pt}simp\ add{\isacharcolon}{\kern0pt}\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ transp{\isacharunderscore}{\kern0pt}def{\isacharparenright}{\kern0pt}%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\begin{isamarkuptext}%
-A formula distinguishes one state from another if its true for the
-  first and false for the second.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{abbreviation}\isamarkupfalse%
-\ distinguishes\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ \ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
-\ \ \ {\isacartoucheopen}distinguishes\ {\isasymphi}\ p\ q\ {\isasymequiv}\ p\ {\isasymTurnstile}\ {\isasymphi}\ {\isasymand}\ {\isasymnot}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isacartoucheclose}\isanewline
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}sym{\isacharcolon}{\kern0pt}\isanewline
-\ \ \isakeyword{shows}\ {\isacartoucheopen}symp\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacartoucheclose}\isanewline
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\isatagproof
-\isacommand{unfolding}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ symp{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
-\ simp%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\begin{isamarkuptext}%
-If two states are not HML equivalent then there must be a
-  distinguishing formula.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{lemma}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}distinctions{\isacharcolon}{\kern0pt}\isanewline
-\ \ \isakeyword{fixes}\ state{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isachardoublequoteopen}{\isacharprime}{\kern0pt}s{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{assumes}\ {\isacartoucheopen}{\isasymnot}\ HML{\isacharunderscore}{\kern0pt}equivalent\ p\ q{\isacartoucheclose}\isanewline
-\ \ \isakeyword{shows}\ {\isacartoucheopen}{\isasymexists}{\isasymphi}{\isachardot}{\kern0pt}\ distinguishes\ {\isasymphi}\ p\ q{\isacartoucheclose}\isanewline
-%
-\isadelimproof
-%
-\endisadelimproof
-%
-\isatagproof
-\isacommand{proof}\isamarkupfalse%
-{\isacharminus}{\kern0pt}\isanewline
-\ \ \isacommand{from}\isamarkupfalse%
-\ assms\ \isacommand{have}\isamarkupfalse%
-\ {\isachardoublequoteopen}{\isasymnot}\ {\isacharparenleft}{\kern0pt}{\isasymforall}\ {\isasymphi}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isasymlongleftrightarrow}\ {\isacharparenleft}{\kern0pt}q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
-\ \ \ \ \isacommand{unfolding}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\ \ \isacommand{then}\isamarkupfalse%
-\ \isacommand{obtain}\isamarkupfalse%
-\ {\isasymphi}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml{\isachardoublequoteclose}\ \isakeyword{where}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isasymnoteq}\ {\isacharparenleft}{\kern0pt}q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\ \ \isacommand{then}\isamarkupfalse%
-\ \isacommand{have}\isamarkupfalse%
-\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isasymnot}{\isacharparenleft}{\kern0pt}q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymor}\ {\isacharparenleft}{\kern0pt}{\isasymnot}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isacharparenleft}{\kern0pt}q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-\ \ \ \ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\ \ \isacommand{then}\isamarkupfalse%
-\ \isacommand{show}\isamarkupfalse%
-\ {\isacharquery}{\kern0pt}thesis\isanewline
-\ \ \isacommand{proof}\isamarkupfalse%
-\isanewline
-\ \ \ \ \isacommand{show}\isamarkupfalse%
-\ {\isachardoublequoteopen}distinguishes\ {\isasymphi}\ p\ q\ {\isasymLongrightarrow}\ {\isasymexists}{\isasymphi}{\isachardot}{\kern0pt}\ distinguishes\ {\isasymphi}\ p\ q{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\ \ \isacommand{next}\isamarkupfalse%
-\isanewline
-\ \ \ \ \isacommand{assume}\isamarkupfalse%
-\ assm{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymnot}\ p\ {\isasymTurnstile}\ {\isasymphi}\ {\isasymand}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isachardoublequoteclose}\isanewline
-\ \ \ \ \isacommand{define}\isamarkupfalse%
-\ n{\isasymphi}\ \isakeyword{where}\ {\isachardoublequoteopen}n{\isasymphi}\ {\isasymequiv}{\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ {\isacharparenleft}{\kern0pt}{\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}{\isacharprime}{\kern0pt}s\ set{\isacharparenright}{\kern0pt}\ \isanewline
-\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharbraceleft}{\kern0pt}state{\isacharbraceright}{\kern0pt}\ \isanewline
-\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isacharparenleft}{\kern0pt}{\isasymlambda}j{\isachardot}{\kern0pt}\ if\ j\ {\isacharequal}{\kern0pt}\ state\ then\ {\isasymphi}\ else\ undefined{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-\ \ \ \ \isacommand{have}\isamarkupfalse%
-\ {\isachardoublequoteopen}p\ {\isasymTurnstile}\ n{\isasymphi}\ {\isasymand}\ {\isasymnot}\ q\ {\isasymTurnstile}\ n{\isasymphi}{\isachardoublequoteclose}\ \isanewline
-\ \ \ \ \ \ \isacommand{unfolding}\isamarkupfalse%
-\ n{\isasymphi}{\isacharunderscore}{\kern0pt}def\isanewline
-\ \ \ \ \ \ \isacommand{using}\isamarkupfalse%
-\ hml{\isacharunderscore}{\kern0pt}semantics{\isachardot}{\kern0pt}simps\ assm\isanewline
-\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
-\ force\isanewline
-\ \ \ \ \isacommand{then}\isamarkupfalse%
-\ \isacommand{show}\isamarkupfalse%
-\ {\isacharquery}{\kern0pt}thesis\isanewline
-\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\ \ \isacommand{qed}\isamarkupfalse%
-\isanewline
-\isacommand{qed}\isamarkupfalse%
-%
 \endisatagproof
 {\isafoldproof}%
 %
@@ -620,413 +310,243 @@ revivals{\isacharunderscore}{\kern0pt}conj{\isacharcolon}{\kern0pt}\ {\isachardo
 \end{isabellebody}%
 \endinput
 %:%file=~/Documents/Isabelle_HOL/HML_list.thy%:%
-%:%24=9%:%
-%:%36=10%:%
-%:%37=11%:%
-%:%38=12%:%
-%:%39=13%:%
-%:%40=14%:%
-%:%41=15%:%
-%:%42=16%:%
-%:%43=17%:%
-%:%47=19%:%
-%:%48=20%:%
-%:%49=21%:%
-%:%50=22%:%
-%:%51=23%:%
-%:%52=24%:%
-%:%53=25%:%
-%:%57=27%:%
-%:%58=28%:%
-%:%59=29%:%
-%:%60=30%:%
-%:%62=33%:%
-%:%63=33%:%
-%:%64=34%:%
-%:%65=35%:%
-%:%66=36%:%
-%:%68=38%:%
-%:%69=39%:%
-%:%70=40%:%
-%:%71=41%:%
-%:%72=42%:%
-%:%74=44%:%
-%:%75=44%:%
-%:%76=45%:%
-%:%77=46%:%
-%:%78=47%:%
-%:%79=48%:%
-%:%80=49%:%
-%:%81=49%:%
-%:%82=50%:%
-%:%83=51%:%
-%:%84=52%:%
-%:%85=53%:%
-%:%86=54%:%
-%:%87=55%:%
-%:%88=55%:%
-%:%89=56%:%
-%:%90=57%:%
-%:%91=58%:%
-%:%92=59%:%
-%:%93=60%:%
-%:%94=61%:%
-%:%95=61%:%
-%:%96=62%:%
-%:%97=63%:%
-%:%98=64%:%
-%:%99=65%:%
-%:%100=66%:%
-%:%102=68%:%
-%:%103=69%:%
-%:%104=70%:%
-%:%105=71%:%
-%:%106=71%:%
-%:%107=72%:%
-%:%108=73%:%
-%:%109=74%:%
-%:%110=75%:%
-%:%111=76%:%
-%:%112=77%:%
-%:%113=78%:%
-%:%114=79%:%
-%:%115=79%:%
-%:%116=80%:%
-%:%117=81%:%
-%:%118=82%:%
-%:%119=83%:%
-%:%120=84%:%
-%:%121=85%:%
-%:%122=86%:%
-%:%123=86%:%
-%:%124=87%:%
-%:%125=88%:%
-%:%126=89%:%
-%:%127=90%:%
-%:%128=91%:%
-%:%129=92%:%
-%:%130=93%:%
-%:%131=94%:%
-%:%132=94%:%
-%:%133=95%:%
-%:%134=96%:%
-%:%135=97%:%
-%:%136=98%:%
-%:%137=99%:%
-%:%138=100%:%
-%:%139=101%:%
-%:%140=102%:%
-%:%141=102%:%
-%:%142=103%:%
-%:%143=104%:%
-%:%144=104%:%
-%:%145=105%:%
-%:%146=106%:%
-%:%147=107%:%
-%:%148=108%:%
-%:%149=109%:%
-%:%150=110%:%
-%:%151=111%:%
-%:%152=111%:%
-%:%153=112%:%
-%:%154=113%:%
-%:%161=114%:%
-%:%162=114%:%
-%:%163=115%:%
-%:%164=115%:%
-%:%165=116%:%
-%:%166=116%:%
-%:%167=117%:%
-%:%168=117%:%
-%:%169=117%:%
-%:%170=117%:%
-%:%171=118%:%
-%:%172=118%:%
-%:%173=118%:%
-%:%174=119%:%
-%:%175=119%:%
-%:%176=120%:%
-%:%177=120%:%
-%:%178=120%:%
-%:%179=120%:%
-%:%180=121%:%
-%:%186=121%:%
-%:%189=122%:%
-%:%190=123%:%
-%:%191=123%:%
-%:%192=124%:%
-%:%193=125%:%
-%:%194=126%:%
-%:%195=126%:%
-%:%196=127%:%
-%:%197=128%:%
-%:%198=129%:%
-%:%201=130%:%
-%:%205=130%:%
-%:%206=130%:%
-%:%207=130%:%
-%:%212=130%:%
-%:%215=131%:%
-%:%216=132%:%
+%:%15=10%:%
+%:%18=11%:%
+%:%19=11%:%
+%:%20=12%:%
+%:%21=13%:%
+%:%22=14%:%
+%:%23=15%:%
+%:%24=16%:%
+%:%25=16%:%
+%:%26=17%:%
+%:%27=18%:%
+%:%28=19%:%
+%:%29=20%:%
+%:%30=21%:%
+%:%31=22%:%
+%:%32=22%:%
+%:%33=23%:%
+%:%34=24%:%
+%:%35=25%:%
+%:%36=26%:%
+%:%37=27%:%
+%:%38=28%:%
+%:%39=28%:%
+%:%40=29%:%
+%:%41=30%:%
+%:%42=31%:%
+%:%43=32%:%
+%:%44=33%:%
+%:%46=35%:%
+%:%47=36%:%
+%:%48=37%:%
+%:%49=38%:%
+%:%50=38%:%
+%:%51=39%:%
+%:%52=40%:%
+%:%53=41%:%
+%:%54=42%:%
+%:%55=43%:%
+%:%56=44%:%
+%:%57=45%:%
+%:%58=46%:%
+%:%59=46%:%
+%:%60=47%:%
+%:%61=48%:%
+%:%62=49%:%
+%:%63=50%:%
+%:%64=51%:%
+%:%65=52%:%
+%:%66=53%:%
+%:%67=53%:%
+%:%68=54%:%
+%:%69=55%:%
+%:%70=56%:%
+%:%71=57%:%
+%:%72=58%:%
+%:%73=59%:%
+%:%74=60%:%
+%:%75=61%:%
+%:%76=61%:%
+%:%77=62%:%
+%:%78=63%:%
+%:%79=64%:%
+%:%80=65%:%
+%:%81=66%:%
+%:%82=67%:%
+%:%83=68%:%
+%:%84=69%:%
+%:%85=69%:%
+%:%86=70%:%
+%:%87=71%:%
+%:%88=71%:%
+%:%89=72%:%
+%:%90=73%:%
+%:%97=74%:%
+%:%98=74%:%
+%:%99=75%:%
+%:%100=75%:%
+%:%101=76%:%
+%:%102=76%:%
+%:%103=77%:%
+%:%104=77%:%
+%:%105=77%:%
+%:%106=77%:%
+%:%107=78%:%
+%:%108=78%:%
+%:%109=78%:%
+%:%110=79%:%
+%:%111=79%:%
+%:%112=80%:%
+%:%113=80%:%
+%:%114=80%:%
+%:%115=80%:%
+%:%116=81%:%
+%:%122=81%:%
+%:%125=82%:%
+%:%126=83%:%
+%:%127=83%:%
+%:%128=84%:%
+%:%129=85%:%
+%:%132=86%:%
+%:%136=86%:%
+%:%137=86%:%
+%:%138=87%:%
+%:%139=87%:%
+%:%140=88%:%
+%:%141=88%:%
+%:%142=89%:%
+%:%143=89%:%
+%:%148=89%:%
+%:%151=90%:%
+%:%152=91%:%
+%:%153=91%:%
+%:%154=92%:%
+%:%155=93%:%
+%:%158=94%:%
+%:%162=94%:%
+%:%163=94%:%
+%:%164=95%:%
+%:%165=95%:%
+%:%166=96%:%
+%:%167=96%:%
+%:%168=97%:%
+%:%169=97%:%
+%:%174=97%:%
+%:%177=98%:%
+%:%178=99%:%
+%:%179=99%:%
+%:%180=100%:%
+%:%181=101%:%
+%:%182=102%:%
+%:%183=103%:%
+%:%184=103%:%
+%:%185=104%:%
+%:%186=105%:%
+%:%187=106%:%
+%:%188=107%:%
+%:%189=108%:%
+%:%190=109%:%
+%:%191=109%:%
+%:%192=110%:%
+%:%194=112%:%
+%:%196=114%:%
+%:%197=114%:%
+%:%198=115%:%
+%:%199=116%:%
+%:%200=117%:%
+%:%201=118%:%
+%:%202=119%:%
+%:%203=119%:%
+%:%204=120%:%
+%:%205=121%:%
+%:%206=122%:%
+%:%207=123%:%
+%:%208=124%:%
+%:%209=125%:%
+%:%210=126%:%
+%:%211=126%:%
+%:%212=127%:%
+%:%213=128%:%
+%:%214=129%:%
+%:%215=130%:%
+%:%216=131%:%
 %:%217=132%:%
 %:%218=133%:%
-%:%219=134%:%
-%:%222=135%:%
-%:%226=135%:%
-%:%227=135%:%
-%:%228=136%:%
-%:%229=136%:%
-%:%230=137%:%
-%:%231=137%:%
-%:%232=138%:%
-%:%233=138%:%
-%:%238=138%:%
-%:%241=139%:%
-%:%242=140%:%
-%:%243=140%:%
-%:%244=141%:%
-%:%245=142%:%
-%:%248=143%:%
-%:%252=143%:%
-%:%253=143%:%
-%:%254=144%:%
-%:%255=144%:%
-%:%256=145%:%
-%:%257=145%:%
-%:%258=146%:%
-%:%259=146%:%
-%:%268=149%:%
-%:%270=150%:%
-%:%271=150%:%
-%:%272=151%:%
-%:%274=153%:%
-%:%275=154%:%
-%:%277=156%:%
-%:%278=156%:%
-%:%279=157%:%
-%:%280=158%:%
-%:%281=159%:%
-%:%282=159%:%
-%:%285=160%:%
-%:%289=160%:%
-%:%290=160%:%
-%:%291=160%:%
-%:%305=162%:%
-%:%317=165%:%
-%:%318=166%:%
-%:%319=167%:%
-%:%320=168%:%
-%:%322=171%:%
-%:%323=171%:%
-%:%324=172%:%
-%:%326=174%:%
-%:%328=175%:%
-%:%329=175%:%
-%:%332=176%:%
-%:%336=176%:%
-%:%337=176%:%
-%:%342=176%:%
-%:%345=177%:%
-%:%346=178%:%
-%:%347=178%:%
-%:%348=179%:%
-%:%349=180%:%
-%:%352=181%:%
-%:%356=181%:%
-%:%357=181%:%
-%:%358=182%:%
-%:%359=182%:%
-%:%360=183%:%
-%:%361=183%:%
-%:%366=183%:%
-%:%369=184%:%
-%:%370=185%:%
-%:%371=186%:%
-%:%372=186%:%
-%:%375=187%:%
-%:%379=187%:%
-%:%380=187%:%
-%:%389=190%:%
-%:%390=191%:%
-%:%392=193%:%
-%:%393=193%:%
-%:%394=194%:%
-%:%395=195%:%
-%:%396=196%:%
-%:%397=196%:%
-%:%398=197%:%
-%:%405=198%:%
-%:%406=198%:%
-%:%407=198%:%
-%:%416=201%:%
-%:%417=202%:%
-%:%419=205%:%
-%:%420=205%:%
-%:%421=206%:%
-%:%422=207%:%
-%:%423=208%:%
-%:%430=209%:%
-%:%431=209%:%
-%:%432=210%:%
-%:%433=210%:%
-%:%434=210%:%
-%:%435=211%:%
-%:%436=211%:%
-%:%437=211%:%
-%:%438=212%:%
-%:%439=212%:%
-%:%440=212%:%
-%:%441=212%:%
-%:%442=213%:%
-%:%443=213%:%
-%:%444=213%:%
-%:%445=214%:%
-%:%446=214%:%
-%:%447=215%:%
-%:%448=215%:%
-%:%449=215%:%
-%:%450=216%:%
-%:%451=216%:%
-%:%452=217%:%
-%:%453=217%:%
-%:%454=217%:%
-%:%455=218%:%
-%:%456=218%:%
-%:%457=219%:%
-%:%458=219%:%
-%:%459=220%:%
-%:%460=220%:%
-%:%462=222%:%
-%:%463=223%:%
-%:%464=223%:%
-%:%465=224%:%
-%:%466=224%:%
-%:%467=225%:%
-%:%468=225%:%
-%:%469=226%:%
-%:%470=226%:%
-%:%471=227%:%
-%:%472=227%:%
-%:%473=227%:%
-%:%474=228%:%
-%:%475=228%:%
-%:%476=229%:%
-%:%477=229%:%
-%:%478=230%:%
-%:%484=230%:%
-%:%487=231%:%
-%:%488=232%:%
-%:%489=232%:%
-%:%490=233%:%
-%:%491=234%:%
-%:%492=235%:%
-%:%493=236%:%
-%:%494=236%:%
-%:%495=237%:%
-%:%496=238%:%
-%:%497=239%:%
-%:%498=240%:%
-%:%499=241%:%
-%:%500=242%:%
-%:%501=242%:%
-%:%502=243%:%
-%:%504=245%:%
-%:%506=247%:%
-%:%507=247%:%
-%:%508=248%:%
-%:%509=249%:%
-%:%510=250%:%
-%:%511=251%:%
-%:%512=252%:%
-%:%513=252%:%
-%:%514=253%:%
-%:%515=254%:%
-%:%516=255%:%
-%:%517=256%:%
-%:%518=257%:%
-%:%519=258%:%
-%:%520=259%:%
-%:%521=259%:%
-%:%522=260%:%
-%:%523=261%:%
-%:%524=262%:%
-%:%525=263%:%
-%:%526=264%:%
-%:%527=265%:%
-%:%528=266%:%
-%:%529=266%:%
-%:%530=267%:%
-%:%531=268%:%
-%:%532=269%:%
-%:%533=269%:%
-%:%534=270%:%
-%:%535=271%:%
-%:%536=272%:%
-%:%537=273%:%
-%:%538=274%:%
-%:%539=275%:%
-%:%540=276%:%
-%:%541=276%:%
-%:%542=277%:%
-%:%543=278%:%
-%:%544=279%:%
-%:%545=280%:%
-%:%546=281%:%
-%:%547=282%:%
-%:%548=283%:%
-%:%549=283%:%
-%:%550=284%:%
-%:%551=285%:%
-%:%552=286%:%
-%:%553=287%:%
-%:%554=288%:%
-%:%555=289%:%
-%:%556=290%:%
-%:%557=290%:%
-%:%558=291%:%
-%:%559=292%:%
-%:%560=293%:%
-%:%561=293%:%
-%:%562=294%:%
-%:%563=295%:%
-%:%564=296%:%
-%:%565=297%:%
-%:%566=298%:%
-%:%568=300%:%
-%:%569=301%:%
-%:%570=302%:%
-%:%571=303%:%
-%:%572=303%:%
-%:%573=304%:%
-%:%574=305%:%
-%:%575=306%:%
-%:%576=307%:%
-%:%577=308%:%
-%:%578=309%:%
-%:%579=310%:%
-%:%580=311%:%
-%:%581=312%:%
-%:%582=312%:%
-%:%583=313%:%
-%:%584=314%:%
-%:%585=315%:%
-%:%586=316%:%
-%:%587=317%:%
-%:%588=318%:%
-%:%589=319%:%
-%:%590=319%:%
-%:%591=320%:%
-%:%592=321%:%
-%:%593=322%:%
-%:%594=323%:%
-%:%595=324%:%
-%:%596=325%:%
-%:%597=326%:%
-%:%598=326%:%
-%:%599=327%:%
-%:%600=328%:%
-%:%601=329%:%
-%:%602=330%:%
-%:%603=331%:%
-%:%606=332%:%
-%:%611=333%:%
+%:%219=133%:%
+%:%220=134%:%
+%:%221=135%:%
+%:%222=136%:%
+%:%223=136%:%
+%:%224=137%:%
+%:%225=138%:%
+%:%226=139%:%
+%:%227=140%:%
+%:%228=141%:%
+%:%229=142%:%
+%:%230=143%:%
+%:%231=143%:%
+%:%232=144%:%
+%:%233=145%:%
+%:%234=146%:%
+%:%235=147%:%
+%:%236=148%:%
+%:%237=149%:%
+%:%238=150%:%
+%:%239=150%:%
+%:%240=151%:%
+%:%241=152%:%
+%:%242=153%:%
+%:%243=154%:%
+%:%244=155%:%
+%:%245=156%:%
+%:%246=157%:%
+%:%247=157%:%
+%:%248=158%:%
+%:%249=159%:%
+%:%250=160%:%
+%:%251=160%:%
+%:%252=161%:%
+%:%253=162%:%
+%:%254=163%:%
+%:%255=164%:%
+%:%256=165%:%
+%:%258=167%:%
+%:%259=168%:%
+%:%260=169%:%
+%:%261=170%:%
+%:%262=170%:%
+%:%263=171%:%
+%:%264=172%:%
+%:%265=173%:%
+%:%266=174%:%
+%:%267=175%:%
+%:%268=176%:%
+%:%269=177%:%
+%:%270=178%:%
+%:%271=179%:%
+%:%272=179%:%
+%:%273=180%:%
+%:%274=181%:%
+%:%275=182%:%
+%:%276=183%:%
+%:%277=184%:%
+%:%278=185%:%
+%:%279=186%:%
+%:%280=186%:%
+%:%281=187%:%
+%:%282=188%:%
+%:%283=189%:%
+%:%284=190%:%
+%:%285=191%:%
+%:%286=192%:%
+%:%287=193%:%
+%:%288=193%:%
+%:%289=194%:%
+%:%290=195%:%
+%:%291=196%:%
+%:%292=197%:%
+%:%293=198%:%
+%:%296=199%:%
+%:%301=200%:%

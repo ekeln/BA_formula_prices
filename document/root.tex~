@@ -44,9 +44,6 @@
 
 \newcommand{\example}[1]{\bigbreak\textbf{Example}\quad {#1}\bigbreak}
 
-\newcommand{\LTSt}{LTS\textsubscript{t}}
-\newcommand{\HMLt}{HML\textsubscript{t}}
-
 \newcommand{\Proc}{\mathit{Proc}}
 \newcommand{\Act}{\mathit{Act}}
 
@@ -81,6 +78,8 @@
 \input{Transition_Systems}
 \input{Relational_Equivalences}
 \input{HML_list}
+\input{HML_definitions}
+\input{HML_equivalences}
 \input{formula_prices_list}
 
 % optional bibliography

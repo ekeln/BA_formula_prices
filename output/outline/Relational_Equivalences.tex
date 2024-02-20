@@ -175,7 +175,7 @@ Trace equivalence as mutual preorder%
 Trace preorder is transitive%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{lemma}\isamarkupfalse%
-\ T{\isacharunderscore}{\kern0pt}trans{\isacharcolon}{\kern0pt}\isanewline
+\ trace{\isacharunderscore}{\kern0pt}preorder{\isacharunderscore}{\kern0pt}transitive{\isacharcolon}{\kern0pt}\isanewline
 \ \ \isakeyword{shows}\ {\isacartoucheopen}transp\ {\isacharparenleft}{\kern0pt}{\isasymlesssim}T{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
 %
 \isadelimproof
@@ -186,6 +186,62 @@ Trace preorder is transitive%
 \isacommand{unfolding}\isamarkupfalse%
 \ transp{\isacharunderscore}{\kern0pt}def\ trace{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
 \ blast%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ empty{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}trivial{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{fixes}\ p\isanewline
+\ \ \isakeyword{shows}\ {\isacartoucheopen}{\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ {\isasymin}\ traces\ p{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros\ \isacommand{by}\isamarkupfalse%
+\ blast%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacartoucheopen}equivp\ {\isacharparenleft}{\kern0pt}{\isasymsimeq}T{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isatagproof
+\isacommand{proof}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}rule\ equivpI{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{show}\isamarkupfalse%
+\ {\isacartoucheopen}reflp\ {\isacharparenleft}{\kern0pt}{\isasymsimeq}T{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{unfolding}\isamarkupfalse%
+\ reflp{\isacharunderscore}{\kern0pt}def\ trace{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{show}\isamarkupfalse%
+\ {\isacartoucheopen}symp\ {\isacharparenleft}{\kern0pt}{\isasymsimeq}T{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{unfolding}\isamarkupfalse%
+\ symp{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{show}\isamarkupfalse%
+\ {\isacartoucheopen}transp\ {\isacharparenleft}{\kern0pt}{\isasymsimeq}T{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{unfolding}\isamarkupfalse%
+\ transp{\isacharunderscore}{\kern0pt}def\ trace{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
 \endisatagproof
 {\isafoldproof}%
 %
@@ -214,9 +270,13 @@ Failure preorder and -equivalence%
 Possible future sets%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{abbreviation}\isamarkupfalse%
-\ possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ list\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a\ list\ list{\isacharparenright}{\kern0pt}\ set{\isacartoucheclose}\isanewline
+\ possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a\ list\ {\isasymtimes}\ {\isacharprime}{\kern0pt}a\ list\ set{\isacharparenright}{\kern0pt}\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isacharparenleft}{\kern0pt}xs{\isacharcomma}{\kern0pt}\ X{\isacharparenright}{\kern0pt}{\isacharbar}{\kern0pt}xs\ X{\isachardot}{\kern0pt}\ {\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ xs\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ traces\ p{\isacharprime}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}set\ X{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
+{\isacartoucheopen}possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isacharparenleft}{\kern0pt}xs{\isacharcomma}{\kern0pt}\ X{\isacharparenright}{\kern0pt}{\isacharbar}{\kern0pt}xs\ X{\isachardot}{\kern0pt}\ {\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ xs\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ traces\ p{\isacharprime}{\kern0pt}\ {\isacharequal}{\kern0pt}\ X{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ possible{\isacharunderscore}{\kern0pt}futures{\isacharunderscore}{\kern0pt}preordered\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isacartoucheopen}{\isasymlesssim}PF{\isacartoucheclose}\ {\isadigit{6}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
+{\isacartoucheopen}p\ {\isasymlesssim}PF\ q\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ p\ {\isasymsubseteq}\ possible{\isacharunderscore}{\kern0pt}future{\isacharunderscore}{\kern0pt}pairs\ q{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
 \isacommand{definition}\isamarkupfalse%
 \ possible{\isacharunderscore}{\kern0pt}futures{\isacharunderscore}{\kern0pt}equivalent\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isacartoucheopen}{\isasymsimeq}PF{\isacartoucheclose}\ {\isadigit{6}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
@@ -234,6 +294,64 @@ Possible future sets%
 \ possible{\isacharunderscore}{\kern0pt}futures{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\isanewline
 \ \ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}{\kern0pt}simp\ add{\isacharcolon}{\kern0pt}\ transp{\isacharunderscore}{\kern0pt}def{\isacharparenright}{\kern0pt}%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ pf{\isacharunderscore}{\kern0pt}implies{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}preord{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isacartoucheopen}p\ {\isasymlesssim}PF\ q{\isacartoucheclose}\isanewline
+\ \ \isakeyword{shows}\ {\isacartoucheopen}p\ {\isasymlesssim}T\ q{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\ \isacommand{unfolding}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ safe\isanewline
+\ \ \isacommand{fix}\isamarkupfalse%
+\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}\ tr\isanewline
+\ \ \isacommand{assume}\isamarkupfalse%
+\ {\isacartoucheopen}p\ {\isasymlesssim}PF\ q{\isacartoucheclose}\ \isakeyword{and}\ {\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isacommand{thus}\isamarkupfalse%
+\ {\isacartoucheopen}{\isasymexists}q{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ q\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isacommand{proof}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}induct\ tr\ arbitrary{\isacharcolon}{\kern0pt}\ p\ q{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{case}\isamarkupfalse%
+\ Nil\isanewline
+\ \ \ \ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{using}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}Cons\ a\ tr{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{from}\isamarkupfalse%
+\ Cons\ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isasymexists}q{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ q\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharparenleft}{\kern0pt}a{\isacharhash}{\kern0pt}tr{\isacharparenright}{\kern0pt}\ q{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\ \isacommand{using}\isamarkupfalse%
+\ Cons{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\ \isanewline
+\ \ \ \ \ \ \isacommand{unfolding}\isamarkupfalse%
+\ possible{\isacharunderscore}{\kern0pt}futures{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\ \isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}smt\ {\isacharparenleft}{\kern0pt}z{\isadigit{3}}{\isacharparenright}{\kern0pt}\ Collect{\isacharunderscore}{\kern0pt}mono{\isacharunderscore}{\kern0pt}iff\ prod{\isachardot}{\kern0pt}inject{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{qed}\isamarkupfalse%
+\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
 \endisatagproof
 {\isafoldproof}%
 %
@@ -263,6 +381,79 @@ Two states are simulation preordered if they can be related by
 \isacommand{definition}\isamarkupfalse%
 \ simulated{\isacharunderscore}{\kern0pt}by\ {\isacharparenleft}{\kern0pt}\isakeyword{infix}\ {\isacartoucheopen}{\isasymlesssim}S{\isacartoucheclose}\ {\isadigit{6}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
 \ \ \isakeyword{where}\ {\isacartoucheopen}p\ {\isasymlesssim}S\ q\ {\isasymequiv}\ {\isasymexists}R{\isachardot}{\kern0pt}\ R\ p\ q\ {\isasymand}\ simulation\ R{\isacartoucheclose}%
+\begin{isamarkuptext}%
+Simulation preorder implies trace preorder%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{lemma}\isamarkupfalse%
+\ sim{\isacharunderscore}{\kern0pt}implies{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}preord{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isacartoucheopen}p\ {\isasymlesssim}S\ q{\isacartoucheclose}\isanewline
+\ \ \isakeyword{shows}\ {\isacartoucheopen}p\ {\isasymlesssim}T\ q{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\ \isacommand{unfolding}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}preordered{\isacharunderscore}{\kern0pt}def\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ safe\isanewline
+\ \ \isacommand{fix}\isamarkupfalse%
+\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}\ tr\isanewline
+\ \ \isacommand{assume}\isamarkupfalse%
+\ {\isacartoucheopen}p\ {\isasymlesssim}S\ q{\isacartoucheclose}\ \isakeyword{and}\ {\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isacommand{thus}\isamarkupfalse%
+\ {\isacartoucheopen}{\isasymexists}q{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ q\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isacommand{proof}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}induct\ tr\ arbitrary{\isacharcolon}{\kern0pt}\ p\ q{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{case}\isamarkupfalse%
+\ Nil\isanewline
+\ \ \ \ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{using}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}Cons\ a\ tr{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{obtain}\isamarkupfalse%
+\ p{\isacharprime}{\kern0pt}\ \isakeyword{where}\ {\isacartoucheopen}p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}{\isacartoucheclose}\ {\isacartoucheopen}p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Cons{\isachardot}{\kern0pt}prems{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}simps\isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \ \ \isacommand{obtain}\isamarkupfalse%
+\ q{\isacharprime}{\kern0pt}\ \isakeyword{where}\ {\isacartoucheopen}q\ {\isasymmapsto}\ a\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\ {\isacartoucheopen}p{\isacharprime}{\kern0pt}\ {\isasymlesssim}S\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Cons{\isachardot}{\kern0pt}prems{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\ {\isacartoucheopen}p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isacommand{unfolding}\isamarkupfalse%
+\ simulated{\isacharunderscore}{\kern0pt}by{\isacharunderscore}{\kern0pt}def\ simulation{\isacharunderscore}{\kern0pt}def\isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \ \ \isacommand{obtain}\isamarkupfalse%
+\ q{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}\ \isakeyword{where}\ {\isacartoucheopen}q{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ q{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Cons{\isachardot}{\kern0pt}hyps\ {\isacartoucheopen}p{\isacharprime}{\kern0pt}\ {\isasymlesssim}S\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\ {\isacartoucheopen}p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\isanewline
+\ \ \ \ \ \ \isacommand{using}\isamarkupfalse%
+\ {\isacartoucheopen}q\ {\isasymmapsto}\ a\ q{\isacharprime}{\kern0pt}{\isacartoucheclose}\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{qed}\isamarkupfalse%
+\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+%
+\endisadelimproof
+%
 \begin{isamarkuptext}%
 Two states are bisimilar if they can be related by a symmetric simulation.%
 \end{isamarkuptext}\isamarkuptrue%
@@ -445,69 +636,209 @@ Bisimilarity is a simulation.%
 %:%186=77%:%
 %:%187=77%:%
 %:%188=77%:%
+%:%193=77%:%
+%:%196=78%:%
 %:%197=79%:%
-%:%199=81%:%
+%:%198=79%:%
+%:%199=80%:%
 %:%200=81%:%
-%:%201=82%:%
-%:%202=83%:%
-%:%204=85%:%
-%:%206=87%:%
-%:%207=87%:%
-%:%208=88%:%
-%:%209=89%:%
-%:%210=90%:%
-%:%211=90%:%
-%:%212=91%:%
-%:%214=93%:%
-%:%216=95%:%
-%:%217=95%:%
-%:%218=96%:%
-%:%219=97%:%
-%:%220=98%:%
-%:%221=99%:%
-%:%222=99%:%
-%:%223=100%:%
-%:%224=101%:%
-%:%225=102%:%
-%:%226=102%:%
-%:%229=103%:%
-%:%233=103%:%
-%:%234=103%:%
-%:%235=104%:%
-%:%236=104%:%
-%:%245=106%:%
-%:%247=108%:%
-%:%248=108%:%
-%:%249=109%:%
-%:%250=110%:%
-%:%251=111%:%
-%:%252=111%:%
-%:%253=112%:%
-%:%255=114%:%
-%:%256=115%:%
-%:%258=117%:%
-%:%259=117%:%
-%:%260=118%:%
-%:%261=119%:%
-%:%262=120%:%
-%:%263=121%:%
-%:%264=121%:%
-%:%265=122%:%
-%:%267=124%:%
-%:%269=126%:%
-%:%270=126%:%
-%:%271=127%:%
-%:%273=129%:%
-%:%275=131%:%
-%:%276=131%:%
-%:%277=132%:%
-%:%280=133%:%
-%:%284=133%:%
-%:%285=133%:%
-%:%286=133%:%
-%:%291=133%:%
-%:%294=134%:%
-%:%295=135%:%
-%:%296=136%:%
-%:%297=136%:%
-%:%304=137%:%
+%:%203=82%:%
+%:%207=82%:%
+%:%208=82%:%
+%:%209=82%:%
+%:%214=82%:%
+%:%217=83%:%
+%:%218=84%:%
+%:%219=84%:%
+%:%226=85%:%
+%:%227=85%:%
+%:%228=86%:%
+%:%229=86%:%
+%:%230=87%:%
+%:%231=87%:%
+%:%232=87%:%
+%:%233=88%:%
+%:%234=88%:%
+%:%235=89%:%
+%:%236=89%:%
+%:%237=89%:%
+%:%238=90%:%
+%:%239=90%:%
+%:%240=91%:%
+%:%241=91%:%
+%:%242=91%:%
+%:%243=92%:%
+%:%253=94%:%
+%:%255=96%:%
+%:%256=96%:%
+%:%257=97%:%
+%:%258=98%:%
+%:%260=100%:%
+%:%262=102%:%
+%:%263=102%:%
+%:%264=103%:%
+%:%265=104%:%
+%:%266=105%:%
+%:%267=105%:%
+%:%268=106%:%
+%:%270=108%:%
+%:%272=110%:%
+%:%273=110%:%
+%:%274=111%:%
+%:%275=112%:%
+%:%276=113%:%
+%:%277=114%:%
+%:%278=114%:%
+%:%279=115%:%
+%:%280=116%:%
+%:%281=117%:%
+%:%282=117%:%
+%:%283=118%:%
+%:%284=119%:%
+%:%285=120%:%
+%:%286=120%:%
+%:%289=121%:%
+%:%293=121%:%
+%:%294=121%:%
+%:%295=122%:%
+%:%296=122%:%
+%:%301=122%:%
+%:%304=123%:%
+%:%305=124%:%
+%:%306=124%:%
+%:%307=125%:%
+%:%308=126%:%
+%:%311=127%:%
+%:%315=127%:%
+%:%316=127%:%
+%:%317=127%:%
+%:%318=128%:%
+%:%319=128%:%
+%:%320=129%:%
+%:%321=129%:%
+%:%322=130%:%
+%:%323=130%:%
+%:%324=131%:%
+%:%325=131%:%
+%:%326=132%:%
+%:%327=132%:%
+%:%328=133%:%
+%:%329=133%:%
+%:%330=134%:%
+%:%331=134%:%
+%:%332=134%:%
+%:%333=134%:%
+%:%334=135%:%
+%:%335=135%:%
+%:%336=136%:%
+%:%337=136%:%
+%:%338=137%:%
+%:%339=137%:%
+%:%340=137%:%
+%:%341=137%:%
+%:%342=138%:%
+%:%343=138%:%
+%:%344=139%:%
+%:%345=139%:%
+%:%346=140%:%
+%:%347=140%:%
+%:%348=140%:%
+%:%349=141%:%
+%:%350=141%:%
+%:%351=142%:%
+%:%352=142%:%
+%:%353=143%:%
+%:%363=146%:%
+%:%365=148%:%
+%:%366=148%:%
+%:%367=149%:%
+%:%368=150%:%
+%:%369=151%:%
+%:%370=151%:%
+%:%371=152%:%
+%:%373=154%:%
+%:%374=155%:%
+%:%376=157%:%
+%:%377=157%:%
+%:%378=158%:%
+%:%379=159%:%
+%:%380=160%:%
+%:%381=161%:%
+%:%382=161%:%
+%:%383=162%:%
+%:%385=164%:%
+%:%387=166%:%
+%:%388=166%:%
+%:%389=167%:%
+%:%390=168%:%
+%:%393=169%:%
+%:%397=169%:%
+%:%398=169%:%
+%:%399=169%:%
+%:%400=170%:%
+%:%401=170%:%
+%:%402=171%:%
+%:%403=171%:%
+%:%404=172%:%
+%:%405=172%:%
+%:%406=173%:%
+%:%407=173%:%
+%:%408=174%:%
+%:%409=174%:%
+%:%410=175%:%
+%:%411=175%:%
+%:%412=176%:%
+%:%413=176%:%
+%:%414=176%:%
+%:%415=176%:%
+%:%416=177%:%
+%:%417=177%:%
+%:%418=178%:%
+%:%419=178%:%
+%:%420=179%:%
+%:%421=179%:%
+%:%422=180%:%
+%:%423=180%:%
+%:%424=181%:%
+%:%425=181%:%
+%:%426=182%:%
+%:%427=182%:%
+%:%428=183%:%
+%:%429=183%:%
+%:%430=183%:%
+%:%431=184%:%
+%:%432=184%:%
+%:%433=185%:%
+%:%434=185%:%
+%:%435=186%:%
+%:%436=186%:%
+%:%437=187%:%
+%:%438=187%:%
+%:%439=188%:%
+%:%440=188%:%
+%:%441=188%:%
+%:%442=189%:%
+%:%443=189%:%
+%:%444=190%:%
+%:%445=190%:%
+%:%446=191%:%
+%:%447=191%:%
+%:%448=192%:%
+%:%458=194%:%
+%:%460=196%:%
+%:%461=196%:%
+%:%462=197%:%
+%:%464=199%:%
+%:%466=201%:%
+%:%467=201%:%
+%:%468=202%:%
+%:%471=203%:%
+%:%475=203%:%
+%:%476=203%:%
+%:%477=203%:%
+%:%482=203%:%
+%:%485=204%:%
+%:%486=205%:%
+%:%487=206%:%
+%:%488=206%:%
+%:%495=207%:%

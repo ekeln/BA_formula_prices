@@ -133,15 +133,14 @@ next
     then obtain x where "x \<noteq> undefined" "x = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
       by blast
     hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-       sledgehammer sorry
+       sorry
     then obtain \<psi> where "\<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-      using someI_ex sledgehammer sorry
+      using someI_ex sorry
     hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-      u
-      sledgehammer sorry
+      sorry
       sorry
   hence "max_elem = undefined" 
-    unfolding max_elem_def sledgehammer sorry
+    unfolding max_elem_def sorry
   then show ?thesis sorry
 qed
   case True

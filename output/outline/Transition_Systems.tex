@@ -21,7 +21,7 @@
 %
 \isatagdocument
 %
-\isamarkupsection{Labelled Transition Systems%
+\isamarkupsection{Labeled Transition Systems%
 }
 \isamarkuptrue%
 %
@@ -36,13 +36,27 @@
 \label{sec:LTS}%
 \end{isamarkuptext}\isamarkuptrue%
 %
+\begin{isamarkuptext}%
+As mentioned in (Introduction), labeled transition systems are formal models used to describe the behavior of reactive systems.
+A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. Actions denote the events or operations that can occur within the system.
+The outgoing transitions of each process correspond to the actions the system can perform in that state, yielding a subsequent state.
+A process may have multiple outgoing transitions labeled with the same or different actions. This signifies that the system can choose any of these transitions nondeterministically
+\footnote{Note that "nondeterministic" has been used  differently in some of the literature (citation needed). In the context of reactive systems, 
+all transitions are directly triggered by external actions or events and represent synchronization with the environment.
+The next state of the system is then uniquely determined by its current state and the external action. In that sense the behavior of the system is deterministic.}.
+The semantic equivalences treated in (Glabbeeck) are defined entirely in terms of action relations.
+We treat processes as being \textit{sequential}, meaning it can perform at most one action at a time, and instantanious.
+Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. However, in our definition of LTS, 
+internal behavior is not considered.%
+\end{isamarkuptext}\isamarkuptrue%
+%
 \isadelimdocument
 %
 \endisadelimdocument
 %
 \isatagdocument
 %
-\isamarkupsubsubsection{Definition 1 (Labeled transition Systems)%
+\isamarkupsubsubsection{Definition 1.1 (Labeled transition Systems)%
 }
 \isamarkuptrue%
 %
@@ -54,87 +68,91 @@
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-A Labelled Transition System (LTS) is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
-$\Act$ is the set of actions and $\rightarrow$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.\\
-
-In concurrency theory, it is customary that the semantics of Reactive Systems are given in terms of labelled transition systems.
-The processes represent the states a reactive system can be in. A transition of one state into another, 
-caused by performing an action, can be understood as moving along the corresponding edge in the transition relation. \\
-
-- Example?\\
-
-- examples (to reuse later?)???%
-\end{isamarkuptext}\isamarkuptrue%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\isatagdocument
-%
-\isamarkupsubsubsection{Some more Definitions%
-}
-\isamarkuptrue%
-%
-\endisatagdocument
-{\isafolddocument}%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\begin{isamarkuptext}%
-The $\alpha$-derivatives of a process are the processes that can be reached with one $\alpha$-transition:%
+A \textit{Labeled Transition System} (LTS) is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
+$\Act$ is the set of actions and $\rightarrow$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
+We write $p \rightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-- image finite? nötig?\\
-- image countable?
-- initial actions
-- deadlock
-- relevant actions?
-- step sequence!
--%
-\end{isamarkuptext}\isamarkuptrue%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\isatagdocument
-%
-\isamarkupsubsection{Isabelle%
-}
-\isamarkuptrue%
-%
-\endisatagdocument
-{\isafolddocument}%
-%
-\isadelimdocument
-%
-\endisadelimdocument
-%
-\begin{isamarkuptext}%
-Zustände: \isa{{\isacharprime}{\kern0pt}s} und Aktionen \isa{{\isacharprime}{\kern0pt}a}, Transitionsrelation ist locale trans. Ein LTS wird dann durch
-seine Transitionsrelation definiert.%
+Actions and processes are formalized using type variable \isa{{\isacharprime}{\kern0pt}a} and \isa{{\isacharprime}{\kern0pt}s}, respectively. As only actions and states involved in the transition relation are relevant, 
+the set of transitions uniquely defines a specific LTS. We express this relationship using the predicate \isa{tran}. We associate it with a more readable notation (\isa{p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}} for $p \xrightarrow{\alpha} p'$).%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{locale}\isamarkupfalse%
 \ lts\ {\isacharequal}{\kern0pt}\ \isanewline
-\ \ \isakeyword{fixes}\ tran\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\isanewline
+\ \ \isakeyword{fixes}\ tran\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isanewline
 \ \ \ \ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isachardoublequoteclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
-\isakeyword{begin}\isanewline
-\isanewline
+\isakeyword{begin}%
+\begin{isamarkuptext}%
+Example... (to reuse later?)%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+We introduce some concepts to better talk about LTS. Note that these Isabelle definitions are only defined in the \isa{context} of LTS.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsubsubsection{Definition 1.2%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+The \textit{$\alpha$-derivatives} of a state refer to the set of states that can be reached with an $\alpha$-transition:
+$$mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$$%
+\end{isamarkuptext}\isamarkuptrue%
 \isacommand{abbreviation}\isamarkupfalse%
 \ derivatives\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
 {\isacartoucheopen}derivatives\ p\ {\isasymalpha}\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
-Transition System is image-finite%
+The set of \textit{initial actions} of a process $p$ is defined by: 
+$$I(p)={\alpha \in Act \mid \exists p'. p \xrightarrow{\alpha} p'}$$%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{abbreviation}\isamarkupfalse%
+\ initial{\isacharunderscore}{\kern0pt}actions{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
+\ \ \isakeyword{where}\isanewline
+{\isacartoucheopen}initial{\isacharunderscore}{\kern0pt}actions\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymalpha}{\isacharbar}{\kern0pt}{\isasymalpha}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+The step sequence relation $\xrightarrow{\sigma}*$ for $\sigma \in \Act$ is the reflexive transitive closure of $p \xrightarrow{\alpha} p'$.
+It is defined recursively by:
+\begin{align*}
+  p &\xrightarrow{\varepsilon}^* p \\
+  p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p' \xrightarrow{\sigma}^* p''
+\end{align*}%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{inductive}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ list\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ {\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}{\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
+{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ p{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
+{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharparenleft}{\kern0pt}a{\isacharhash}{\kern0pt}rt{\isacharparenright}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isakeyword{if}\ {\isacartoucheopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ rt\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+$p$ is image-finite if for each $\alpha \in \Act$ the set $mathit{Der} (p, \alpha)$ is finite.
+An LTS is image-finite if each $p \in \Proc$ is image-finite:
+"$$\forall p \in\Proc, \alpha \in \Act. mathit{Der} (p, \alpha)$$ is finite.%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{definition}\isamarkupfalse%
 \ image{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
-{\isacartoucheopen}image{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p\ {\isasymalpha}{\isachardot}{\kern0pt}\ finite\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
-\isanewline
+{\isacartoucheopen}image{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p\ {\isasymalpha}{\isachardot}{\kern0pt}\ finite\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+We say that a process is in a \textit{deadlock} if no observation is possible. That is:
+$$\mathit{deadlock} p = (\forall\alpha .\mathit{deadlock} p \alpha = \varnothing)$$%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{abbreviation}\isamarkupfalse%
+\ deadlock\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
+{\isacartoucheopen}deadlock\ p\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}{\isasymalpha}{\isachardot}{\kern0pt}\ derivatives\ p\ {\isasymalpha}\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+nötig?%
+\end{isamarkuptext}\isamarkuptrue%
 \isacommand{definition}\isamarkupfalse%
 \ image{\isacharunderscore}{\kern0pt}countable\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}bool{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\ {\isacartoucheopen}image{\isacharunderscore}{\kern0pt}countable\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}\ p\ {\isasymalpha}{\isachardot}{\kern0pt}\ countable\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
@@ -146,25 +164,10 @@ stimmt definition? definition benötigt nach umstieg auf sets?%
 {\isacartoucheopen}lts{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}finite\ {\isacharparenleft}{\kern0pt}UNIV\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}s\ set{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
-\ initial{\isacharunderscore}{\kern0pt}actions{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
-\ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}initial{\isacharunderscore}{\kern0pt}actions\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymalpha}{\isacharbar}{\kern0pt}{\isasymalpha}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
-\isanewline
-\isacommand{abbreviation}\isamarkupfalse%
-\ deadlock\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
-{\isacartoucheopen}deadlock\ p\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}a{\isachardot}{\kern0pt}\ derivatives\ p\ a\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-nötig?%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{abbreviation}\isamarkupfalse%
 \ relevant{\isacharunderscore}{\kern0pt}actions\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
 {\isacartoucheopen}relevant{\isacharunderscore}{\kern0pt}actions\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}a{\isachardot}{\kern0pt}\ {\isasymexists}p\ p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}a\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
-\isacommand{inductive}\isamarkupfalse%
-\ step{\isacharunderscore}{\kern0pt}sequence\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ list\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ {\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}{\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
-{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ p{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharparenleft}{\kern0pt}a{\isacharhash}{\kern0pt}rt{\isacharparenright}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isakeyword{if}\ {\isacartoucheopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ rt\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
 \isacommand{end}\isamarkupfalse%
 \isanewline
@@ -187,70 +190,78 @@ nötig?%
 %:%file=~/Documents/Isabelle_HOL/Transition_Systems.thy%:%
 %:%24=8%:%
 %:%36=9%:%
-%:%45=11%:%
-%:%57=13%:%
-%:%58=14%:%
-%:%59=15%:%
-%:%60=16%:%
-%:%61=17%:%
-%:%62=18%:%
-%:%63=19%:%
-%:%64=20%:%
-%:%65=21%:%
-%:%66=22%:%
-%:%75=25%:%
-%:%87=27%:%
-%:%91=31%:%
-%:%92=32%:%
-%:%93=33%:%
-%:%94=34%:%
-%:%95=35%:%
-%:%96=36%:%
-%:%97=37%:%
-%:%106=39%:%
-%:%118=41%:%
-%:%119=42%:%
-%:%121=43%:%
-%:%122=43%:%
-%:%123=44%:%
-%:%124=45%:%
-%:%125=46%:%
-%:%126=47%:%
-%:%127=48%:%
-%:%128=48%:%
-%:%129=49%:%
-%:%130=50%:%
-%:%132=52%:%
-%:%134=54%:%
-%:%135=54%:%
-%:%136=55%:%
-%:%137=56%:%
-%:%138=57%:%
-%:%139=57%:%
-%:%140=58%:%
-%:%142=60%:%
-%:%144=61%:%
-%:%145=61%:%
-%:%146=62%:%
-%:%147=63%:%
-%:%148=64%:%
-%:%149=64%:%
-%:%150=65%:%
-%:%151=66%:%
-%:%152=67%:%
-%:%153=68%:%
-%:%154=68%:%
-%:%155=69%:%
-%:%157=71%:%
-%:%159=72%:%
-%:%160=72%:%
-%:%161=73%:%
-%:%162=74%:%
-%:%163=75%:%
-%:%164=76%:%
-%:%165=76%:%
-%:%166=77%:%
-%:%167=78%:%
-%:%168=79%:%
-%:%169=80%:%
-%:%170=80%:%
+%:%40=11%:%
+%:%41=12%:%
+%:%42=13%:%
+%:%43=14%:%
+%:%44=15%:%
+%:%45=16%:%
+%:%46=17%:%
+%:%47=18%:%
+%:%48=19%:%
+%:%49=20%:%
+%:%50=21%:%
+%:%59=23%:%
+%:%71=25%:%
+%:%72=26%:%
+%:%73=27%:%
+%:%77=29%:%
+%:%78=30%:%
+%:%80=32%:%
+%:%81=32%:%
+%:%82=33%:%
+%:%83=34%:%
+%:%84=35%:%
+%:%86=37%:%
+%:%90=39%:%
+%:%99=41%:%
+%:%111=43%:%
+%:%112=44%:%
+%:%114=46%:%
+%:%115=46%:%
+%:%116=47%:%
+%:%117=48%:%
+%:%119=50%:%
+%:%120=51%:%
+%:%122=53%:%
+%:%123=53%:%
+%:%124=54%:%
+%:%125=55%:%
+%:%127=57%:%
+%:%128=58%:%
+%:%129=59%:%
+%:%130=60%:%
+%:%131=61%:%
+%:%132=62%:%
+%:%134=65%:%
+%:%135=65%:%
+%:%136=66%:%
+%:%137=67%:%
+%:%139=69%:%
+%:%140=70%:%
+%:%141=71%:%
+%:%143=73%:%
+%:%144=73%:%
+%:%145=74%:%
+%:%147=76%:%
+%:%148=77%:%
+%:%150=79%:%
+%:%151=79%:%
+%:%152=80%:%
+%:%154=82%:%
+%:%156=84%:%
+%:%157=84%:%
+%:%158=85%:%
+%:%160=87%:%
+%:%162=88%:%
+%:%163=88%:%
+%:%164=89%:%
+%:%165=90%:%
+%:%166=91%:%
+%:%167=91%:%
+%:%168=92%:%
+%:%169=93%:%
+%:%170=94%:%
+%:%171=95%:%
+%:%172=96%:%
+%:%173=96%:%
