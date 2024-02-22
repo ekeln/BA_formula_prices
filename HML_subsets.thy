@@ -85,130 +85,161 @@ proof-
   define max_val_a where "max_val_a = (Sup (expr_1 ` (xs \<union> {a})))"
   define max_elem where "max_elem = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
   define max_elem_a where "max_elem_a = (SOME \<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)"
+  define xs_new where "xs_new = xs - {max_elem}"
+  define xs_new_a where "xs_new_a = (xs \<union> {a}) - {max_elem_a}"
   have "max_val \<le> max_val_a"
     unfolding max_val_def max_val_a_def
     by force
-  consider "\<exists>\<psi> \<in> xs. expr_1 \<psi> = \<infinity> \<and> expr_1 a = \<infinity>" 
-    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> = \<infinity> \<and> expr_1 a \<noteq> \<infinity>"
-    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> \<noteq> \<infinity> \<and> expr_1 a = \<infinity>"
-    | "\<exists>\<psi> \<in> xs. expr_1 \<psi> \<noteq> \<infinity> \<and> expr_1 a \<noteq> \<infinity>"
-    by (meson assms ex_in_conv)
+  consider "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val \<and> (\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)" |
+"(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) \<and> (\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)" |
+"\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val \<and> (\<nexists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)" |
+"(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) \<and> (\<nexists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a)"
+    unfolding max_val_def max_val_a_def by blast
   then show ?thesis proof(cases)
     case 1
-    then show ?thesis sorry
+    consider "max_elem_a \<in> xs \<and> max_elem_a = max_elem" |
+        "max_elem_a \<in> xs \<and> max_elem_a \<noteq> max_elem" |
+        "max_elem_a \<notin> xs \<and> max_elem_a = max_elem" |
+        "max_elem_a \<notin> xs \<and> max_elem_a \<noteq> max_elem"
+      by blast
+    then show ?thesis proof(cases)
+      case 1
+      hence "xs_new \<subseteq> xs_new_a"
+        unfolding xs_new_def xs_new_a_def by blast
+      then show ?thesis
+        unfolding xs_new_def xs_new_a_def max_elem_def max_elem_a_def max_val_a_def max_val_def 
+        by (simp add: Sup_subset_mono image_mono)
+    next
+      case 2
+      hence "\<exists>\<phi> \<in> xs. \<exists>\<psi> \<in> xs. \<phi> \<noteq> \<psi> \<and> expr_1 \<phi> = expr_1 \<psi> \<and> expr_1 \<psi> = expr_1 max_elem"
+        using "1" unfolding max_elem_def max_elem_a_def 
+        by (smt (verit, ccfv_threshold) SUP_upper \<open>max_val \<le> max_val_a\<close> antisym max_val_def verit_sko_ex')
+      hence "\<exists>\<phi> \<in> xs. \<exists>\<psi> \<in> xs. \<phi> \<noteq> \<psi> \<and> expr_1 \<phi> = expr_1 \<psi> \<and> expr_1 \<psi> = expr_1 max_elem_a"
+        using "1" 
+        by (metis (mono_tags, lifting) "2" Sup_upper \<open>max_val \<le> max_val_a\<close> imageI leD max_elem_a_def max_elem_def max_val_def order_less_le someI_ex)
+      have "Sup (expr_1 ` xs_new) = Sup (expr_1 ` xs)"
+        unfolding xs_new_def 
+        using \<open>\<exists>\<phi> \<in> xs. \<exists>\<psi> \<in> xs. \<phi> \<noteq> \<psi> \<and> expr_1 \<phi> = expr_1 \<psi> \<and> expr_1 \<psi> = expr_1 max_elem\<close>
+        by (metis image_insert insert_Diff_single insert_absorb insert_iff xs_new_def)
+      have "Sup (expr_1 ` xs_new_a) = Sup (expr_1 ` (xs \<union> {a}))"
+        using 2 "1" \<open>\<exists>\<phi> \<in> xs. \<exists>\<psi> \<in> xs. \<phi> \<noteq> \<psi> \<and> expr_1 \<phi> = expr_1 \<psi> \<and> expr_1 \<psi> = expr_1 max_elem_a\<close>
+        unfolding xs_new_a_def max_elem_def max_elem_a_def max_val_def max_val_a_def
+        using "2" Sup_insert Sup_union_distrib Un_insert_left image_Un image_insert insert_Diff_single insert_iff mk_disjoint_insert sup.orderE sup_commute sup_ge1 xs_new_a_def
+        by (smt (verit, best) "1" Diff_empty SUP_absorb SUP_union Un_iff insert_absorb max_val_a_def max_val_def)
+      have "Sup (expr_1 ` xs) \<le> Sup (expr_1 ` (xs \<union> {a}))" 
+        using \<open>max_val \<le> max_val_a\<close> max_val_a_def max_val_def by blast
+      then show ?thesis 
+        using \<open>Sup (expr_1 ` xs_new) = Sup (expr_1 ` xs)\<close> \<open>Sup (expr_1 ` xs_new_a) = Sup (expr_1 ` (xs \<union> {a}))\<close>
+        unfolding xs_new_def max_elem_def max_elem_a_def max_val_def max_val_a_def
+        by (simp add: max_elem_a_def max_val_a_def xs_new_a_def)
+    next
+      case 3
+      have "max_elem \<in> xs"
+        unfolding max_elem_def max_val_def 
+        by (metis (mono_tags, lifting) "1" max_val_def someI)
+      hence False using 3 
+        by blast
+      then show ?thesis by blast
+    next
+      case 4
+      hence "max_elem_a = a"
+        unfolding max_elem_a_def
+        by (smt (verit, ccfv_threshold) "1" UnE singletonD someI_ex)
+      hence "\<exists>\<phi> \<in> (xs \<union> {a}). \<exists>\<psi> \<in> (xs \<union> {a}). \<phi> \<noteq> \<psi> \<and> expr_1 \<phi> \<ge> expr_1 max_elem \<and> expr_1 \<psi> \<ge> expr_1 max_elem"
+        using "1" \<open>max_val \<le> max_val_a\<close> 4
+        unfolding max_elem_def max_elem_a_def max_val_def max_val_a_def
+        by (smt (verit, best) dual_order.order_iff_strict insert_iff insert_is_Un someI sup.commute)
+      hence "Sup (expr_1 ` xs_new_a) \<ge> Sup (expr_1 ` xs)"
+        unfolding xs_new_a_def max_elem_def max_elem_a_def
+        using "4" \<open>max_elem_a = a\<close> max_elem_a_def by auto
+      have "Sup (expr_1 ` xs) \<ge> Sup (expr_1 ` (pos_r xs))"
+        by (simp add: Sup_subset_mono image_mono)
+      then show ?thesis using \<open>Sup (expr_1 ` xs_new_a) \<ge> Sup (expr_1 ` xs)\<close>
+        unfolding xs_new_a_def max_val_a_def max_val_a_def 
+        using "4" \<open>max_elem_a = a\<close> max_elem_a_def max_val_a_def by force
+    qed
   next
     case 2
-    then show ?thesis sorry
+    hence "Sup (expr_1 ` xs) = \<infinity>"
+      unfolding max_val_def max_elem_def
+      by (smt (z3) Diff_insert_absorb Max_in SUP_insert Sup_enat_def Un_insert_right assms image_iff image_is_empty insert_Diff_single insert_absorb max_def max_val_a_def sup_bot_right sup_enat_def)
+    hence "\<forall>x \<in> xs. expr_1 x < \<infinity>" using 2 
+      using \<open>max_val \<le> max_val_a\<close> max_val_def by auto
+    have "Sup (expr_1 ` (xs \<union> {a})) = \<infinity>"
+      using \<open>Sup (expr_1 ` xs) = \<infinity>\<close> 
+      by (metis \<open>max_val \<le> max_val_a\<close> enat_ord_simps(5) max_val_a_def max_val_def)
+    from 2 have "(\<exists>\<psi>. \<psi> \<in> xs \<union> {a} \<and> expr_1 \<psi> = max_val_a)"
+      unfolding max_val_a_def 
+      by blast
+    with 2 have "\<exists>x \<in> (xs \<union> {a}). expr_1 x = \<infinity>" 
+      unfolding max_val_a_def 
+      using \<open>Sup (expr_1 ` xs) = \<infinity>\<close> 
+      by (metis \<open>Sup (expr_1 ` (xs \<union> {a})) = \<infinity>\<close>)
+    hence "max_elem_a = a"
+      using 2 \<open>\<forall>x \<in> xs. expr_1 x < \<infinity>\<close>
+      unfolding max_elem_a_def max_val_def max_val_a_def 
+      using \<open>Sup (expr_1 ` xs) = \<infinity>\<close> 
+      by force
+    hence "expr_1 a = \<infinity>"
+      unfolding max_elem_a_def 
+      using \<open>\<exists>x\<in>xs \<union> {a}. expr_1 x = \<infinity>\<close> \<open>\<forall>x\<in>xs. expr_1 x < \<infinity>\<close> by auto 
+    hence "xs_new_a = xs"
+      unfolding xs_new_a_def
+      using \<open>\<forall>x \<in> xs. expr_1 x < \<infinity>\<close> \<open>max_elem_a = a\<close> 
+      by auto
+    hence "pos_r (xs \<union> {a}) = xs"
+      unfolding xs_new_a_def max_elem_a_def max_val_a_def
+      by simp
+    hence "pos_r xs \<subseteq> pos_r (xs \<union> {a})" 
+      by simp 
+    then show ?thesis 
+      using \<open>Sup (expr_1 ` xs) = \<infinity>\<close> \<open>pos_r (xs \<union> {a}) = xs\<close> enat_ord_simps(3) by presburger
   next
     case 3
-    then show ?thesis sorry
-  next
-    case 4
-    then show ?thesis sorry
-  qed
-  consider "(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> (\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" 
-    | "(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> \<not>(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
-    | "\<not>(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> (\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
-    | "\<not>(\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = max_val_a) \<and> \<not>(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
-    by blast
-then show ?thesis proof(cases)
-  case 1
-  then show ?thesis sorry
-next
-  case 2
-  then show ?thesis sorry
-next
-  case 3
-  hence False 
-    unfolding max_val_def max_val_a_def
-    by (metis SUP_insert Un_insert_right complete_linorder_sup_max insert_iff max_def sup_bot_right)
-  then show ?thesis by blast
-next
-  case 4
-  hence "(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" by blast
-  have "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) = undefined"
-  proof(rule ccontr)
-    assume "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) \<noteq> undefined"
-    hence "\<exists>x. x \<noteq> undefined \<and> x = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" by blast
-    then obtain x where "x \<noteq> undefined" "x = (SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
-      by blast
-    hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-       sorry
-    then obtain \<psi> where "\<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-      using someI_ex sorry
-    hence "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-      sorry
-      sorry
-  hence "max_elem = undefined" 
-    unfolding max_elem_def sorry
-  then show ?thesis sorry
-qed
-  case True
-  hence "(\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)"
-    using \<open>max_val \<le> max_val_a\<close>
-    unfolding max_val_def max_val_a_def 
-proof-
-  then show ?thesis sorry
-next
-  case False
-  then show ?thesis sorry
-qed
-  hence "expr_1 max_elem \<le> expr_1 max_elem_a"
-    unfolding max_elem_def max_elem_a_def
-    sorry
-  consider "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) < \<infinity>" | 
-    "Sup (expr_1 ` (xs \<union> {a})) < \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |
-    "Sup (expr_1 ` (xs \<union> {a})) \<ge> \<infinity> \<and> Sup (expr_1 ` xs) \<ge> \<infinity>" |
-    "Sup (expr_1 ` (xs \<union> {a})) \<ge> \<infinity> \<and> Sup (expr_1 ` xs) < \<infinity>" 
-    using linorder_not_le by blast
-  then show ?thesis
-  proof(cases)
-    case 1
-      from 1 have "\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val"
-        unfolding max_val_def
-      by (metis (mono_tags, opaque_lifting) Max_in Sup_enat_def assms empty_is_image image_iff less_le_not_le)
-    with 1 have "\<exists>\<psi>. \<psi> \<in> (xs \<union> {a}) \<and> expr_1 \<psi> = (Sup (expr_1 ` (xs \<union> {a})))" 
-      unfolding max_val_a_def 
-      by (metis SUP_insert Un_insert_right complete_linorder_sup_max insert_iff max_def max_val_def sup_bot_right)
-    hence "expr_1 max_elem \<le> expr_1 max_elem_a"
-      by (metis (mono_tags, lifting) SUP_upper Un_iff \<open>\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val\<close> max_elem_a_def max_elem_def max_val_a_def verit_sko_ex_indirect2)
-
-    hence "Sup (expr_1 ` (xs - {max_elem})) \<le> Sup (expr_1 ` (xs - {max_elem_a}))" 
-      by (smt (verit, ccfv_SIG) DiffI SUP_insert \<open>\<exists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val\<close> insert_Diff_single insert_absorb le_sup_iff max_elem_def max_val_def nle_le singletonD someI_ex)
-    hence "Sup (expr_1 ` (xs - {max_elem})) \<le> Sup (expr_1 ` ((xs \<union> {a}) - {max_elem_a}))"
-      by (smt (verit, del_insts) SUP_union Un_Diff le_sup_iff nle_le)
-    then show ?thesis unfolding max_elem_def max_elem_a_def max_val_def max_val_a_def 
-      by simp
-  next
-    case 2
     hence False 
-      using sup_enat_def by fastforce
+      using \<open>max_val \<le> max_val_a\<close>
+      unfolding max_elem_a_def max_elem_def max_val_def max_val_a_def
+      by (metis SUP_insert Un_insert_right insertCI max_def sup_bot_right sup_enat_def)
     then show ?thesis by simp
   next
-    case 3
-    hence "max_val = \<infinity>" "max_val_a = \<infinity>" 
-      unfolding max_val_def max_val_a_def enat_ord_simps(5) by blast+
-    then show ?thesis
-  proof(cases "\<exists>\<phi> \<in> xs. expr_1 \<phi> = \<infinity>")
-    case True
-    then show ?thesis sorry
-  next
-    case False
-    hence "(\<nexists>\<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val)" 
-      using \<open>max_val = \<infinity>\<close> by blast
-    hence "(SOME \<psi>. \<psi> \<in> xs \<and> expr_1 \<psi> = max_val) = undefined" sorry
-    then show ?thesis sorry
+    case 4
+    hence "Sup (expr_1 ` xs) = \<infinity>"
+      unfolding max_val_def
+      by (metis (mono_tags, lifting) Max_in Sup_enat_def assms image_iff image_is_empty)
+    with 4 have "\<forall>x \<in> xs. expr_1 x < \<infinity>" 
+      by (simp add: max_val_def)
+    hence "\<not>(finite xs)" using 4 \<open>Sup (expr_1 ` xs) = \<infinity>\<close> 
+      by (metis (mono_tags, lifting) Max_in Sup_enat_def assms enat_ord_simps(4) finite_imageI image_iff image_is_empty)
+    hence "\<not>(finite xs_new)" 
+      unfolding xs_new_def
+      by fastforce
+    hence "Sup (expr_1 ` (pos_r xs)) \<ge> \<infinity>"
+      unfolding xs_new_def max_val_def max_elem_def
+      using pos_r.simps
+      by (smt (verit, best) "4" Diff_empty Diff_insert0 SUP_insert SUP_le_iff \<open>Sup (expr_1 ` xs) = \<infinity>\<close> insert_Diff max_def max_val_def sup_enat_def)
+    from 4 have "Sup (expr_1 ` (xs \<union> {a})) = \<infinity>"
+      unfolding max_val_a_def
+      by (simp add: \<open>Sup (expr_1 ` xs) = \<infinity>\<close> sup_enat_def)
+    with 4 have "\<forall>x \<in> (xs \<union> {a}). expr_1 x < \<infinity>" 
+      using max_val_a_def
+      by auto
+    hence "\<not>(finite (xs \<union> {a}))" using 4 \<open>Sup (expr_1 ` (xs \<union> {a})) = \<infinity>\<close>
+      using \<open>infinite xs\<close> by blast 
+    hence "\<not>(finite xs_new_a)" 
+      unfolding xs_new_a_def
+      by fastforce
+    hence "Sup (expr_1 ` (pos_r (xs \<union> {a}))) \<ge> \<infinity>"
+      unfolding xs_new_a_def max_val_a_def max_elem_a_def
+      using pos_r.simps
+      by (smt (verit, best) "4" Diff_empty Diff_insert0 SUP_insert SUP_least \<open>Sup (expr_1 ` (xs \<union> {a})) = \<infinity>\<close> insert_Diff max_def max_val_a_def sup_enat_def)
+    then show ?thesis using \<open>Sup (expr_1 ` (pos_r xs)) \<ge> \<infinity>\<close>
+      by (metis enat_ord_simps(5))
   qed
-next
-  case 4
-  then show ?thesis sorry
 qed
-qed
-  
 
 lemma mon_expr_1_pos_r: 
   "Sup (expr_1 ` (pos_r xs)) \<le> Sup (expr_1 ` xs)"
-  sorry
+  by (simp add: Sup_subset_mono image_mono)
 
 lemma pos_r_del_max:
   assumes "\<forall>x\<in> xs. expr_1 x < expr_1 a"
@@ -1057,124 +1088,6 @@ and e6_neg: "\<forall>j \<in> J. expr_6 (\<Phi> j) = 0"
     using less_eq_t.simps expr.simps 
     by fastforce
 qed
-
-(*
-function conj_flattened :: "('a, 's) hml \<Rightarrow> bool"
-  where
-"conj_flattened TT = True" |
-"conj_flattened (hml_pos \<alpha> \<psi>) = conj_flattened \<psi>" |
-"conj_flattened (hml_conj I \<Phi> J \<Phi>) = 
-(\<forall>x \<in> (\<Phi> ` I). (x \<noteq> TT) \<and> (\<nexists>K \<chi>s L n\<chi>s. x = hml_conj K \<chi>s L n\<chi>s) \<and> conj_flattened x)"
-  using hml.exhaust by blast+
-
-text \<open>A well-founded order on formulas\<close>
-inductive_set HML_wf_rel :: \<open>('a, 's)hml rel\<close>
-  where
-\<open>(\<phi> = (\<Phi> i) \<and> i \<in> I) \<Longrightarrow> (\<phi>, hml_conj I \<Phi> J \<Phi>) \<in> HML_wf_rel\<close> |
-    \<open>(\<phi>, (hml_pos \<alpha> \<phi>)) \<in> HML_wf_rel\<close>
-
-lemma HML_wf_rel_is_wf: "wf HML_wf_rel"
-  unfolding wf_def
-proof safe
-  fix P \<phi>
-  assume "\<forall>(\<phi>::('a, 's)hml). (\<forall>(\<phi>'::('a, 's)hml). (\<phi>', \<phi>) \<in> HML_wf_rel \<longrightarrow> P \<phi>') \<longrightarrow> P \<phi>"
-  thus "P \<phi>"
-  proof(induct \<phi>)
-    case TT
-    then show ?case
-      using HML_wf_rel.cases by blast
-  next
-    case (hml_pos \<alpha> \<psi>)
-    have "(\<psi>, (hml_pos \<alpha> \<psi>)) \<in> HML_wf_rel"
-      by (simp add: HML_wf_rel.intros(2)) 
-    then show ?case
-      using hml_pos 
-      by (smt (verit, ccfv_SIG) HML_wf_rel.simps hml.distinct(5) hml.inject(1))
-  next
-    case (hml_conj I \<Phi> J \<Phi>)
-    hence "\<forall>x \<in> (\<Phi> ` I). P x"
-and "\<forall>y \<in> (\<Phi> ` J). P y"
-      by blast+
-    hence "(\<forall>i j \<phi>. ((\<phi> = (\<Phi> i) \<and> i \<in> I) \<or> (\<phi> = (\<Phi> j) \<and> j \<in> J)) \<longrightarrow> P \<phi>)"
-      by blast
-    hence "(\<forall>\<phi>'. (\<phi>', (hml_conj I \<Phi> J \<Phi>)) \<in> HML_wf_rel \<longrightarrow> P \<phi>')"
-      using HML_wf_rel.cases
-      by (metis hml.distinct(6) hml.inject(2))
-    thus ?case using hml_conj(3)
-      by blast
-  qed
-qed
-
-termination 
-  using HML_wf_rel_is_wf
-  apply standard
-  apply (simp add: HML_wf_rel.intros)
-  by (metis (no_types, lifting) HML_wf_rel.intros(1) image_iff)
-
-lemma conj_flattened_alt: "conj_flattened (hml_conj I \<Phi> J \<Phi>) =
-(\<forall>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<phi>. x = hml_pos \<alpha> \<phi>) \<and> conj_flattened x)"
-proof
-  show "(\<forall>x\<in>\<Phi> ` I. (\<exists>\<alpha> \<phi>. x = hml_pos \<alpha> \<phi>) \<and> conj_flattened x) \<Longrightarrow>
-    conj_flattened (hml_conj I \<Phi> J \<Phi>)"
-    using conj_flattened.simps Un_iff hml.simps(8) 
-    by auto
-  show "conj_flattened (hml_conj I \<Phi> J \<Phi>) \<Longrightarrow>
-    (\<forall>x\<in>\<Phi> ` I. (\<exists>\<alpha> \<phi>. x = hml_pos \<alpha> \<phi>) \<and> conj_flattened x)"
-    using conj_flattened.simps(3) hml.distinct(2) hml.simps(4, 8)
-    by (metis (no_types, opaque_lifting) hml.exhaust)
-qed
-*)
-
-(*Idee: statt alles zu flatten nur positive Conj flatten?,
-(weil nur dort expr function flatten benötigt? - prüfen)*)
-(*Can really every formula be flattened? (negated conjunction wird zu disjunktion über negierte klauseln, wie übersetzen?)*)
-
-(*
-primrec flatten_\<phi> ::"('a, 'i) hml \<Rightarrow> ('a, 'i) hml" and
-    flatten_\<phi>_conj :: "('a, 'i) hml set \<Rightarrow> ('a, 'i) hml set" where
-"flatten_\<phi> TT = TT" |
-"flatten_\<phi> (hml_pos \<alpha> \<psi>) = (hml_pos \<alpha> (flatten_\<phi> \<psi>))" |
-"flatten_\<phi> (hml_conj I \<Phi> J \<Phi>) = (
-let \<Phi>_new = (\<lambda>x. if x \<in> J then flatten_\<phi> (\<Phi> x) else undefined);
-    \<Phi>_new = (\<lambda>x. if x \<in> J then flatten_\<phi>_conj {\<Phi> x} else undefined)
-in hml_conj I \<Phi> J \<Phi>_new
-)" |
-"flatten_\<phi>_conj {} = {}" |
-"flatten_\<phi>_conj (hml_pos \<alpha> \<psi>) = (hml_pos \<alpha> \<psi>)" |
-"flatten_\<phi>_conj (hml_conj I \<Phi> J \<Phi>) = "
-*)
-(*
-let x1_flat = (map flatten_\<phi>_conj x1);
-    x2_flat = (map flatten_\<phi>_conj x2);
-    new_x1 = foldl (\<lambda>(y1, y2) (input1, input2). (y1 @ input1, y2 @ input2)) ([], []) x1_flat;
-    new_x2 = foldl (\<lambda>(y1, y2) (input1, input2). (y1 @ input1, y2 @ input2)) ([], []) x2_flat
-in (HML_conj ((fst new_x1) @ (snd new_x2)) ((snd new_x1) @ (fst new_x2))))" |
-"flatten_\<phi>_conj (HML_poss \<alpha> \<psi>) = ([(HML_poss \<alpha> (flatten_\<phi> \<psi>))], ([]::'a formula_list list))" |
-"flatten_\<phi>_conj (HML_conj x1 x2) = (
-let x1_flat = (map flatten_\<phi>_conj x1);
-    x2_flat = map flatten_\<phi>_conj x2;
-    new_x1 = foldl (\<lambda>(y1, y2) (input1, input2). (y1 @ input1, y2 @ input2)) ([], []) x1_flat;
-    new_x2 = foldl (\<lambda>(y1, y2) (input1, input2). (y1 @ input1, y2 @ input2)) ([], []) x2_flat
-in (fst(new_x1) @ snd (new_x2), snd(new_x1) @ fst(new_x2)))"
-*)
-
-context lts
-begin
-
-(*
-(*TODO*)
-lemma flatten_\<phi>_flattens:
-  shows "conj_flattened (flatten_\<phi> \<phi>)"
-  using conj_flattened.simps flatten_\<phi>.simps
-  oops
-
-lemma flattened_equivalent:
-  shows "(p \<Turnstile> \<phi>) = (p \<Turnstile> (flatten_\<phi> \<phi>))"
-proof
-  oops
-*)
-
-end
 
 lemma failure_pos_tt_like:
   assumes "less_eq_t (expr (hml_conj I J \<Phi>)) (\<infinity>, 2, 0, 0, 1, 1)"
@@ -3029,4 +2942,267 @@ next
     using \<open>\<forall>x \<in> \<Phi> ` I. HML_2_nested_sim x\<close> HML_2_nested_sim.intros(3) by blast
 qed
 
+lemma revivals_right:
+  assumes "HML_revivals \<phi>"
+  shows "less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 0, 1, 1)"
+  using assms
+proof(induction \<phi> rule: HML_revivals.induct)
+  case revivals_tt
+  then show ?case by simp
+next
+  case (revivals_pos \<phi> \<alpha>)
+  then show ?case by simp
+next
+  case (revivals_conj \<Phi> I J)
+  hence neg: "\<forall>x\<in>\<Phi> ` J. less_eq_t (expr x) (1, 1, 0, 0, 0, 0)"
+    using e1_tt e2_tt e3_tt e4_tt e5_tt e6_tt expr.simps expr_TT 
+    by (metis le_numeral_extra(3) le_numeral_extra(4) less_eq_t.simps linordered_nonzero_semiring_class.zero_le_one)
+  hence f2: "\<forall>x \<in> ((expr_1 \<circ> \<Phi>) ` J). x \<le> 1"
+   "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` J). x \<le> 1"
+   "\<forall>x \<in> ((expr_3 \<circ> \<Phi>) ` J). x \<le> 0"
+   "\<forall>x \<in> ((expr_4 \<circ> \<Phi>) ` J). x \<le> 0"
+   "\<forall>x \<in> ((expr_5 \<circ> \<Phi>) ` J). x \<le> 0"
+   "\<forall>x \<in> ((expr_6 \<circ> \<Phi>) ` J). x \<le>  0"
+    using expr.simps by simp+
+
+
+  have "Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> 1"
+and "Sup ((expr_2 \<circ> \<Phi>) ` J) \<le> 1"
+and "Sup ((expr_5 \<circ> \<Phi>) ` J) \<le> 0"
+and "Sup ((expr_6 \<circ> \<Phi>) ` J) \<le> 0"
+and "Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> 0"
+and "Sup ((expr_3 \<circ> \<Phi>) ` J) \<le> 0" 
+using Sup_le_iff f2
+         apply (simp add: SUP_least)
+    using Sup_le_iff f2
+         apply (simp add: SUP_least)
+    using Sup_le_iff f2
+    by (metis)+
+  from revivals_conj(1) show ?case proof
+    assume "\<forall>y\<in>\<Phi> ` I. TT_like y"
+    hence "\<forall>y\<in>\<Phi> ` I. less_eq_t (expr y) (0, 1, 0, 0, 0, 0)"
+      using expr_TT by auto
+  hence f1: "\<forall>x \<in> ((expr_1 \<circ> \<Phi>) ` I). x \<le> 0"
+   "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` I). x \<le> 1"
+   "\<forall>x \<in> ((expr_3 \<circ> \<Phi>) ` I). x \<le> 0"
+   "\<forall>x \<in> ((expr_4 \<circ> \<Phi>) ` I). x \<le> 0"
+   "\<forall>x \<in> ((expr_5 \<circ> \<Phi>) ` I). x \<le> 0"
+   "\<forall>x \<in> ((expr_6 \<circ> \<Phi>) ` I). x \<le>  0"
+    using expr.simps by simp+
+have "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
+and "Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> 1"
+and "Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+and "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
+and "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+and "Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
+    using Sup_le_iff f1
+         apply (simp add: SUP_least)
+    using Sup_le_iff f1
+         apply (simp add: SUP_least)
+    using Sup_le_iff f1 SUP_bot_conv(2) bot_enat_def
+    by (metis )+
+  have e2: "expr_2 (hml_conj I J \<Phi>) \<le> 2"
+    using \<open>Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> 1\<close> \<open>Sup ((expr_2 \<circ> \<Phi>) ` J) \<le> 1\<close> expr_2_conj one_add_one
+    by (metis Sup_union_distrib add_left_mono le_sup_iff)
+  have e3: "expr_3 (hml_conj I J \<Phi>) \<le> 1"
+    using \<open>Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_3 \<circ> \<Phi>) ` J) \<le> 0\<close> \<open>Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0\<close> 
+      one_add_one expr_3_conj Sup_union_distrib add_left_mono le_sup_iff
+    by (smt (verit) le_zero_eq max_def sup_enat_def)
+  from \<open>Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0\<close> have "Sup (expr_1 ` (pos_r (\<Phi> ` I))) <= 0" 
+    using SUP_image dual_order.trans mon_expr_1_pos_r by metis
+  hence e4: "expr_4 (hml_conj I J \<Phi>) \<le> 0" 
+    using \<open>Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> 0\<close>
+      expr_4_conj Sup_union_distrib le_sup_iff
+    by metis
+  have e5: "expr_5 (hml_conj I J \<Phi>) \<le> 1" 
+    using \<open>Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_5 \<circ> \<Phi>) ` J) \<le> 0\<close> \<open>Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> 1\<close> expr_5_conj 
+    by (simp add: Sup_union_distrib)
+  from \<open>Sup ((expr_6 \<circ> \<Phi>) ` J) \<le> 0\<close> have "Sup ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J) \<le> 1"
+    using eSuc_def f2(6)
+    by (metis eSuc_Sup image_comp image_is_empty nle_le one_eSuc zero_le) 
+    hence e6: "expr_6 (hml_conj I J \<Phi>) \<le> 1"
+    using \<open>Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0\<close> expr_6_conj 
+    by (simp add: Sup_union_distrib)
+  then show ?thesis using e2 e3 e4 e5 e6 expr.simps less_eq_t.simps 
+    by (metis enat_ord_code(3))
+next
+  assume "\<exists>x\<in>\<Phi> ` I. (\<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>) \<and> (\<forall>y\<in>\<Phi> ` I. x \<noteq> y \<longrightarrow> TT_like y)"
+  then obtain \<phi> where "\<phi> \<in> \<Phi> ` I" "(\<exists>\<alpha> \<chi>. \<phi> = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>)" "(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> TT_like y)"
+    by blast
+  hence expr_\<phi>: "expr_1 \<phi> = 1" "expr_2 \<phi> = 1" "expr_3 \<phi> = 0" "expr_4 \<phi> = 0" "expr_5 \<phi> = 0" "expr_6 \<phi> = 0"
+    using e1_tt e2_tt e3_tt e4_tt e5_tt e6_tt expr.simps expr_TT 
+    by metis+
+  have "(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_1 y = 0)"
+"(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_2 y = 1)"
+"(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_3 y = 0)"
+"(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_4 y = 0)"
+"(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_5 y = 0)"
+"(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_6 y = 0)"
+    using \<open>(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> TT_like y)\<close> expr_TT expr.simps 
+    by fastforce+
+  hence "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 1"
+"Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> 1"
+"Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
+"Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
+    using expr_\<phi> 
+    by (metis SUP_image SUP_least linorder_linear zero_less_one_class.zero_le_one)+
+  have "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
+    using expr_\<phi> \<open>(\<forall>y\<in>\<Phi> ` I. \<phi> \<noteq> y \<longrightarrow> expr_1 y = 0)\<close> 
+    by (metis \<open>\<phi> \<in> \<Phi> ` I\<close> image_iff le_zero_eq pos_r_bounded)
+  have e2: "expr_2 (hml_conj I J \<Phi>) \<le> 2"
+    using \<open>Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> 1\<close> \<open>Sup ((expr_2 \<circ> \<Phi>) ` J) \<le> 1\<close> expr_2_conj one_add_one
+    by (metis Sup_union_distrib add_left_mono le_sup_iff)
+  have e3: "expr_3 (hml_conj I J \<Phi>) \<le> 1"
+    using \<open>Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 1\<close> \<open>Sup ((expr_3 \<circ> \<Phi>) ` J) \<le> 0\<close> \<open>Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0\<close> 
+      one_add_one expr_3_conj Sup_union_distrib add_left_mono le_sup_iff
+    by (smt (verit) le_zero_eq max_def sup_enat_def)
+  have e4: "expr_4 (hml_conj I J \<Phi>) \<le> 0" 
+    using \<open>Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> 0\<close> \<open>Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0\<close>
+      expr_4_conj Sup_union_distrib le_sup_iff
+    by metis
+  have e5: "expr_5 (hml_conj I J \<Phi>) \<le> 1" 
+    using \<open>Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0\<close> \<open>Sup ((expr_5 \<circ> \<Phi>) ` J) \<le> 0\<close> \<open>Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> 1\<close> expr_5_conj 
+    by (simp add: Sup_union_distrib)
+  from \<open>Sup ((expr_6 \<circ> \<Phi>) ` J) \<le> 0\<close> have "Sup ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J) \<le> 1"
+    using eSuc_def f2(6)
+    by (metis eSuc_Sup image_comp image_is_empty nle_le one_eSuc zero_le) 
+    hence e6: "expr_6 (hml_conj I J \<Phi>) \<le> 1"
+    using \<open>Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0\<close> expr_6_conj 
+    by (simp add: Sup_union_distrib)
+  then show ?thesis using e2 e3 e4 e5 e6 less_eq_t.simps expr.simps 
+    by auto
+  qed
+qed
+
+lemma pos_r_apply:
+  assumes "\<forall>x \<in> (pos_r (\<Phi> ` I)). expr_1 x \<le> n" "\<forall>x \<in> \<Phi> ` I. expr_1 x \<le> m"
+  shows "\<forall>x \<in> (\<Phi> ` I). expr_1 x \<le> n \<or> (\<exists>x \<in> \<Phi> ` I. expr_1 x \<le> m \<and> (\<forall>y \<in> \<Phi> ` I. y \<noteq> x \<longrightarrow> expr_1 y \<le> n))"
+proof-
+  from assms show ?thesis 
+    by (metis (no_types, lifting) DiffI pos_r.simps singletonD)
+qed
+
+lemma e1_le_0_e2_le_1:
+  assumes "expr_1 \<phi> \<le> 0" "expr_2 \<phi> \<le> 1"
+  shows "TT_like \<phi>"
+  using assms proof(induction \<phi>)
+  case TT
+  then show ?case 
+    using TT_like.intros(1) by blast
+next
+  case (hml_pos x1 \<phi>)
+  from this(2) have False by simp
+  then show ?case by simp
+next
+  case (hml_conj I J \<Phi>)
+  hence "\<forall>x \<in> \<Phi> ` (I \<union> J). expr_2 x \<le> 0" 
+    using expr_2_le_1 
+    by (metis empty_iff empty_is_image sup_bot_right)
+  hence "\<Phi> ` (I \<union> J) = {}" 
+    using expr_2_le_1 hml_conj.prems(2) by blast
+  then show ?case 
+    by (simp add: TT_like.intros(2))
+qed
+
+lemma e1_le_1_e2_le_1:
+  assumes "expr_1 \<phi> \<le> 1" "expr_2 \<phi> \<le> 1"
+  shows "TT_like \<phi> \<or> (\<exists>\<alpha> \<psi>. \<phi> = (hml_pos \<alpha> \<psi>) \<and> TT_like \<psi>)"
+  using assms proof(induction \<phi>)
+  case TT
+  then show ?case 
+    using TT_like.intros(1) by blast
+next
+  case (hml_pos x1 \<phi>)
+  hence "expr_1 \<phi> \<le> 0" "expr_2 \<phi> \<le> 1"
+    by simp+
+  hence "TT_like \<phi>" using e1_le_0_e2_le_1 
+    by blast
+  then show ?case 
+    by blast
+next
+  case (hml_conj I J \<Phi>)
+  hence "\<forall>x \<in> \<Phi> ` (I \<union> J). expr_2 x \<le> 0" 
+    using expr_2_le_1 
+    by (metis empty_iff empty_is_image sup_bot_right)
+  hence "\<Phi> ` (I \<union> J) = {}" 
+    using expr_2_le_1 hml_conj.prems(2) by blast
+  then show ?case 
+    by (simp add: TT_like.intros(2))
+qed
+
+lemma revivals_pos:
+  assumes "less_eq_t (expr (hml_conj I J \<Phi>)) (\<infinity>, 2, 1, 0, 1, 1)"
+  shows "(\<exists>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>) \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> TT_like y))
+\<or> (\<forall>y \<in> (\<Phi> ` I).TT_like y)"
+proof-
+  have "expr_2 (hml_conj I J \<Phi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J)"
+    using expr_2_conj by blast
+  also have "... \<le> 2" 
+    using assms by simp
+  hence "Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J) \<le> 1" 
+    by (metis enat_add_left_cancel_le infinity_ne_i1 one_add_one)
+  hence "\<forall>x \<in> \<Phi> ` I. expr_2 x \<le> 1" "\<forall>x \<in> \<Phi> ` J. expr_2 x \<le> 1"
+    using Sup_le_iff 
+    by (metis UnI1 UnI2 comp_apply image_iff image_eqI)+
+  have "expr_3 (hml_conj I J \<Phi>) = (Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` J))"
+    using expr_3_conj by blast
+  hence e3_le_1: "... \<le> 1" using assms by simp
+  hence "\<forall>x \<in> \<Phi> ` I. expr_1 x \<le> 1" "\<forall>x \<in> \<Phi> ` I. expr_3 x \<le> 1" "\<forall>x \<in> \<Phi> ` J. expr_3 x \<le> 1"
+    using Sup_le_iff comp_apply 
+      apply (metis (no_types, opaque_lifting) SUP_image SUP_upper Sup_union_distrib dual_order.trans sup_ge1)
+    using e3_le_1 Sup_le_iff comp_apply 
+    by (metis UnCI image_iff)+
+  have "expr_4 (hml_conj I J \<Phi>) = Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Phi>) ` J)"
+    using expr_4_conj by simp
+  hence "... \<le> 0" using assms by simp
+  hence "\<forall>x \<in> (pos_r (\<Phi> ` I)). expr_1 x \<le> 0" 
+    by (meson Sup_le_iff UnCI Un_upper1 image_subset_iff)
+  hence "(\<forall>x \<in> (\<Phi> ` I). expr_1 x \<le> 0) \<or> (\<exists>x \<in> \<Phi> ` I. expr_1 x \<le> 1 \<and> (\<forall>y \<in> \<Phi> ` I. y \<noteq> x \<longrightarrow> expr_1 y \<le> 0))"
+    using pos_r_apply \<open>\<forall>x\<in>\<Phi> ` I. expr_1 x \<le> 1\<close> by blast
+  then show ?thesis proof
+    assume "\<forall>x\<in>\<Phi> ` I. expr_1 x \<le> 0"
+    hence "\<forall>x\<in>\<Phi> ` I. TT_like x"
+      using \<open>\<forall>x \<in> \<Phi> ` I. expr_2 x \<le> 1\<close> e1_le_0_e2_le_1 by blast
+    then show ?thesis by blast
+  next
+    assume "\<exists>x\<in>\<Phi> ` I. expr_1 x \<le> 1 \<and> (\<forall>y\<in>\<Phi> ` I. y \<noteq> x \<longrightarrow> expr_1 y \<le> 0)"
+    then obtain x where "x\<in>\<Phi> ` I" "expr_1 x \<le> 1" "(\<forall>y\<in>\<Phi> ` I. y \<noteq> x \<longrightarrow> expr_1 y \<le> 0)"
+      by blast
+    hence "(\<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>) \<or> TT_like x"
+      using e1_le_1_e2_le_1 \<open>\<forall>x\<in>\<Phi> ` I. expr_2 x \<le> 1\<close> by blast
+    have "(\<forall>y\<in>\<Phi> ` I. y \<noteq> x \<longrightarrow> TT_like y)"
+      using \<open>(\<forall>y\<in>\<Phi> ` I. y \<noteq> x \<longrightarrow> expr_1 y \<le> 0)\<close> e1_le_0_e2_le_1 \<open>\<forall>x\<in>\<Phi> ` I. expr_2 x \<le> 1\<close> by blast
+    then show ?thesis
+      using \<open>(\<exists>\<alpha> \<chi>. x = hml_pos \<alpha> \<chi> \<and> TT_like \<chi>) \<or> TT_like x\<close> by metis
+  qed
+qed
+
+lemma revivals_left:
+  assumes "less_eq_t (expr \<phi>) (\<infinity>, 2, 1, 0, 1, 1)"
+  shows "HML_revivals \<phi>"
+using assms proof(induction \<phi>)
+  case TT
+  then show ?case 
+    using revivals_tt by blast
+next
+  case (hml_pos x1 \<phi>)
+  then show ?case 
+    using HML_revivals.simps by auto
+next
+  case (hml_conj I J \<Phi>)
+  have neg: "(\<forall>j \<in> J. (TT_like (\<Phi> j)) \<or> (\<exists>\<alpha> \<chi>. ((\<Phi> j) = hml_pos \<alpha> \<chi> \<and> (TT_like \<chi>))))"
+    using expr_2_expr_5_restrict_negations hml_conj(2) less_eq_t.simps expr.simps
+    by metis
+  have "(\<exists>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>) \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> TT_like y))
+          \<or> (\<forall>y \<in> (\<Phi> ` I).TT_like y)" 
+    using hml_conj(2) revivals_pos by auto
+  then show ?case using neg HML_revivals.simps revivals_conj
+    by (smt (verit, ccfv_threshold) image_iff)
+qed
+
+
+
 end
+

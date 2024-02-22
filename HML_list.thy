@@ -194,7 +194,8 @@ inductive HML_revivals :: "('a, 's) hml \<Rightarrow> bool"
   where
 revivals_tt: "HML_revivals TT" |
 revivals_pos: "HML_revivals (hml_pos \<alpha> \<phi>)" if "HML_revivals \<phi>" |
-revivals_conj: "HML_revivals (hml_conj I J \<Phi>)" if "(\<forall>x \<in> (\<Phi> ` I). \<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
-"(\<forall>x \<in> (\<Phi> ` J). \<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>)"
+revivals_conj: "HML_revivals (hml_conj I J \<Phi>)" if "(\<exists>x \<in> (\<Phi> ` I). (\<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>) \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> TT_like y))
+\<or> (\<forall>y \<in> (\<Phi> ` I).TT_like y)"
+"(\<forall>x \<in> (\<Phi> ` J). TT_like x \<or> (\<exists>\<alpha> \<chi>. (x = hml_pos \<alpha> \<chi>) \<and> TT_like \<chi>))"
 
 end

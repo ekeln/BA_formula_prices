@@ -7,22 +7,41 @@ begin
 
 chapter \<open>Introduction\<close>
 text \<open>In this thesis, I show the correspondence between various equivalences popular in the reactive
-systems community and coordinates of a formula price function, as introduced by Benjamin Bisping (citation).
-I formalised the concepts and proofs discussed in this thesis in the interactive proof assistant Isabelle (citation).
-\\\\
-\textit{Reactive systems} are computing systems that continuously interact with their environment, reacting to external stimuli and producing outputs accordingly(Harel).
-At a high level of abstraction, they can be seen as a collection of interacting processes. Modeling and verifying these processes is often referred to as \textit{Process Theory}. \\\\
+systems community and coordinates of a formula price function, as introduced by Bisping (citation).
+I formalized the concepts and proofs discussed in this thesis in the interactive proof assistant Isabelle (citation).
 
+\textit{Reactive systems} are computing systems that continuously interact with their environment, reacting to external stimuli and producing outputs accordingly(Harel).
+At a high level of abstraction, they can be seen as a collection of interacting processes. Modeling and verification of these processes is often referred to as \textit{Process Theory}. \\\\
+
+Modeling is the activity of abstracting real-world systems by capturing essential features while omitting unnecessary details, often by mathematical structures.
 Verification of these systems involves proving statements regarding the behavior of a system model. Often, verification tasks aim to show that a system's observed behavior aligns with its intended behavior.
 That requires a criterion of similar behavior, or \textit{semantics of equality}. Depending on the requirements of a particular user, many different such criterions have been defined.
 For a subset of processes, namely the class of sequential processes lacking internal behavior, (Glaabbeck) classified many such semantics. 
 The processes in this subset can only perform one action at a time. Furthermore, this class is restricted to \textit{concrete} processes; processes in which no internal actions occur.
 This classification involved partially ordering them by the relation 'makes strictly more identifications on processes than' (Glabbeeck). The resulting complete lattice is
 referred to as the (infinitary) linear-time--branching-time spectrum. \footnote{On Infinity?} 
-\footnote{linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions.}
+\footnote{Linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions.}
 \\\\
+\textit{Reactive systems} are computing systems that continually interact with their environment, responding to external stimuli and generating outputs accordingly (Harel). 
+At a high level of abstraction, they can be viewed as a collection of interacting processes. The modeling and verification of these processes are often referred to as \textit{Process Theory}.
+
+Modeling is the process of abstracting real-world systems by capturing essential features while omitting unnecessary details, 
+often through mathematical structures. 
+
+The verification of these systems involves proving statements regarding the behavior of a system model.
+Verification tasks typically aim to demonstrate that a system's observed behavior aligns with its intended behavior. 
+This requires a criterion for similar behavior, or for the \textit{semantics of equality}. Depending on the requirements of a particular user, various such criteria have been defined.
+For a subset of processes, specifically the class of sequential processes lacking internal behavior, Glabbeck classified many such semantics. 
+These processes can only execute one action at a time. Moreover, this class is confined to \textit{concrete} processes, 
+where internal actions are absent. Glabbeck's classification involved partially ordering these processes by the relation 'makes strictly more identifications on processes than' (Glabbeeck). 
+The resulting complete lattice is known as the (infinitary) linear-time--branching-time spectrum.
+
+
+
+For a subset of processes, namely the class of sequential processes lacking internal behavior, Glabbeck classified many such semantics. These processes can only perform one action at a time and are restricted to \textit{concrete} processes, where no internal actions occur. Glabbeck's classification involved partially ordering them by the relation 'makes strictly more identifications on processes than' (Glabbeeck). The resulting complete lattice is referred to as the (infinitary) linear-time--branching-time spectrum \footnote{On Infinity?} \footnote{Linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions}.
+
 more on LT BT spectrum?
-\\\\
+
 Systems with this kind of processes can be modeled using labeled transition systems (Kel). An LTS is a triple of a set of processes, or states of the system,
 a set of possible actions and a transition relation between a process, an action and another process. The outgoing transitions of each process correspond to the actions the system can perform in that state, 
 yielding a subsequent state. In accordance with our restriction to concrete processes, we do not distinguish between different kinds of actions. 
