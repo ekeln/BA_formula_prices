@@ -201,6 +201,46 @@ lemma pf_trace_shortening:
   assumes "p \<simeq>PF q" "p \<mapsto> a p'"
   shows "\<exists>q'. p' \<simeq>PF q' \<and> q \<mapsto> a q'"
 proof-
+  obtain PFp where "possible_future_pairs p = PFp" by blast
+  hence "PFp = possible_future_pairs q" using assms 
+    by (simp add: possible_futures_equivalent_def)
+  obtain PFp' where "PFp' = possible_future_pairs p'" by blast
+  hence "\<forall>(xs, X) \<in> possible_future_pairs p'. ((a#xs), X) \<in> possible_future_pairs p"
+    using assms step_sequence.intros(2) by fastforce
+  hence "\<forall>(xs, X) \<in> possible_future_pairs p'. ((a#xs), X) \<in> possible_future_pairs q"
+    by (metis (no_types, lifting) \<open>PFp = possible_future_pairs q\<close> \<open>possible_future_pairs p = PFp\<close> case_prodD case_prodI2)
+  then have "\<exists>q'. q \<mapsto>a q' \<and> (\<forall>(xs, X) \<in> possible_future_pairs q'. ((a#xs), X) \<in> possible_future_pairs q)"
+proof-
+  sorry
+  oops
+  hence "\<forall>(xs, X) \<in> possible_future_pairs p'. (\<exists>p'. {(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X})"
+  then obtain q' where "\<forall>(xs, X) \<in> possible_future_pairs q'. ((a#xs), X) \<in> possible_future_pairs q"
+    by blast
+  hence "\<exists>q'. q \<mapsto>a q' \<and> (possible_future_pairs p' = possible_future_pairs q')"
+  proof-
+    show ?thesis sorry
+  qed
+  then obtain q' where "q \<mapsto>a q'" "possible_future_pairs p' = possible_future_pairs q'"
+    by force
+  then show ?thesis
+    using possible_futures_equivalent_def by auto
+qed
+
+  with assms have "\<exists>q'. q \<mapsto>a q' \<and> PFp' = possible_future_pairs q'"
+    sorry
+
+
+  oops
+  obtain tr X p'' where "((a#tr), X) \<in> possible_future_pairs p" "p' \<mapsto>$ tr p''"
+    using assms unfolding possible_futures_equivalent_def
+    by (smt (verit, ccfv_SIG) CollectD CollectI empty_trace_trivial lts.step_sequence.intros(2))
+  hence "((a#tr), X) \<in> possible_future_pairs q" 
+    by (metis (no_types, lifting) assms(1) possible_futures_equivalent_def)
+  then obtain q'' q' where "q \<mapsto>$ (a#tr) q'' \<and> traces q'' = X" "q \<mapsto> a q'" "q' \<mapsto>$tr q''"
+    by (smt (verit, best) Pair_inject lts.step_seq mem_Collect_eq)
+  hence "(tr, X) \<in> possible_future_pairs p'" using assms \<open>((a#tr), X) \<in> possible_future_pairs p\<close> \<open>p' \<mapsto>$ tr p''\<close>
+    sledgehammer sorry
+    oops
   from assms(1) have subs: "{(xs, X)|xs X. \<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X} = {(xs, X)|xs X. \<exists>p'. q \<mapsto>$ xs p' \<and> traces p' = X}"
     unfolding possible_futures_preordered_def possible_futures_equivalent_def by blast
   hence "\<forall>xs X. (\<exists>p'. p \<mapsto>$ xs p' \<and> traces p' = X) \<longleftrightarrow> (\<exists>q'. q \<mapsto>$ xs q' \<and> traces q' = X)" 
@@ -254,6 +294,7 @@ next
   case (hml_conj I J \<Phi> p q)
   from this(3) have "\<forall>x1a \<in> \<Phi> ` (I \<union> J). hml_trace x1a"
     using hml_possible_futures.simps hml.distinct(3) hml.distinct(5) hml.inject(2) hml_conj.prems(1)
+    sorry
     by (metis hml_possible_futures_formulas_def mem_Collect_eq)  
   hence "\<forall>x1a \<in> \<Phi> ` (I \<union> J).  hml_possible_futures x1a"
     using trace_formula_is_pf_formula by blast

@@ -37,14 +37,14 @@
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-As mentioned in (Introduction), labeled transition systems are formal models used to describe the behavior of reactive systems.
-A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. Actions denote the events or operations that can occur within the system.
-The outgoing transitions of each process correspond to the actions the system can perform in that state, yielding a subsequent state.
-A process may have multiple outgoing transitions labeled with the same or different actions. This signifies that the system can choose any of these transitions nondeterministically
-\footnote{Note that "nondeterministic" has been used  differently in some of the literature (citation needed). In the context of reactive systems, 
+As described in \cref{chap::introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
+A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. 
+Actions denote the events or operations that can occur within the system. The outgoing transitions of each process 
+correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled with the same or different actions. This signifies that the system can choose any of these transitions non-deterministically
+\footnote{Note that "non-determinism" has been used differently in some of the literature (citation needed). In the context of reactive systems, 
 all transitions are directly triggered by external actions or events and represent synchronization with the environment.
 The next state of the system is then uniquely determined by its current state and the external action. In that sense the behavior of the system is deterministic.}.
-The semantic equivalences treated in (Glabbeeck) are defined entirely in terms of action relations.
+The semantic equivalences treated in \cite{GLABBEEK20013} are defined entirely in terms of action relations.
 We treat processes as being \textit{sequential}, meaning it can perform at most one action at a time, and instantanious.
 Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. However, in our definition of LTS, 
 internal behavior is not considered.%
@@ -56,7 +56,7 @@ internal behavior is not considered.%
 %
 \isatagdocument
 %
-\isamarkupsubsubsection{Definition 1.1 (Labeled transition Systems)%
+\isamarkupsubsubsection{Definition 2.1.1 (Labeled transition Systems)%
 }
 \isamarkuptrue%
 %
@@ -69,13 +69,13 @@ internal behavior is not considered.%
 %
 \begin{isamarkuptext}%
 A \textit{Labeled Transition System} (LTS) is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
-$\Act$ is the set of actions and $\rightarrow$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
-We write $p \rightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.%
+$\Act$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
+We write $p \xrightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
 Actions and processes are formalized using type variable \isa{{\isacharprime}{\kern0pt}a} and \isa{{\isacharprime}{\kern0pt}s}, respectively. As only actions and states involved in the transition relation are relevant, 
-the set of transitions uniquely defines a specific LTS. We express this relationship using the predicate \isa{tran}. We associate it with a more readable notation (\isa{p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}} for $p \xrightarrow{\alpha} p'$).%
+the set of transitions uniquely defines a specific LTS. We express this relationship using the predicate \isa{tran}. In Isabelle we associate \isa{tran} with a more readable notation, \isa{p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}} for $p \xrightarrow{\alpha} p'$.%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{locale}\isamarkupfalse%
 \ lts\ {\isacharequal}{\kern0pt}\ \isanewline
@@ -83,7 +83,53 @@ the set of transitions uniquely defines a specific LTS. We express this relation
 \ \ \ \ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isachardoublequoteclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
 \isakeyword{begin}%
 \begin{isamarkuptext}%
-Example... (to reuse later?)%
+\textbf{Example 1} (Taken from (Glabbeeck, counterex. 3)) A simple LTS. Depending on how ``close'' we look, we might consider the observable behaviors of $p_1$ and $q_2$ equivalent or not.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+\begin{center}
+\begin{tikzpicture}[auto,node distance=1.5cm]
+  \coordinate (p1) at (-3,0);
+  \node at (-3, 0.2) {$p_1$}; 
+  \node[below left of=p1] (p2) {$p_2$};
+  \node[below right of=p1] (p3) {$p_3$};
+  \node[below of=p2] (p4) {$p_4$};
+  \node[below left of=p3] (p5) {$p_5$};
+  \node[below right of=p3] (p6) {$p_6$};
+  
+  \draw[->] (p1) -- node[above] {a} (p2);
+  \draw[->] (p1) -- node[above] {a} (p3);
+  \draw[->] (p2) -- node[left] {b} (p4);
+  \draw[->] (p3) -- node[right] {b} (p5);
+  \draw[->] (p3) -- node[left] {c} (p6);
+
+\coordinate (q1) at (3,0);
+  \node at (3, 0.2) {$q_1$}; 
+  \node[below of=q1] (q2) {$q_2$};
+  \node[below left of=q2] (q3) {$q_3$};
+  \node[below right of=q2] (q4) {$q_4$};
+  
+  \draw[->] (q1) -- node[left] {a} (q2);
+  \draw[->] (q2) -- node[above] {b} (q3);
+  \draw[->] (q2) -- node[right] {c} (q4);
+\end{tikzpicture}
+\end{center}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+If we compare the states $p_1$ and $q_1$ of (ref example 1) we can see many similarities but also differences between their behavior.
+They can perform the same set of action-sequences, however the $p_1$ can take a a-transition to $p_2$ where only a b-transition is possible, 
+while $q_1$ can only has one a-transition into $q_2$ where both b and c are possible actions.
+Abstracting away details of the inner workings of a system leads us to a notion of equivalence that focuses solely on its externally observable behavior, called \textit{trace equivalence}. 
+We can imagine an observer that simply writes down the events of a process as they occur. 
+This observer views two processes as equivalent iff they allow the same sequences of actions. As discussed, $p_1$ and $q_1$ are clearly trace-equivalent.
+Opposite to that we can define a equivalence that also captures internal behavior. \textit{Strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes we omit such qualifiers.} considers two states equivalent if, 
+for every possible action of one state, there exists a corresponding action of the other and vice versa. 
+Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an a-transition from $q_1$ to $q_2$, $p_1$ can perform an a-transition to $p_2$
+and $q_2$ and $p_2$ do not have the same possible actions. Bisimilarity is the finest commonly used \textit{extensional behavioral equivalence}.
+In extensional equivalences, only observable behavior is taken into account, without considering the
+identity of the processes. This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, 
+where the (intensional) identity of processes is relevant.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -96,7 +142,7 @@ We introduce some concepts to better talk about LTS. Note that these Isabelle de
 %
 \isatagdocument
 %
-\isamarkupsubsubsection{Definition 1.2%
+\isamarkupsubsubsection{Definition 2.1.2%
 }
 \isamarkuptrue%
 %
@@ -109,7 +155,7 @@ We introduce some concepts to better talk about LTS. Note that these Isabelle de
 %
 \begin{isamarkuptext}%
 The \textit{$\alpha$-derivatives} of a state refer to the set of states that can be reached with an $\alpha$-transition:
-$$mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$$%
+$$\mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$$%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{abbreviation}\isamarkupfalse%
 \ derivatives\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ set{\isacartoucheclose}\isanewline
@@ -117,14 +163,14 @@ $$mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$$%
 {\isacartoucheopen}derivatives\ p\ {\isasymalpha}\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
 The set of \textit{initial actions} of a process $p$ is defined by: 
-$$I(p)={\alpha \in Act \mid \exists p'. p \xrightarrow{\alpha} p'}$$%
+$$I(p)=\{\alpha \in Act \mid \exists p'. p \xrightarrow{\alpha} p'\}$$%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{abbreviation}\isamarkupfalse%
 \ initial{\isacharunderscore}{\kern0pt}actions{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
 {\isacartoucheopen}initial{\isacharunderscore}{\kern0pt}actions\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymalpha}{\isacharbar}{\kern0pt}{\isasymalpha}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
-The step sequence relation $\xrightarrow{\sigma}*$ for $\sigma \in \Act$ is the reflexive transitive closure of $p \xrightarrow{\alpha} p'$.
+The step sequence relation $\xrightarrow{\sigma}^*$ for $\sigma \in \Act^*$ is the reflexive transitive closure of $p \xrightarrow{\alpha} p'$.
 It is defined recursively by:
 \begin{align*}
   p &\xrightarrow{\varepsilon}^* p \\
@@ -144,13 +190,6 @@ An LTS is image-finite if each $p \in \Proc$ is image-finite:
 \ image{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
 {\isacartoucheopen}image{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p\ {\isasymalpha}{\isachardot}{\kern0pt}\ finite\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
-We say that a process is in a \textit{deadlock} if no observation is possible. That is:
-$$\mathit{deadlock} p = (\forall\alpha .\mathit{deadlock} p \alpha = \varnothing)$$%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{abbreviation}\isamarkupfalse%
-\ deadlock\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
-{\isacartoucheopen}deadlock\ p\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}{\isasymalpha}{\isachardot}{\kern0pt}\ derivatives\ p\ {\isasymalpha}\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
 nötig?%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{definition}\isamarkupfalse%
@@ -161,16 +200,78 @@ stimmt definition? definition benötigt nach umstieg auf sets?%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{definition}\isamarkupfalse%
 \ lts{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
-{\isacartoucheopen}lts{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}finite\ {\isacharparenleft}{\kern0pt}UNIV\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}s\ set{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+{\isacartoucheopen}lts{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}finite\ {\isacharparenleft}{\kern0pt}UNIV\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}s\ set{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+We say that a process is in a \textit{deadlock} if no observation is possible. That is:
+$$\mathit{deadlock} (p) = (\forall\alpha .\mathit{Der} (p, \alpha) = \varnothing)$$%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{abbreviation}\isamarkupfalse%
+\ deadlock\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
+{\isacartoucheopen}deadlock\ p\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}{\isasymalpha}{\isachardot}{\kern0pt}\ derivatives\ p\ {\isasymalpha}\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ relevant{\isacharunderscore}{\kern0pt}actions\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}relevant{\isacharunderscore}{\kern0pt}actions\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}a{\isachardot}{\kern0pt}\ {\isasymexists}p\ p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}a\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
-\isanewline
-\isanewline
+{\isacartoucheopen}relevant{\isacharunderscore}{\kern0pt}actions\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}a{\isachardot}{\kern0pt}\ {\isasymexists}p\ p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}a\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
+\begin{isamarkuptext}%
+\textbf{Example 2} (van Glaabeeck counterex. 1)%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+\begin{center}
+\begin{tikzpicture}[auto,node distance=1.5cm]
+  \coordinate (p1) at (-3,0);
+  \node at (-3, 0.2) {$p$}; 
+  \node[draw, circle, fill=black, inner sep=1pt, below left of=p1] (p2) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=p1] (p3) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below right of=p1] (p4) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=p3] (p5) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=p4] (p6) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=p6] (p7) {};
+
+  
+  \draw[->] (p1) -- node[above] {a} (p2);
+  \draw[->] (p1) -- node[left] {a} (p3);
+  \draw[->] (p1) -- node[right] {a} (p4);
+  \draw[->] (p3) -- node[left] {a} (p5);
+  \draw[->] (p4) -- node[left] {a} (p6);
+  \draw[->] (p6) -- node[left] {a} (p7);
+  \node[] (dot1) at (-1.1,-1) {$\dots$};
+
+\coordinate (q1) at (3,0);
+  \node at (3, 0.2) {$q$}; 
+  \node[draw, circle, fill=black, inner sep=1pt, below left of=q1] (q2) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q1] (q3) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below right of=q1] (q4) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q3] (q5) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q4] (q6) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q6] (q7) {};
+  \node[draw, circle, fill=black, inner sep=1pt, right of=q4] (q8) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q8] (q9) {};
+  \node[draw, circle, fill=black, inner sep=1pt, below of=q9] (q10) {};
+  
+  \draw[->] (q1) -- node[left] {a} (q2);
+  \draw[->] (q1) -- node[left] {a} (q3);
+  \draw[->] (q1) -- node[right] {a} (q4);
+  \draw[->] (q1) -- node[right] {a} (q8);
+  \draw[->] (q3) -- node[left] {a} (q5);
+  \draw[->] (q4) -- node[right] {a} (q6);
+  \draw[->] (q6) -- node[right] {a} (q7);
+  \draw[->] (q8) -- node[right] {a} (q9);
+  \draw[->, dotted] (q9) -- node[right] {} (q10);
+  \draw[->, dotted] (q10) -- +(0,-1) node[right] {};
+  \node[] (dot2) at (4.7,-1) {$\ldots$};
+\end{tikzpicture}
+\end{center}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they have unlimited ways to proceed. 
+Given the possibility of infinity in sequential and branching behavior, we must consider how we identify processes that only differ in their infinite behavior. 
+Take the states $p$ and $q$ of (ref example 2). They have the same (finite) step sequences, however only $q$ has an infinite trace. Do we consider them trace equivalent?
+We will investigate this further in (Trace Semantics, Simulation?).%
+\end{isamarkuptext}\isamarkuptrue%
 \isacommand{end}\isamarkupfalse%
-\isanewline
 %
 \isadelimtheory
 %
@@ -213,55 +314,142 @@ stimmt definition? definition benötigt nach umstieg auf sets?%
 %:%83=34%:%
 %:%84=35%:%
 %:%86=37%:%
-%:%90=39%:%
-%:%99=41%:%
-%:%111=43%:%
-%:%112=44%:%
-%:%114=46%:%
-%:%115=46%:%
-%:%116=47%:%
-%:%117=48%:%
-%:%119=50%:%
-%:%120=51%:%
-%:%122=53%:%
-%:%123=53%:%
-%:%124=54%:%
-%:%125=55%:%
-%:%127=57%:%
-%:%128=58%:%
-%:%129=59%:%
-%:%130=60%:%
-%:%131=61%:%
-%:%132=62%:%
-%:%134=65%:%
-%:%135=65%:%
-%:%136=66%:%
-%:%137=67%:%
-%:%139=69%:%
-%:%140=70%:%
-%:%141=71%:%
-%:%143=73%:%
-%:%144=73%:%
-%:%145=74%:%
-%:%147=76%:%
-%:%148=77%:%
-%:%150=79%:%
-%:%151=79%:%
-%:%152=80%:%
-%:%154=82%:%
-%:%156=84%:%
-%:%157=84%:%
-%:%158=85%:%
-%:%160=87%:%
-%:%162=88%:%
-%:%163=88%:%
-%:%164=89%:%
-%:%165=90%:%
-%:%166=91%:%
-%:%167=91%:%
-%:%168=92%:%
-%:%169=93%:%
-%:%170=94%:%
-%:%171=95%:%
-%:%172=96%:%
-%:%173=96%:%
+%:%90=40%:%
+%:%91=41%:%
+%:%92=42%:%
+%:%93=43%:%
+%:%94=44%:%
+%:%95=45%:%
+%:%96=46%:%
+%:%97=47%:%
+%:%98=48%:%
+%:%99=49%:%
+%:%100=50%:%
+%:%101=51%:%
+%:%102=52%:%
+%:%103=53%:%
+%:%104=54%:%
+%:%105=55%:%
+%:%106=56%:%
+%:%107=57%:%
+%:%108=58%:%
+%:%109=59%:%
+%:%110=60%:%
+%:%111=61%:%
+%:%112=62%:%
+%:%113=63%:%
+%:%114=64%:%
+%:%115=65%:%
+%:%116=66%:%
+%:%120=68%:%
+%:%121=69%:%
+%:%122=70%:%
+%:%123=71%:%
+%:%124=72%:%
+%:%125=73%:%
+%:%126=74%:%
+%:%127=75%:%
+%:%128=76%:%
+%:%129=77%:%
+%:%130=78%:%
+%:%131=79%:%
+%:%132=80%:%
+%:%136=82%:%
+%:%145=84%:%
+%:%157=86%:%
+%:%158=87%:%
+%:%160=89%:%
+%:%161=89%:%
+%:%162=90%:%
+%:%163=91%:%
+%:%165=93%:%
+%:%166=94%:%
+%:%168=96%:%
+%:%169=96%:%
+%:%170=97%:%
+%:%171=98%:%
+%:%173=100%:%
+%:%174=101%:%
+%:%175=102%:%
+%:%176=103%:%
+%:%177=104%:%
+%:%178=105%:%
+%:%180=108%:%
+%:%181=108%:%
+%:%182=109%:%
+%:%183=110%:%
+%:%185=112%:%
+%:%186=113%:%
+%:%187=114%:%
+%:%189=116%:%
+%:%190=116%:%
+%:%191=117%:%
+%:%193=119%:%
+%:%195=121%:%
+%:%196=121%:%
+%:%197=122%:%
+%:%199=124%:%
+%:%201=125%:%
+%:%202=125%:%
+%:%203=126%:%
+%:%205=128%:%
+%:%206=129%:%
+%:%208=131%:%
+%:%209=131%:%
+%:%210=132%:%
+%:%211=133%:%
+%:%212=134%:%
+%:%213=134%:%
+%:%214=135%:%
+%:%215=136%:%
+%:%217=138%:%
+%:%221=141%:%
+%:%222=142%:%
+%:%223=143%:%
+%:%224=144%:%
+%:%225=145%:%
+%:%226=146%:%
+%:%227=147%:%
+%:%228=148%:%
+%:%229=149%:%
+%:%230=150%:%
+%:%231=151%:%
+%:%232=152%:%
+%:%233=153%:%
+%:%234=154%:%
+%:%235=155%:%
+%:%236=156%:%
+%:%237=157%:%
+%:%238=158%:%
+%:%239=159%:%
+%:%240=160%:%
+%:%241=161%:%
+%:%242=162%:%
+%:%243=163%:%
+%:%244=164%:%
+%:%245=165%:%
+%:%246=166%:%
+%:%247=167%:%
+%:%248=168%:%
+%:%249=169%:%
+%:%250=170%:%
+%:%251=171%:%
+%:%252=172%:%
+%:%253=173%:%
+%:%254=174%:%
+%:%255=175%:%
+%:%256=176%:%
+%:%257=177%:%
+%:%258=178%:%
+%:%259=179%:%
+%:%260=180%:%
+%:%261=181%:%
+%:%262=182%:%
+%:%263=183%:%
+%:%264=184%:%
+%:%265=185%:%
+%:%269=187%:%
+%:%270=188%:%
+%:%271=189%:%
+%:%272=190%:%
+%:%274=192%:%

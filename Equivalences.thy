@@ -4,23 +4,26 @@ imports Transition_Systems
 begin
 (*>*)
 
+(*<*)
+(*Zu viel dopplng mit introduction Evtl irgwo bisimilarity und HM-Theorem einbauen, sonst weglassen.*)
 section \<open>Behavioral Equivalence of Processes\<close>
 
-text \<open>As discussed in the previous sections, LTSs model the behaviour of reactive systems. That behaviour
-is observable by the environment in terms of transitions performed by the system. Depending on different criteria
-on what constitutes equal behavior has led to a large number of equivalences for concurrent processes. Those equivalences are often
-defined in term of relations on LTSs or sets of executions. The finest commonly used \textit{extensional behavioral equivalence}
-is \textit{Bisimilarity}. In extensional equivalences, only observable behavior is taken into account, without considering the
-identity of the processes. This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, 
-here the (intensional) identity of processes is relevant. The coarsest commonly used equivalence is \textit{trace equivalence}.
+text \<open>One important equivalence relation is trace equivalence. 
+Trace equivalence considers two states of an LTS equivalent if they produce the same 
+sequence of observable actions, or "traces," when starting from those states. 
+In other words, two states are trace equivalent if they lead to indistinguishable observable behaviors.
 
-- LT-BT spectrum (between them there is a lattice of equivalences ...)
-- Wir behandeln bisimilarität hier gesondert wegen dessen bezihung zu HML (HM-Theorem) (s.h. Introduction, doppelung vermeiden).
-- example bisimilarity
+Trace equivalence is motivated by the desire to abstract away internal details of a system and 
+focus solely on its externally observable behavior. In many practical scenarios, 
+such as distributed systems or communication protocols, what matters most is the sequence of 
+interactions with the environment rather than the intricate internal workings of the system. 
+By considering processes with the same traces as equivalent, we can simplify the analysis and 
+verification of systems while still capturing their essential observable behavior. 
+This abstraction allows us to reason about complex systems more effectively and 
+make predictions about their behavior in real-world scenarios.
+\<close>
 
-Informally, we call two processes bisimilar if...\<close>
-
-
+(*Für section bisimilarity*)
 subsubsection \<open>Bisimilarity\<close>
 text \<open>The notion of strong bisimilarity can be formalised through \emph{strong bisimulation} (SB) relations, introduced originally in (citation Park). 
 A binary relation $\mathcal{R}$ over the set of processes $\Proc$ is an SB iff for all $(p,q) \in \mathcal{R}$:
@@ -31,3 +34,4 @@ A binary relation $\mathcal{R}$ over the set of processes $\Proc$ is an SB iff f
 \exists p' \in \Proc .\; p \xrightarrow{\alpha} p' \wedge (p',q') \in \mathcal{R}.
 \end{align*}\<close>
 end
+(*>*)

@@ -7,7 +7,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[mathscr]{euscript}
-\usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{enumitem}
 \usepackage[explicit]{titlesec}
 \usepackage{tocbibind}
@@ -76,15 +76,21 @@
 \input{Introduction}
 \input{Foundations}
 \input{Transition_Systems}
+\input{Equivalences}
+\input{HML}
 \input{Relational_Equivalences}
 \input{HML_list}
 \input{HML_definitions}
 \input{HML_equivalences}
 \input{formula_prices_list}
 
-% optional bibliography
-%\bibliographystyle{abbrv}
-%\bibliography{root}
+{
+\interlinepenalty=10000
+\bibliographystyle{alphaurl}
+\bibliography{root}
+\interlinepenalty=0
+}
+
 
 \end{document}
 

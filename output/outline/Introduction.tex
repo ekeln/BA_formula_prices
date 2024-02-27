@@ -34,90 +34,100 @@
 %
 \begin{isamarkuptext}%
 In this thesis, I show the correspondence between various equivalences popular in the reactive
-systems community and coordinates of a formula price function, as introduced by Bisping (citation).
-I formalized the concepts and proofs discussed in this thesis in the interactive proof assistant Isabelle (citation).
+systems community and coordinates of a formula price function, as introduced by Bisping in \cite{bisping2023process}. I formalized the concepts and proofs discussed in this thesis in the interactive proof assistant Isabelle.
 
-\textit{Reactive systems} are computing systems that continuously interact with their environment, reacting to external stimuli and producing outputs accordingly(Harel).
-At a high level of abstraction, they can be seen as a collection of interacting processes. Modeling and verification of these processes is often referred to as \textit{Process Theory}. \\\\
+\textit{Reactive systems} are computing systems that continuously interact with their environment, reacting to external stimuli and producing outputs accordingly \cite{harel85}.
+At a high level of abstraction, these systems can be seen as collections of interacting processes, where each process represents a state or configuration of the system. 
+Labeled Transition Systems (LTS) \cite{keller76} provide a formal framework for modeling and analyzing the behavior of reactive systems. Roughly, an LTS is a labeled directed graph, whose nodes correspond to processes
+and whose edges correspond to transitions between those processes or states.
 
-Modeling is the activity of abstracting real-world systems by capturing essential features while omitting unnecessary details, often by mathematical structures.
-Verification of these systems involves proving statements regarding the behavior of a system model. Often, verification tasks aim to show that a system's observed behavior aligns with its intended behavior.
-That requires a criterion of similar behavior, or \textit{semantics of equality}. Depending on the requirements of a particular user, many different such criterions have been defined.
-For a subset of processes, namely the class of sequential processes lacking internal behavior, (Glaabbeck) classified many such semantics. 
-The processes in this subset can only perform one action at a time. Furthermore, this class is restricted to \textit{concrete} processes; processes in which no internal actions occur.
-This classification involved partially ordering them by the relation 'makes strictly more identifications on processes than' (Glabbeeck). The resulting complete lattice is
-referred to as the (infinitary) linear-time--branching-time spectrum. \footnote{On Infinity?} 
-\footnote{Linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions.}
-\\\\
-\textit{Reactive systems} are computing systems that continually interact with their environment, responding to external stimuli and generating outputs accordingly (Harel). 
-At a high level of abstraction, they can be viewed as a collection of interacting processes. The modeling and verification of these processes are often referred to as \textit{Process Theory}.
-
-Modeling is the process of abstracting real-world systems by capturing essential features while omitting unnecessary details, 
-often through mathematical structures. 
-
-The verification of these systems involves proving statements regarding the behavior of a system model.
-Verification tasks typically aim to demonstrate that a system's observed behavior aligns with its intended behavior. 
-This requires a criterion for similar behavior, or for the \textit{semantics of equality}. Depending on the requirements of a particular user, various such criteria have been defined.
-For a subset of processes, specifically the class of sequential processes lacking internal behavior, Glabbeck classified many such semantics. 
-These processes can only execute one action at a time. Moreover, this class is confined to \textit{concrete} processes, 
-where internal actions are absent. Glabbeck's classification involved partially ordering these processes by the relation 'makes strictly more identifications on processes than' (Glabbeeck). 
-The resulting complete lattice is known as the (infinitary) linear-time--branching-time spectrum.
-
-
-
-For a subset of processes, namely the class of sequential processes lacking internal behavior, Glabbeck classified many such semantics. These processes can only perform one action at a time and are restricted to \textit{concrete} processes, where no internal actions occur. Glabbeck's classification involved partially ordering them by the relation 'makes strictly more identifications on processes than' (Glabbeeck). The resulting complete lattice is referred to as the (infinitary) linear-time--branching-time spectrum \footnote{On Infinity?} \footnote{Linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions}.
-
-more on LT BT spectrum?
-
-Systems with this kind of processes can be modeled using labeled transition systems (Kel). An LTS is a triple of a set of processes, or states of the system,
-a set of possible actions and a transition relation between a process, an action and another process. The outgoing transitions of each process correspond to the actions the system can perform in that state, 
-yielding a subsequent state. In accordance with our restriction to concrete processes, we do not distinguish between different kinds of actions. 
-\footnote{A popular notion of identification is internal behavior, LTS capable of modeling internal behavior use a fixed action to express internal behavior. This extension allows for additional semantics that have been investigated, for instance, in (Glabeeck).}
-\\\\
-In the context of this spectrum, demonstrating that a system model's observed behavior aligns with the behavior of a model of the specification involves 
+Verification of these systems involves proving statements regarding the behavior of such a system model. Often, verification tasks aim to show that a system's observed behavior aligns with its intended behavior.
+That requires a criterion of what constitutes similar behavior on LTS, commonly referred to as the \textit{semantics of equality} of processes. Depending on the requirements of a particular user, many different such criterions have been defined.
+For a subset of processes, namely the class of concrete sequential processes, \cite{GLABBEEK20013} classified many such semantics. 
+\textit{Sequential} means that the processes can only perform one action at a time. \textit{Concrete} processes are processes in which no internal actions occur, meaning that it exclusively captures the system's interactions with its environment.
+In such LTS, every transition represents an observable event or action between the system and its environment.
+The classification in \cite{GLABBEEK20013} involved partially ordering many of these semantics by the relation 'makes strictly more identifications on processes than'. The resulting complete lattice is
+known as the (infinitary) linear-time--branching-time spectrum \footnote{On Infinity?} 
+\footnote{Linear time describes identification via the order of events, while branching time captures the branching possibilities in system executions.}.
+One way to characterize the behavior of LTS is through the use of modal logics. Formulas of a logic can be seen as describing certain properties of states within an LTS. A commonly used modal logic is Hennessy-Milner logic (HML) \cite{hm85}. 
+Equivalence in terms of HML is determined by whether processes satisfy the same set of formulas. The linear-time--branching-time spectrum can be recharted in terms of the subset relation between these modal-logical characterizations.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+In the context of this spectrum, demonstrating that a system model's observed behavior aligns with the behavior of a model of the specification can be done by 
 finding the finest notions of behavioral equivalence that equate them. Special bisimulation games and algorithms capable of answering equivalence questions 
-by performing a 'spectroscopy' of the differences between two processes have been developed (Deciding all at once)((accounting for silent steps), evtl hier weglassen oder mention: anderes spektrum)(process equiv as energy games)(A game for lt bt spectr).
-These approaches rechart the linear-time--branching-time spectrum using \textit{formula prices} that capture the expressive capabilities of Hennessy-Milner Logic (HML).
+by performing a 'spectroscopy' of the differences between two processes have been developed \cite{bisping2022deciding}\cite{bisping2023process}.
+These approaches rechart the linear-time--branching-time spectrum using an expressiveness function that assigns a \textit{formula price} to every formula. 
+This price is supposed to capture the expressive capabilities of this particular formula. However, to be sure that these characterizations really capture the desired equivalences one has to perform the proofs.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}[auto,node distance=3.2cm] % Adjusted node distance
+  \node[align=center] (B) {Bisimulation B\\$(\infty, \infty, \infty, \infty, \infty, \infty)$};
+  \node[align=center, below of=B] (2S) {2-nested-simulation 2S};
+  \node[align=center, below left of=2S] (RS) {ready simulation RS};
+  \node[align=center, below right of=RS] (RT) {readiness traces RT};
+  \node[align=center] (PF) at (6,-8) {possible futures PF};
+  \node[align=center, below left of=RT] (FT) {failure traces FT};
+  \node[align=center, left of=FT] (S) {simulation S};
+  \node[align=center, below right of=RT] (R) {readiness R};
+  \node[align=center, below left of=R] (RV) {revivals RV};
+  \node[align=center] (IF) at (5,-12) {impossible futures IF};
+  \node[align=center, below right of=RV] (F) {failures F};
+  \node[align=center, below left of=F] (T) {traces T};
 
-This thesis provides a machine-checkable proof that certain price bounds correspond to the modal-logical characterizations of named equivalences. 
-More precisely, a formula \isa{{\isasymphi}} is in an observation language $\mathcal{O_X}$ iff its price is within the given price bound.
-Concretely, for every expressiveness price bound $e_X$, i derive the sublanguage of Hennessy--Miler logic $\mathcal{O_X}$ and show that a formula \isa{{\isasymphi}} is in $\mathcal{O_X}$ precisely if its price \isa{expr{\isacharparenleft}{\kern0pt}{\isasymphi}{\isacharparenright}{\kern0pt}} is less than or equal to $e_X$.
-Then i show that $\mathcal{O_X}$ has exactly the same distinguishing power as the modal-logical characterization of that equivalence.
-
-For the class of sequential processes, that can at most perform one action at a time, and that do not posses internal behavior.
-(cite glabbeeck) classified many such semantics by partially ordering them by the relation 'makes strictly more identifications on processes than'. However,
-The term \emph{reactive system} (citation) describes computing systems that continuously interact with their environment. Unlike sequential systems, 
-the behavior or reactive systems is inherently event-driven and concurrent. They can be modeled by labeled directed graphs called \emph{labeled transition systems} (LTSs) (citation),
-where the nodes of an LTS describe the states of a reactive system and the edges describe transitions between those states.
-
-
-Strucutre:\\
-Foundations: LTS, Bismilarity (weil besonders dadurch das es feinste äquivalenz ist,verbindung zu HML(HM Theorem), HML \\
-Formula Pricing - capturing expressiveness using formula prices \\
-Korrespondenz zwischen koordinaten und äquivalenzen beweise\\
-diskussion?\\
-appendix?\\
-
-The semantics of reactive systems can be modeled as equivalences, that determine whether or not two systems behave similarly.
-In the literature on concurrent systems many different notion of equivalence can be found, the maybe best known being \emph{(strong) bisimilarity}.
-Rab van Glabbeek`s \emph{linear-time--branching-spectrum}(citation) ordered some of the most popular in a hierachy of equivalences.
--> New Paper characterizes them different... (HML beschreibung als erstes?!!)
-
-
-- Reactive Systmes \\
-  - modelling (via lts etc) \\
-  - Semantics of resysts \\
-    - Verification \\
-    - different notions of equivalence (because of nondeteminism?) -> van glabbeek \\
-    - Different definitions of semantics -> HML/relational/... \\
- --> linear-time--branching-time spectrum understood through properties of HML \\
-  --> capture expressiveness capabilities of HML formulas via a function \\
---> Contribution o Paper: The in (citation) introduced expressiveness function 
-and its coordinates captures the linear time branching time spectrum.. \\
-- Isabelle:\\
-  - formalization of concepts, proofs \\
-  - what is isabelle \\
-  - difference between mathematical concepts and their implementation? \\%
+  
+  \draw[-] (B) -- node[above] {} (2S);
+  \draw[-] (2S) -- node[left] {} (RS);
+  \draw[-] (2S) -- node[right] {} (PF);
+  \draw[-] (RS) -- node[left] {} (S);
+  \draw[-] (RS) -- node[left] {} (RT);
+  \draw[-] (PF) -- node[left] {} (IF);
+  \draw[-] (RT) -- node[left] {} (FT);
+  \draw[-] (RT) -- node[left] {} (R);
+  \draw[-] (FT) -- node[left] {} (RV);
+  \draw[-] (R) -- node[left] {} (RV);
+  \draw[-] (RV) -- node[left] {} (F);
+  \draw[-] (IF) -- node[left] {} (F);
+  \draw[-] (F) -- node[left] {} (T);
+  \draw[-] (S) -- node[left] {} (T);
+\end{tikzpicture}
+\caption{TEEEEEEEEEEEEEEEEEEST}
+    \label{fig:your_label}
+\end{figure}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsubsubsection{Contributions%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+This thesis provides a machine-checkable proof that the price bounds of the expressiveness function $\textsf{expr}$ of \cite{bisping2023process} correspond to the modal-logical characterizations of named equivalences. 
+More precisely, we consider a formula $\varphi$ to be in an observation language $\mathcal{O_X}$ iff its price is within the given price bound.
+For every expressiveness price bound $e_X$, we derive the sublanguage of Hennessy--Miler logic $\mathcal{O_X}$ and show that a formula $\varphi$ is in $\mathcal{O_X}$ precisely if its price \isa{expr{\isacharparenleft}{\kern0pt}{\isasymphi}{\isacharparenright}{\kern0pt}} is less than or equal to $e_X$.
+Then we show that $\mathcal{O_X}$ has exactly the same distinguishing power as the modal-logical characterization of that equivalence.
+In (ref Foundations (chapter 2)) we discuss and introduce formal definitions of LTSs, Hennessy-Milner logic and the expressiveness function $\textsf{expr}$, in (ref The Correspondances?! name!) we perform
+the proofs for the standard notions of equivalence, i.e. the equivalences of (ref Figure 1). Namely for trace-, failures-, failure-trace-, readiness-, ready-trace-, revivals-, possible-futures-, impossible-futures-, simulation-, ready-simulation-, 2-nested-simulation- and bisimulation semantics.
+All the main concepts and proofs have been formalized and conducted using the interactive proof assistant Isabelle. More information on Isabelle can be found in (appendix?).
+We tried to present Isabelle implementations directly after their corresponding mathematical definitions.
+The mathematical definitions are marked as 'definitions' and presented in standard text format. Their corresponding Isabelle implementations
+are presented right after, distinguished by their \isa{monospaced\ font} and \textcolor{RoyalBlue}{colored} \textcolor{ForestGreen}{syntax} \textcolor{Cerulean}{highlighting}.
+However, for readability purposes, a majority of the Isabelle proofs are hidden and replaced by \isa{{\isasymproof}} and some lemmas excluded. The whole Isabelle code and a web version of this thesis can be found on Github\footnote{\textcolor{red}{Link!!!}}.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \isadelimtheory
@@ -155,70 +165,55 @@ and its coordinates captures the linear time branching time spectrum.. \\
 %:%51=24%:%
 %:%52=25%:%
 %:%53=26%:%
-%:%54=27%:%
-%:%55=28%:%
-%:%56=29%:%
-%:%57=30%:%
-%:%58=31%:%
-%:%59=32%:%
-%:%60=33%:%
-%:%61=34%:%
-%:%62=35%:%
-%:%63=36%:%
-%:%64=37%:%
-%:%65=38%:%
-%:%66=39%:%
-%:%67=40%:%
-%:%68=41%:%
-%:%69=42%:%
-%:%70=43%:%
-%:%71=44%:%
-%:%72=45%:%
-%:%73=46%:%
-%:%74=47%:%
-%:%75=48%:%
-%:%76=49%:%
-%:%77=50%:%
-%:%78=51%:%
-%:%79=52%:%
-%:%80=53%:%
-%:%81=54%:%
-%:%82=55%:%
-%:%83=56%:%
-%:%84=57%:%
-%:%85=58%:%
-%:%86=59%:%
-%:%87=60%:%
-%:%88=61%:%
-%:%89=62%:%
-%:%90=63%:%
-%:%91=64%:%
-%:%92=65%:%
-%:%93=66%:%
-%:%94=67%:%
-%:%95=68%:%
-%:%96=69%:%
-%:%97=70%:%
-%:%98=71%:%
-%:%99=72%:%
-%:%100=73%:%
-%:%101=74%:%
-%:%102=75%:%
-%:%103=76%:%
-%:%104=77%:%
-%:%105=78%:%
-%:%106=79%:%
-%:%107=80%:%
-%:%108=81%:%
-%:%109=82%:%
-%:%110=83%:%
-%:%111=84%:%
-%:%112=85%:%
-%:%113=86%:%
-%:%114=87%:%
-%:%115=88%:%
-%:%116=89%:%
-%:%117=90%:%
-%:%118=91%:%
-%:%119=92%:%
-%:%120=93%:%
+%:%57=38%:%
+%:%58=39%:%
+%:%59=40%:%
+%:%60=41%:%
+%:%61=42%:%
+%:%65=46%:%
+%:%66=47%:%
+%:%67=48%:%
+%:%68=49%:%
+%:%69=50%:%
+%:%70=51%:%
+%:%71=52%:%
+%:%72=53%:%
+%:%73=54%:%
+%:%74=55%:%
+%:%75=56%:%
+%:%76=57%:%
+%:%77=58%:%
+%:%78=59%:%
+%:%79=60%:%
+%:%80=61%:%
+%:%81=62%:%
+%:%82=63%:%
+%:%83=64%:%
+%:%84=65%:%
+%:%85=66%:%
+%:%86=67%:%
+%:%87=68%:%
+%:%88=69%:%
+%:%89=70%:%
+%:%90=71%:%
+%:%91=72%:%
+%:%92=73%:%
+%:%93=74%:%
+%:%94=75%:%
+%:%95=76%:%
+%:%96=77%:%
+%:%97=78%:%
+%:%98=79%:%
+%:%99=80%:%
+%:%108=82%:%
+%:%120=84%:%
+%:%121=85%:%
+%:%122=86%:%
+%:%123=87%:%
+%:%124=88%:%
+%:%125=89%:%
+%:%126=90%:%
+%:%127=91%:%
+%:%128=92%:%
+%:%129=93%:%
+%:%130=94%:%

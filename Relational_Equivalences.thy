@@ -1,8 +1,9 @@
 (*<*)
 theory Relational_Equivalences
   imports Main
-"HOL-Library.Countable_Set"
+"HOL-Library.Stream"
 Transition_Systems
+Traces
 begin
 (*>*)
 
@@ -10,100 +11,10 @@ context lts
 begin
 text \<open>Introduce these definitions later?\<close>
 
-abbreviation traces :: \<open>'s \<Rightarrow> 'a list set\<close> where
-\<open>traces p \<equiv> {tr. \<exists>p'. p \<mapsto>$ tr p'}\<close>
-
 abbreviation all_traces :: "'a list set" where
 "all_traces \<equiv>{tr. \<exists>p p'. p \<mapsto>$ tr p'}"
 
-inductive paths:: \<open>'s \<Rightarrow> 's list \<Rightarrow> 's \<Rightarrow> bool\<close> where
-\<open>paths p [] p\<close> |
-\<open>paths p (a#as) p''\<close> if "\<exists>\<alpha>. p \<mapsto> \<alpha> a \<and> (paths a as p'')"
 
-lemma path_implies_seq:
-  assumes A1: "\<exists>xs. paths p xs p'"
-  shows "\<exists>ys. p \<mapsto>$ ys p'"
-proof-
-  from A1 obtain xs where "paths p xs p'" by auto
-  then show "\<exists>ys. p \<mapsto>$ ys p'"
-proof (rule local.paths.induct)
-  fix q
-  have "q \<mapsto>$ [] q" using step_sequence.intros(1).
-  then show "\<exists>ys. q \<mapsto>$ ys q" by (rule exI)
-next
-  fix p a as p''
-  assume A1: "\<exists>\<alpha>. p \<mapsto>\<alpha> a \<and> paths a as p'' \<and> (\<exists>ys. a \<mapsto>$ ys p'')"
-  then obtain ys \<alpha> where A2: "a \<mapsto>$ ys p''" and A3: "p \<mapsto>\<alpha> a"
-    by blast
-  then have "p \<mapsto>$ (\<alpha>#ys) p''" using step_sequence.intros(2)
-    by blast
-  then show "\<exists>ys. p \<mapsto>$ ys p''" by (rule exI)
-  qed
-qed
-
-lemma seq_implies_path:
-  assumes A1: "\<exists>ys. p \<mapsto>$ ys p'"
-  shows "\<exists>xs. paths p xs p'"
-proof-
-  from A1 obtain ys where "p \<mapsto>$ ys p'" by auto
-  then show "\<exists>xs. paths p xs p'"
-  proof(rule step_sequence.induct)
-    fix p
-    have "paths p [] p" using paths.intros(1).
-    then show "\<exists>xs. paths p xs p" by (rule exI)
-  next
-    fix p a rt p''
-    assume "\<exists>p'. p \<mapsto>a p' \<and> p' \<mapsto>$ rt p'' \<and> (\<exists>xs. paths p' xs p'')"
-    then obtain p' xs where "p \<mapsto>a p'" and "paths p' xs p''" by auto
-    then have "paths p (p'#xs) p''" using paths.intros(2) by blast
-    then show "\<exists>xs. paths p xs p''" by (rule exI)
-  qed
-qed
-
-text \<open>Trace preorder as inclusion of trace sets\<close>
-
-definition trace_preordered (infix \<open>\<lesssim>T\<close> 60)where
-\<open>trace_preordered p q \<equiv> traces p \<subseteq> traces q\<close>
-
-text \<open>Trace equivalence as mutual preorder\<close>
-
-abbreviation trace_equivalent (infix \<open>\<simeq>T\<close> 60) where
-\<open>p \<simeq>T q \<equiv> p \<lesssim>T q \<and> q \<lesssim>T p\<close>
-
-text \<open>Trace preorder is transitive\<close>
-
-lemma trace_preorder_transitive:
-  shows \<open>transp (\<lesssim>T)\<close>
-  unfolding transp_def trace_preordered_def by blast
-
-lemma empty_trace_trivial:
-  fixes p
-  shows \<open>[] \<in> traces p\<close>
-  using step_sequence.intros by blast
-
-lemma \<open>equivp (\<simeq>T)\<close>
-proof (rule equivpI)
-  show \<open>reflp (\<simeq>T)\<close>
-    unfolding reflp_def trace_preordered_def by blast
-  show \<open>symp (\<simeq>T)\<close>
-    unfolding symp_def by blast
-  show \<open>transp (\<simeq>T)\<close>
-    unfolding transp_def trace_preordered_def by blast
-qed
-
-text \<open>Failure Pairs\<close>
-
-abbreviation failure_pairs :: \<open>'s \<Rightarrow> ('a list \<times> 'a set) set\<close>
-  where
-\<open>failure_pairs p \<equiv> {(xs, F)|xs F. \<exists>p'. p \<mapsto>$ xs p' \<and> (initial_actions p' \<inter> F = {})}\<close>
-
-text \<open>Failure preorder and -equivalence\<close>
-
-definition failure_preordered (infix \<open>\<lesssim>F\<close> 60) where
-\<open>p \<lesssim>F q \<equiv> failure_pairs p \<subseteq> failure_pairs q\<close>
-
-abbreviation failure_equivalent (infix \<open>\<simeq>F\<close> 60) where
-\<open> p \<simeq>F q \<equiv> p \<lesssim>F q \<and> q \<lesssim>F p\<close>
 
 text \<open>Possible future sets\<close>
 

@@ -1,8 +1,7 @@
 (*<*)
 theory formula_prices_list
   imports 
-    Main
-    HML_list
+    HML
     "HOL-Library.Extended_Nat"
 begin
 (*>*)
@@ -16,17 +15,15 @@ equivalence $X$ is characterized by the HML formulas with prices less then or eq
 We use the six dimensions from (energy games) to characterize the notions of equivalence we are interested in (In figure xx oder so umschreiben).
 Intuitively, the dimensions can be described as follows:\\
 1. Formula modal depth of observations: How many modal operations $\langle \alpha \rangle$ may one pass when descending the syntax tree. (Algebraic laws for nondeterminism and concurrency)(Operational and algebraic semantics of concurrent processes)\\
-2. Formula nesting depth of conjunctions: How often may one pass a conjunction?
-3. Maximal modal depth of deepest positive clauses in conjunctions: The modal depth of the deepest positive clause within a conjunction ??!!!!
-4. Maximal modal depth of other positive clauses in conjunctions: The modal depth of the other positive clauses... !!??!!
-5. Maximal modal depth of negative clauses in conjunctions: ... self explanatory...
-6. Formula nesting depth of negations: How many negations may be visited when descending? This is sometimes called the number of ``alternations'' between [] and <>.(Citation suchen, warum?)
-\<close>
+2. Formula nesting depth of conjunctions: How often may one pass a conjunction?\\
+3. Maximal modal depth of deepest positive clauses in conjunctions\\
+4. Maximal modal depth of other positive clauses in conjunctions\\
+5. Maximal modal depth of negative clauses in conjunctions\\
+6. Formula nesting depth of negations\\\<close>
 
 subsubsection \<open>Definition 2.1 (Formula Prices)\<close>
-text \<open>The \textit{expressiveness price} $\text{expr}: \text{HML}[\Sigma] \rightarrow (\mathbb{N} \cup \{\infty\})^6$ of a formula is defined recursively, similar to energy games:
-
-The expressiveness price $\text{expr} : \text{HML}[\Sigma] \rightarrow (\mathbb{N \cup \infty})^6$ of a formula interpreted as $6 \times 1$-dimensional vectors is defined recursively by:
+text \<open>
+The expressiveness price $\textsf{expr} : \text{HML}[\Sigma] \rightarrow (\mathbb{N \cup \infty})^6$ of a formula interpreted as $6 \times 1$-dimensional vectors is defined recursively by:
 
 \[
 \text{expr}(\langle a \rangle \varphi) :=
@@ -53,7 +50,7 @@ The expressiveness price $\text{expr} : \text{HML}[\Sigma] \rightarrow (\mathbb{
 \]
 
 \[
-\text{expr}\left( \bigwedge_{i \in I} \psi_i \right) := 
+\text{expr}\left( \bigwedge_{i \in I} \psi_i \right) := \sup(\{
 \begin{pmatrix}
 0 \\
 1 + \sup_{i \in I} \text{expr}_2(\psi_i) \\
@@ -61,25 +58,25 @@ The expressiveness price $\text{expr} : \text{HML}[\Sigma] \rightarrow (\mathbb{
 \sup_{i \in \text{Pos} \backslash \mathcal{R}} \text{expr}_1(\psi_i) \\
 \sup_{i \in \text{Neg}} \text{expr}_1(\psi_i) \\
 0 \\
-\end{pmatrix}
+\end{pmatrix} \} \cup \{\textsf{expr}(\psi_i) | i \in I\} 
 \]
 
 where:
 
-$\text{Neg} := \{i \in I \, | \, \exists \varphi'_i. \psi_i = \neg \varphi'_i\}$
+$\textit{Neg} := \{i \in I \, | \, \exists \varphi'_i. \psi_i = \neg \varphi'_i\}$
 
-$\text{Pos} := I \setminus \text{Neg}$
+$\textit{Pos} := I \setminus \text{Neg}$
 
 $\mathcal{R} := \left\{
 \begin{aligned}
-&\varnothing \text{ if } \text{Pos} = \varnothing, \\
-&\{ r \} \text{ for some } r \in \text{Pos} \text{ where } \text{expr}_1(\psi_r) \text{ maximal for Pos}
+&\varnothing \text{ if } \textit{Pos} = \varnothing, \\
+&\{ r \} \text{ for some } r \in \textit{Pos} \text{ where } \text{expr}_1(\psi_r) \text{ maximal for \textit{Pos}}
 \end{aligned}
 \right.$
 
-Our Isabelle-definition of HML makes it very easy to derive the sets Pos and Neg, by \<open>\<Phi> ` I\<close> and \<open>\<Phi> ` J\<close> respectively.
+Our Isabelle definition of HML makes it very easy to derive the sets Pos and Neg, by \<open>\<Phi> ` I\<close> and \<open>\<Phi> ` J\<close> respectively.
 
-Remark: Infinity is included in our definition, due to infinite branching conjunctions. Supremum over infinite set wird zu unendlich.\<close>
+Remark: We deviate from the definition in (cite Bisp) by including infinity in the domain of the function due to infinite branching conjunctions. Supremum over infinite set wird zu unendlich.\<close>
 
 text \<open>To better argue about the function we define each dimension as a seperate function.\<close>
 
@@ -435,6 +432,42 @@ next
   qed
 
   then show ?case using e1 e2 e3 e4 e5 e6 by simp
+qed
+
+section \<open>definition of component wise comparison\<close>
+
+fun less_eq_t :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> bool"
+  where
+"less_eq_t (n1, n2, n3, n4, n5, n6) (i1, i2, i3, i4, i5, i6) =
+    (n1 \<le> i1 \<and> n2 \<le> i2 \<and> n3 \<le> i3 \<and> n4 \<le> i4 \<and> n5 \<le> i5 \<and> n6 \<le> i6)"
+
+definition less where
+"less x y \<equiv> less_eq_t x y \<and> \<not> (less_eq_t y x)"
+
+definition e_sup :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) set \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat)"
+  where
+"e_sup S \<equiv> ((Sup (fst ` S)), (Sup ((fst \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd) ` S)), 
+(Sup ((fst \<circ> snd \<circ> snd \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)), 
+(Sup ((snd \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)))"
+
+section \<open>general auxillary lemmas to argue about formulas and prices\<close>
+subsection \<open>The price of formulas is monotonic with respect to subformulas. 
+I.e.: If (expr \<phi>) <= (expr \<langle>\<alpha>\<rangle>\<phi>) and (\<forall>\<psi>_i \<in> \<Phi>. expr \<psi>_i \<le> n) --> (expr \<And>\<Phi>) <= n\<close> 
+
+lemma mon_pos:
+  fixes n1 and n2 and n3 and n4::enat and n5 and n6 and \<alpha>
+  assumes A1: "less_eq_t (expr (hml_pos \<alpha> \<phi>)) (n1, n2, n3, n4, n5, n6)"
+  shows "less_eq_t (expr \<phi>) (n1, n2, n3, n4, n5, n6)" 
+proof-
+  from A1 have E_rest: 
+"expr_2 \<phi> \<le> n2 \<and> expr_3 \<phi> \<le> n3 \<and> expr_4 \<phi> \<le> n4 \<and> expr_5 \<phi> \<le> n5 \<and>expr_6 \<phi> \<le> n6" 
+    using expr.simps 
+    by simp
+  from A1 have "1 + expr_1 \<phi> \<le> n1"
+    using expr_1.simps(1) by simp
+  hence "expr_1 \<phi> \<le> n1" 
+    using ile_eSuc plus_1_eSuc(1) dual_order.trans by fastforce
+  with E_rest show ?thesis by simp
 qed
 
 (*<*)

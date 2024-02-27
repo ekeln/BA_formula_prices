@@ -3,45 +3,10 @@ theory HML_subsets
     "HOL-Library.Extended_Nat"
     Main
     HML_list
-  formula_prices_list
+    formula_prices_list
+    Traces
+    Failures
 begin
-
-section \<open>definition of component wise comparison\<close>
-
-fun less_eq_t :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> bool"
-  where
-"less_eq_t (n1, n2, n3, n4, n5, n6) (i1, i2, i3, i4, i5, i6) =
-    (n1 \<le> i1 \<and> n2 \<le> i2 \<and> n3 \<le> i3 \<and> n4 \<le> i4 \<and> n5 \<le> i5 \<and> n6 \<le> i6)"
-
-definition less where
-"less x y \<equiv> less_eq_t x y \<and> \<not> (less_eq_t y x)"
-
-definition e_sup :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) set \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat)"
-  where
-"e_sup S \<equiv> ((Sup (fst ` S)), (Sup ((fst \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd) ` S)), 
-(Sup ((fst \<circ> snd \<circ> snd \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)), 
-(Sup ((snd \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)))"
-
-
-section \<open>general auxillary lemmas to argue about formulas and prices\<close>
-subsection \<open>The price of formulas is monotonic with respect to subformulas. 
-I.e.: If (expr \<phi>) <= (expr \<langle>\<alpha>\<rangle>\<phi>) and (\<forall>\<psi>_i \<in> \<Phi>. expr \<psi>_i \<le> n) --> (expr \<And>\<Phi>) <= n\<close> 
-
-lemma mon_pos:
-  fixes n1 and n2 and n3 and n4::enat and n5 and n6 and \<alpha>
-  assumes A1: "less_eq_t (expr (hml_pos \<alpha> \<phi>)) (n1, n2, n3, n4, n5, n6)"
-  shows "less_eq_t (expr \<phi>) (n1, n2, n3, n4, n5, n6)" 
-proof-
-  from A1 have E_rest: 
-"expr_2 \<phi> \<le> n2 \<and> expr_3 \<phi> \<le> n3 \<and> expr_4 \<phi> \<le> n4 \<and> expr_5 \<phi> \<le> n5 \<and>expr_6 \<phi> \<le> n6" 
-    using expr.simps 
-    by simp
-  from A1 have "1 + expr_1 \<phi> \<le> n1"
-    using expr_1.simps(1) by simp
-  hence "expr_1 \<phi> \<le> n1" 
-    using ile_eSuc plus_1_eSuc(1) dual_order.trans by fastforce
-  with E_rest show ?thesis by simp
-qed
 
 subsection \<open>lemmas to work with Max, that i didnt find in linorder_class.Max (might have missed them)\<close>
 
@@ -237,9 +202,7 @@ proof-
   qed
 qed
 
-lemma mon_expr_1_pos_r: 
-  "Sup (expr_1 ` (pos_r xs)) \<le> Sup (expr_1 ` xs)"
-  by (simp add: Sup_subset_mono image_mono)
+
 
 lemma pos_r_del_max:
   assumes "\<forall>x\<in> xs. expr_1 x < expr_1 a"
@@ -377,17 +340,7 @@ expr.simps less_eq_t.simps
     by (simp add: Sup_le_iff)
 qed
 
-lemma expr_TT:
-  assumes "TT_like \<chi>"
-  shows "expr \<chi> = (0, 1, 0, 0, 0, 0)"
-using assms
-proof (induction \<chi>)
-  case 1
-  then show ?case by simp
-next
-  case (2 \<Phi> I J)
-  then show ?case using expr.simps Sup_enat_def by force+
-qed
+
 
 lemma expr_nested_empty_pos_conj:
   assumes "nested_empty_pos_conj \<phi>"
@@ -805,95 +758,9 @@ next
     by simp
 qed
 
-lemma assumes "TT_like \<chi>"
-shows e1_tt: "expr_1 (hml_pos \<alpha> \<chi>) = 1"
-and e2_tt: "expr_2 (hml_pos \<alpha> \<chi>) = 1"
-and e3_tt: "expr_3 (hml_pos \<alpha> \<chi>) = 0"
-and e4_tt: "expr_4 (hml_pos \<alpha> \<chi>) = 0"
-and e5_tt: "expr_5 (hml_pos \<alpha> \<chi>) = 0"
-and e6_tt: "expr_6 (hml_pos \<alpha> \<chi>) = 0"
-  using expr_TT assms
-    by auto
 
-lemma expr_2_lb: "expr_2 f \<ge> 1"
-proof(induction f)
-  case TT
-  then show ?case by simp
-next
-  case (hml_pos x1 f)
-  then show ?case by simp
-next
-  case (hml_conj x1 x2 x3)
-  then show ?case
-    by simp 
-qed
 
-subsection \<open>The set of formulas with prices less then or equal to 
-(\<infinity>, 1, 0, 0, 0, 0) is a subset of the HML trace subset\<close>
 
-lemma trace_right: 
-  assumes "HML_trace \<phi>"
-  shows "(less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
-  using assms
-proof(induct \<phi> rule:HML_trace.induct)
-  case trace_tt
-  then show ?case by simp
-next
-  case (trace_conj \<psi>s)
-  have "(expr_4 (hml_conj {} {} \<psi>s)) = 0"
-    using expr_4.simps Sup_enat_def by auto
-  then show ?case by auto
-next
-  case (trace_pos \<phi> \<alpha>)
-  then show ?case by simp
-qed
-
-subsection \<open>The HML trace set is a subset of the set of formulas with prices less then or equal to 
-(\<infinity>, 1, 0, 0, 0, 0)\<close>
-
-\<comment> \<open>The set induced by the coordinates (\<infinity>, 1, 0, 0, 0, 0) only includes empty conjunctions\<close>
-lemma HML_trace_conj_empty:
-  assumes A1: "less_eq_t (expr (hml_conj I J \<Phi>)) (\<infinity>, 1, 0, 0, 0, 0)" 
-  shows "I = {} \<and> J = {}"
-proof-
-  have "expr_2 (hml_conj I J \<Phi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J)"
-    using formula_prices_list.expr_2_conj by blast
-  with assms have "... \<le> 1"
-    using expr.simps less_eq_t.simps
-    by simp
-  hence le_0: "Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J) \<le> 0"
-    by simp
-  hence le_0: "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` I). x \<le> 0" "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` J). x \<le> 0"
-    using Sup_le_iff UnCI
-    by metis+
-  have "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` I). x \<ge> 1" 
-    "\<forall>x \<in> ((expr_2 \<circ> \<Phi>) ` J). x \<ge> 1" using expr_2_lb
-    by fastforce+
-  with le_0 show ?thesis using imageI 
-    by simp
-qed
-
-lemma trace_left:
-  assumes "(less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
-  shows "(HML_trace \<phi>)"
-  using assms
-proof(induction \<phi>)
-  case TT
-  then show ?case
-    using trace_tt by blast
-next
-  case (hml_pos \<alpha> \<phi>)
-  then show ?case 
-    using trace_pos by simp
-next
-  case (hml_conj I J \<Phi>)
-  then show ?case using HML_trace_conj_empty trace_conj
-    by metis
-qed
-
-lemma HML_trace_lemma: 
-"(HML_trace \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
-  using trace_left trace_right by blast
 
 lemma simulation_right:
   assumes "HML_simulation \<phi>"
@@ -1009,85 +876,7 @@ next
   with \<open>\<forall>x \<in> (\<Phi> ` I). HML_simulation x\<close> show ?case using sim_conj by blast
 qed
 
-lemma failure_right:
-  assumes "HML_failure \<phi>"
-  shows "(less_eq_t (expr \<phi>) (\<infinity>, 2, 0, 0, 1, 1))"
-  using assms
-proof(induction \<phi> rule:HML_failure.induct)
-  case failure_tt
-  then show ?case by force
-next
-  case (failure_pos \<phi> \<alpha>)
-  then show ?case by force
-next
-  case (failure_conj I \<Phi> J)
-  have expr_\<psi>s: "\<forall>\<phi>. \<phi> \<in> \<Phi> ` I \<longrightarrow> expr \<phi> = (0, 1, 0, 0, 0, 0)"
-    using expr_TT HML_failure.simps local.failure_conj 
-    by blast
-  hence e1_pos: "\<forall>e \<in> (expr_1 \<circ> \<Phi>) ` I. e = 0"
-and e2_pos: "\<forall>e \<in> (expr_2 \<circ> \<Phi>) ` I. e = 1"
-and e3_pos: "\<forall>e \<in> (expr_3 \<circ> \<Phi>) ` I. e = 0"
-and e4_pos: "\<forall>e \<in> (expr_4 \<circ> \<Phi>) ` I. e = 0"
-and e5_pos: "\<forall>e \<in> (expr_5 \<circ> \<Phi>) ` I. e = 0"
-and e6_pos: "\<forall>e \<in> (expr_6 \<circ> \<Phi>) ` I. e = 0"
-    by simp+
 
-  hence e1_2: "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> 0"
-and e2_2: "Sup ((expr_2 \<circ> \<Phi>) ` I) \<le> 1"
-and e3_2: "Sup ((expr_3 \<circ> \<Phi>) ` I) \<le> 0"
-and e4_2: "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> 0"
-and e5_2: "Sup ((expr_5 \<circ> \<Phi>) ` I) \<le> 0"
-and e6_2: "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> 0"
-    using Sup_enat_def dual_order.refl local.failure_conj 
-    by (metis Sup_le_iff)+
-
-  from failure_conj have e1_neg: "\<forall>j \<in> J. expr_1 (\<Phi> j) \<le> 1"
-and e2_neg: "\<forall>j \<in> J. expr_2 (\<Phi> j) = 1"
-and e3_neg: "\<forall>j \<in> J. expr_3 (\<Phi> j) = 0"
-and e4_neg: "\<forall>j \<in> J. expr_4 (\<Phi> j) = 0"
-and e5_neg: "\<forall>j \<in> J. expr_5 (\<Phi> j) = 0"
-and e6_neg: "\<forall>j \<in> J. expr_6 (\<Phi> j) = 0"
-    using e1_tt e5_tt e2_tt e3_tt e4_tt e6_tt
-    by fastforce+
-  hence "(Sup ((expr_5 \<circ> \<Phi>) ` J \<union> (expr_1 \<circ> \<Phi>) ` J)) \<le> 1"
-    using Sup_enat_def
-    by (smt (verit, del_insts) Sup_le_iff Un_iff comp_apply image_iff nle_le not_one_le_zero)
-  hence e5: "expr_5 (hml_conj I J \<Phi>) \<le> 1"
-    using expr_5_conj expr_\<psi>s e5_2 
-    by (simp add: Sup_union_distrib)
-  from e2_2 e2_neg failure_conj have "Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J) \<le> 1"
-    by (simp add: Sup_le_iff Sup_union_distrib)
-  hence e2: "expr_2 (hml_conj I J \<Phi>) \<le> 2" 
-    using expr_2_conj one_add_one
-    by (metis add_left_mono)
-  from e1_2 e3_2 have "Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` J) \<le> 0"
-    by (metis (no_types, lifting) SUP_bot_conv(2) Sup_union_distrib bot_enat_def comp_apply e3_neg le_zero_eq sup.orderE)
-  hence e3: "expr_3 (hml_conj I J \<Phi>) \<le> 0" 
-    using expr_3_conj
-    by auto
-  have "Sup (expr_1 ` (pos_r (\<Phi> ` I))) \<le> 0"
-    by (metis SUP_image e1_2 le_zero_eq mon_expr_1_pos_r)
-  hence "Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Phi>) ` J) \<le> 0"
-    using e4_2 failure_conj Sup_union_distrib bot_enat_def comp_apply e4_neg
-    by (metis (no_types, lifting) SUP_bot_conv(2) le_zero_eq max_def sup_max) 
-  hence e4: "expr_4 (hml_conj I J \<Phi>) \<le> 0" 
-    using expr_4_conj
-    by auto
-  from failure_conj e6_2 e6_neg have "Sup ((expr_6 \<circ> \<Phi>) ` J) \<le> 0"
-    by (metis (mono_tags, lifting) SUP_least comp_apply le_zero_eq)
-  hence "Sup ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J) \<le> 1"
-    using eSuc_def comp_apply
-    by (metis eSuc_Sup image_comp image_empty le_zero_eq nle_le one_eSuc) 
-  with failure_conj e6_2 e6_tt have "(Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J))) \<le> 1"
-    using one_eSuc e6_neg image_cong le_sup_iff bot.extremum_uniqueI bot_enat_def comp_apply
-    by (simp add: Sup_union_distrib)
-  hence e6: "expr_6 (hml_conj I J \<Phi>) \<le> 1"
-    using expr_6_conj
-    by auto
-  from e2 e3 e4 e5 e6 show ?case
-    using less_eq_t.simps expr.simps 
-    by fastforce
-qed
 
 lemma failure_pos_tt_like:
   assumes "less_eq_t (expr (hml_conj I J \<Phi>)) (\<infinity>, 2, 0, 0, 1, 1)"
@@ -2501,8 +2290,8 @@ proof(cases "\<exists>\<psi> \<in> (\<Phi> ` I). expr_1 \<psi> \<ge> 2")
   from assms have expr_4_5_6: "\<forall>\<psi> \<in> \<Phi> ` I. expr_4 \<psi> \<le> 1 \<and> expr_5 \<psi> \<le> 1 \<and> expr_6 \<psi> \<le> 1"
     using expr_4_conj expr_5_conj expr_6_conj Sup_union_distrib 
     by (smt (verit, del_insts) Sup_le_iff comp_apply expr_6.expr_6_conj image_iff le_sup_iff)
-  have "\<forall>\<chi> \<in> \<Phi> ` I. \<chi> \<noteq> \<psi> \<longrightarrow> expr_1 \<chi> \<le> 1" using assms(3) sorry
-  then have single_pos_\<chi>: "\<forall>\<chi> \<in> \<Phi> ` I. \<chi> \<noteq> \<psi> \<longrightarrow> single_pos \<chi>" using expr_4_5_6 single_pos_expr
+  have single_pos_\<chi>: "\<forall>\<chi> \<in> \<Phi> ` I. \<chi> \<noteq> \<psi> \<longrightarrow> single_pos \<chi>" 
+    using expr_4_5_6 single_pos_expr \<open>\<forall>\<chi> \<in> \<Phi> ` I. \<chi> \<noteq> \<psi> \<longrightarrow> expr_1 \<chi> \<le> 1\<close>
     by blast
   from assms(4) have "HML_ready_trace \<psi>" using \<open>\<psi> \<in> (\<Phi> ` I)\<close>
     by blast

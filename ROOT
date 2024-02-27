@@ -11,10 +11,11 @@ sessions
     Transition_Systems
     Equivalences
     HML
+    formula_prices_list
     HML_list
     Relational_Equivalences
     HML_definitions
     HML_equivalences
-    formula_prices_list
   document_files
+    "root.bib"
     "root.tex"

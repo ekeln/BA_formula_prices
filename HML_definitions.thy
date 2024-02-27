@@ -1,71 +1,16 @@
 theory HML_definitions
-imports HML_list
+imports HML_list Traces Failures
 begin
 
-inductive hml_trace :: "('a, 's)hml \<Rightarrow> bool" where
-"hml_trace TT" |
-"hml_trace (hml_pos \<alpha> \<phi>)" if "hml_trace \<phi>"
 
-inductive hml_failure :: "('a, 's)hml \<Rightarrow> bool"
-  where
-failure_tt: "hml_failure TT" |
-failure_pos: "hml_failure (hml_pos \<alpha> \<phi>)" if "hml_failure \<phi>" |
-failure_conj: "hml_failure (hml_conj I J \<psi>s)" 
-if "I = {}" "(\<forall>j \<in> J. (\<exists>\<alpha>. ((\<psi>s j) = hml_pos \<alpha> TT)) \<or> \<psi>s j = TT)" 
 
-inductive hml_readiness :: "('a, 's)hml \<Rightarrow> bool"
-  where
-read_tt: "hml_readiness TT" |
-read_pos: "hml_readiness (hml_pos \<alpha> \<phi>)" if "hml_readiness \<phi>"|
-read_conj: "hml_readiness (hml_conj I J \<Phi>)" 
-if "\<forall>x \<in> (\<Phi> ` (I \<union> J)). (\<exists>\<alpha>. x = (hml_pos \<alpha> TT::('a, 's)hml)) \<or> x = TT"
 
-inductive hml_impossible_futures ::  "('a, 's)hml \<Rightarrow> bool"
-  where
-  if_tt: "hml_impossible_futures TT" |
-  if_pos: "hml_impossible_futures (hml_pos \<alpha> \<phi>)" if "hml_impossible_futures \<phi>" |
-if_conj: "hml_impossible_futures (hml_conj I J \<Phi>)"
-if "I = {}" "\<forall>x \<in> (\<Phi> ` J). (hml_trace x)"
 
-inductive hml_possible_futures :: "('a, 's)hml \<Rightarrow> bool"
-  where
-pf_tt: "hml_possible_futures TT" |
-pf_pos: "hml_possible_futures (hml_pos \<alpha> \<phi>)" if "hml_possible_futures \<phi>" |
-pf_conj: "hml_possible_futures (hml_conj I J \<Phi>)" 
-if "\<forall>x \<in> (\<Phi> ` (I\<union> J)). (hml_trace x)"
 
-definition hml_possible_futures_formulas where
-"hml_possible_futures_formulas \<equiv> {\<phi>. hml_possible_futures \<phi>}"
 
-inductive hml_failure_trace :: "('a, 's)hml \<Rightarrow> bool" where
-"hml_failure_trace TT" |
-"hml_failure_trace (hml_pos \<alpha> \<phi>)" if "hml_failure_trace \<phi>" |
-"hml_failure_trace (hml_conj I J \<Phi>)" 
-  if "(\<Phi> ` I) = {} \<or> (\<exists>i \<in> \<Phi> ` I. \<Phi> ` I = {i} \<and> hml_failure_trace i)"
-     "\<forall>j \<in> \<Phi> ` J. \<exists>\<alpha>. j = (hml_pos \<alpha> TT) \<or> j = TT" 
 
-inductive hml_ready_trace :: "('a, 's)hml \<Rightarrow> bool"
-  where
-r_trace_tt: "hml_ready_trace TT" |
-r_trace_pos: "hml_ready_trace (hml_pos \<alpha> \<phi>)" if "hml_ready_trace \<phi>"|
-r_trace_conj: "hml_ready_trace (hml_conj I J \<Phi>)" 
-if "(\<exists>x \<in> (\<Phi> ` I). hml_ready_trace x \<and> (\<forall>y \<in> (\<Phi> ` I). x \<noteq> y \<longrightarrow> (\<exists>\<alpha>. y = (hml_pos \<alpha> TT))))
-\<or> (\<forall>y \<in> (\<Phi> ` I).(\<exists>\<alpha>. y = (hml_pos \<alpha> TT)))"
-"(\<forall>y \<in> (\<Phi> ` J). (\<exists>\<alpha>. y = (hml_pos \<alpha> TT)))"
 
-inductive hml_ready_sim :: "('a, 's) hml \<Rightarrow> bool"
-  where
-"hml_ready_sim TT" |
-"hml_ready_sim (hml_pos \<alpha> \<phi>)" if "hml_ready_sim \<phi>" |
-"hml_ready_sim (hml_conj I J \<Phi>)" if 
-"(\<forall>x \<in> (\<Phi> ` I). hml_ready_sim x) \<and> (\<forall>y \<in> (\<Phi> ` J). (\<exists>\<alpha>. y = (hml_pos \<alpha> TT)))"
 
-inductive hml_2_nested_sim :: "('a, 's) hml \<Rightarrow> bool" 
-  where
-"hml_2_nested_sim TT" |
-"hml_2_nested_sim (hml_pos \<alpha> \<phi>)" if "hml_2_nested_sim \<phi>" |
-"hml_2_nested_sim (hml_conj I J \<Phi>)" 
-if "(\<forall>x \<in> (\<Phi> ` I). hml_2_nested_sim x) \<and> (\<forall>y \<in> (\<Phi> ` J). HML_simulation y)"
 
 context lts begin 
 

@@ -123,15 +123,6 @@ failure_pos: "HML_failure (hml_pos \<alpha> \<phi>)" if "HML_failure \<phi>" |
 failure_conj: "HML_failure (hml_conj I J \<psi>s)" 
 if "(\<forall>i \<in> I. TT_like (\<psi>s i)) \<and> (\<forall>j \<in> J. (TT_like (\<psi>s j)) \<or> (\<exists>\<alpha> \<chi>. ((\<psi>s j) = hml_pos \<alpha> \<chi> \<and> (TT_like \<chi>))))" 
 
-inductive HML_simulation :: "('a, 's)hml \<Rightarrow> bool"
-  where
-sim_tt: "HML_simulation TT" |
-sim_pos: "HML_simulation (hml_pos \<alpha> \<phi>)" if "HML_simulation \<phi>"|
-sim_conj: "HML_simulation (hml_conj I J \<psi>s) " 
-if "(\<forall>x \<in> (\<psi>s ` I). HML_simulation x) \<and> (\<psi>s ` J = {})"
-
-definition HML_simulation_formulas where
-"HML_simulation_formulas \<equiv> {\<phi>. HML_simulation \<phi>}"
 
 inductive HML_readiness :: "('a, 's)hml \<Rightarrow> bool"
   where
