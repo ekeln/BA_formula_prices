@@ -11,11 +11,12 @@ sessions
     Transition_Systems
     Equivalences
     HML
-    HML_list
-    Relational_Equivalences
-    HML_definitions
-    HML_equivalences
     formula_prices_list
+    Correspondences
+    Traces
+    Failures
+    Failure_traces
+    Readiness
   document_files
     "root.bib"
     "root.tex"

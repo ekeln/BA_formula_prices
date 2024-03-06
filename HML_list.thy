@@ -7,34 +7,6 @@ theory HML_list
 
 begin
 (*>*)
-
-inductive TT_like :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"TT_like TT" |
-"TT_like (hml_conj I J \<Phi>)" if "(\<Phi> `I) = {}" "(\<Phi> ` J) = {}"
-
-inductive nested_empty_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"nested_empty_pos_conj TT" |
-"nested_empty_pos_conj (hml_conj I J \<Phi>)" 
-if "\<forall>x \<in> (\<Phi> `I). nested_empty_pos_conj x" "(\<Phi> ` J) = {}"
-
-inductive nested_empty_conj :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"nested_empty_conj TT" |
-"nested_empty_conj (hml_conj I J \<Phi>)"
-if "\<forall>x \<in> (\<Phi> `I). nested_empty_conj x" "\<forall>x \<in> (\<Phi> `J). nested_empty_pos_conj x"
-
-inductive stacked_pos_conj_pos :: "('a, 'i) hml \<Rightarrow> bool"
-  where
-"stacked_pos_conj_pos TT" |
-"stacked_pos_conj_pos (hml_pos _ \<psi>)" if "nested_empty_pos_conj \<psi>" |
-"stacked_pos_conj_pos (hml_conj I J \<Phi>)"
-if "((\<exists>\<phi> \<in> (\<Phi> ` I). ((stacked_pos_conj_pos \<phi>) \<and> 
-                     (\<forall>\<psi> \<in> (\<Phi> ` I). \<psi> \<noteq> \<phi> \<longrightarrow> nested_empty_pos_conj \<psi>))) \<or>
-   (\<forall>\<psi> \<in> (\<Phi> ` I). nested_empty_pos_conj \<psi>))"
-"(\<Phi> ` J) = {}"
-
 inductive stacked_pos_conj :: "('a, 'i) hml \<Rightarrow> bool"
   where 
 "stacked_pos_conj TT" |
@@ -80,21 +52,7 @@ proof(safe)
   then show False by blast
 qed
 
-lemma HML_true_TT_like:
-  assumes "TT_like \<phi>"
-  shows "HML_true \<phi>"
-  using assms
-  unfolding HML_true_def
-  apply (induction \<phi> rule: TT_like.induct)
-  by simp+
 
-lemma HML_true_nested_empty_pos_conj:
-  assumes "nested_empty_pos_conj \<phi>"
-  shows "HML_true \<phi>"
-  using assms
-  unfolding HML_true_def
-  apply (induction \<phi> rule: nested_empty_pos_conj.induct)
-  by (simp, force)
 
 end (* context lts *)
 
@@ -116,12 +74,6 @@ fun trace_to_formula :: "'a list \<Rightarrow> ('a, 's)hml"
 "trace_to_formula [] = TT" |
 "trace_to_formula (a#xs) = hml_pos a (trace_to_formula xs)"
 
-inductive HML_failure :: "('a, 's)hml \<Rightarrow> bool"
-  where
-failure_tt: "HML_failure TT" |
-failure_pos: "HML_failure (hml_pos \<alpha> \<phi>)" if "HML_failure \<phi>" |
-failure_conj: "HML_failure (hml_conj I J \<psi>s)" 
-if "(\<forall>i \<in> I. TT_like (\<psi>s i)) \<and> (\<forall>j \<in> J. (TT_like (\<psi>s j)) \<or> (\<exists>\<alpha> \<chi>. ((\<psi>s j) = hml_pos \<alpha> \<chi> \<and> (TT_like \<chi>))))" 
 
 
 inductive HML_readiness :: "('a, 's)hml \<Rightarrow> bool"

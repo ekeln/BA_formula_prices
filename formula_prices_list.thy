@@ -21,7 +21,7 @@ Intuitively, the dimensions can be described as follows:\\
 5. Maximal modal depth of negative clauses in conjunctions\\
 6. Formula nesting depth of negations\\\<close>
 
-subsubsection \<open>Definition 2.1 (Formula Prices)\<close>
+subsubsection \<open>Definition 2.3.1 (Formula Prices)\<close>
 text \<open>
 The expressiveness price $\textsf{expr} : \text{HML}[\Sigma] \rightarrow (\mathbb{N \cup \infty})^6$ of a formula interpreted as $6 \times 1$-dimensional vectors is defined recursively by:
 
@@ -96,7 +96,6 @@ text \<open>Formally, the \textit{modal depth} $\textsf{expr}_1$ of a formula $\
     \text{if } \psi &= \neg \varphi \\
     &\text{then } \textsf{expr}_1(\psi) = \textsf{expr}_1(\varphi)
 \end{align*}
-
 \<close>
 
 primrec expr_1 :: "('a, 's)hml \<Rightarrow> enat"
@@ -434,7 +433,7 @@ next
   then show ?case using e1 e2 e3 e4 e5 e6 by simp
 qed
 
-section \<open>definition of component wise comparison\<close>
+text \<open>Prices are compared component wise, i.e., $(e_1, \ldots e_6) \leq (f_1 \ldots f_6)$ iff $e_i \leq f_i$ for each $i$.\<close>
 
 fun less_eq_t :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) \<Rightarrow> bool"
   where
@@ -444,15 +443,15 @@ fun less_eq_t :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat 
 definition less where
 "less x y \<equiv> less_eq_t x y \<and> \<not> (less_eq_t y x)"
 
+(*<*)
 definition e_sup :: "(enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat) set \<Rightarrow> (enat \<times> enat \<times> enat \<times> enat \<times> enat \<times> enat)"
   where
 "e_sup S \<equiv> ((Sup (fst ` S)), (Sup ((fst \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd) ` S)), 
 (Sup ((fst \<circ> snd \<circ> snd \<circ> snd) ` S)), (Sup ((fst \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)), 
 (Sup ((snd \<circ> snd \<circ> snd \<circ> snd \<circ> snd) ` S)))"
+(*>*)
 
-section \<open>general auxillary lemmas to argue about formulas and prices\<close>
-subsection \<open>The price of formulas is monotonic with respect to subformulas. 
-I.e.: If (expr \<phi>) <= (expr \<langle>\<alpha>\<rangle>\<phi>) and (\<forall>\<psi>_i \<in> \<Phi>. expr \<psi>_i \<le> n) --> (expr \<And>\<Phi>) <= n\<close> 
+text \<open>\textbf{Proposition} The expressiveness function is monotonic.\<close>
 
 lemma mon_pos:
   fixes n1 and n2 and n3 and n4::enat and n5 and n6 and \<alpha>
@@ -468,6 +467,85 @@ proof-
   hence "expr_1 \<phi> \<le> n1" 
     using ile_eSuc plus_1_eSuc(1) dual_order.trans by fastforce
   with E_rest show ?thesis by simp
+qed
+
+lemma mon_conj:
+  fixes n1 and n2 and n3 and n4 and n5 and n6 and xs and ys
+  assumes "less_eq_t (expr (hml_conj I J \<Phi>)) (n1, n2, n3, n4, n5, n6)"
+  shows "(\<forall>x \<in> (\<Phi> ` I). less_eq_t (expr x) (n1, n2, n3, n4, n5, n6))" 
+"(\<forall>y \<in> (\<Phi> ` J). less_eq_t (expr y) (n1, n2, n3, n4, n5, n6))"
+proof-
+  have e1_eq: "expr_1 (hml_conj I J \<Phi>) = Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_1 \<circ> \<Phi>) ` J)"
+    using expr_1_conj by blast
+  have e2_eq: "expr_2 (hml_conj I J \<Phi>) = 1 + Sup ((expr_2 \<circ> \<Phi>) ` I \<union> (expr_2 \<circ> \<Phi>) ` J)"
+    using expr_2_conj by blast
+  have e3_eq: "expr_3 (hml_conj I J \<Phi>) = (Sup ((expr_1 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` I \<union> (expr_3 \<circ> \<Phi>) ` J))"
+    using expr_3_conj by blast
+  have e4_eq: "expr_4 (hml_conj I J \<Phi>) = Sup ((expr_1 ` (pos_r (\<Phi> ` I)))  \<union> (expr_4 \<circ> \<Phi>) ` I \<union> (expr_4 \<circ> \<Phi>) ` J)"
+    using expr_4_conj by blast
+  have e5_eq: "expr_5 (hml_conj I J \<Phi>) = (Sup ((expr_5 \<circ> \<Phi>) ` I \<union> (expr_5 \<circ> \<Phi>) ` J \<union> (expr_1 \<circ> \<Phi>) ` J))"
+    using expr_5_conj by blast
+  have e6_eq: "expr_6 (hml_conj I J \<Phi>) = (Sup ((expr_6 \<circ> \<Phi>) ` I \<union> ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J)))"
+    using expr_6_conj by blast
+
+  have e1_le: "expr_1 (hml_conj I J \<Phi>) \<le> n1" and
+e2_le: "expr_2 (hml_conj I J \<Phi>) \<le> n2" and
+e3_le: "expr_3 (hml_conj I J \<Phi>) \<le> n3" and
+e4_le: "expr_4 (hml_conj I J \<Phi>) \<le> n4" and
+e5_le: "expr_5 (hml_conj I J \<Phi>) \<le> n5" and
+e6_le: "expr_6 (hml_conj I J \<Phi>) \<le> n6"
+    using less_eq_t.simps expr.simps assms
+    by metis+
+
+  from e1_eq e1_le have e1_pos: "Sup ((expr_1 \<circ> \<Phi>) ` I) \<le> n1"
+and e1_neg: "Sup ((expr_1 \<circ> \<Phi>) ` J) \<le> n1"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+    by metis+
+  hence e1_le_pos: "\<forall>x\<in>\<Phi> ` I. expr_1 x \<le> n1"
+and e1_le_neg: "\<forall>y\<in>\<Phi> ` J. expr_1 y \<le> n1"
+    by (simp add: Sup_le_iff)+
+
+  from e2_eq e2_le have e2_pos: "Sup ((expr_2 \<circ> \<Phi>) ` I) <= n2"
+and e2_neg: "Sup ((expr_2 \<circ> \<Phi>) ` J) \<le> n2"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+    by (metis (no_types, lifting) dual_order.trans ile_eSuc plus_1_eSuc(1))+
+
+  from e3_eq e3_le have e3_pos: "Sup ((expr_3 \<circ> \<Phi>) ` I) <= n3"
+and e3_neg: "Sup ((expr_3 \<circ> \<Phi>) ` J) <= n3"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+    by (simp add: Sup_le_iff)+
+
+  from e4_eq e4_le have e4_pos: "Sup ((expr_4 \<circ> \<Phi>) ` I) \<le> n4"
+and e4_neg: "Sup ((expr_4 \<circ> \<Phi>) ` J) \<le> n4"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+    by (simp add: Sup_le_iff)+
+
+  from e5_eq e5_le have e5_pos: "Sup ((expr_5 \<circ> \<Phi>) ` I) <= n5"
+and e5_neg: "Sup ((expr_5 \<circ> \<Phi>) ` J) <= n5"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+    by (simp add: Sup_le_iff)+
+
+  from e6_eq e6_le have e6_pos: "Sup ((expr_6 \<circ> \<Phi>) ` I) \<le> n6"
+and e6_neg: "Sup ((eSuc \<circ> expr_6 \<circ> \<Phi>) ` J) \<le> n6"
+    using Sup_union_distrib le_sup_iff sup_enat_def
+     apply (simp add: Sup_le_iff)
+    using Sup_union_distrib le_sup_iff sup_enat_def e6_eq e6_le
+    by metis
+
+  from e6_neg have e6_neg: "Sup ((expr_6 \<circ> \<Phi>) ` J) \<le> n6"
+    using Sup_enat_def eSuc_def
+    by (metis dual_order.trans eSuc_Sup i0_lb ile_eSuc image_comp)
+
+
+  show "\<forall>x\<in>\<Phi> ` I. less_eq_t (expr x) (n1, n2, n3, n4, n5, n6)"
+    using e1_pos e2_pos e3_pos e4_pos e5_pos e6_pos
+expr.simps less_eq_t.simps
+    by (simp add: Sup_le_iff)
+
+  show "\<forall>y\<in>\<Phi> ` J. less_eq_t (expr y) (n1, n2, n3, n4, n5, n6)"
+    using e1_neg e2_neg e3_neg e4_neg e5_neg e6_neg
+expr.simps less_eq_t.simps
+    by (simp add: Sup_le_iff)
 qed
 
 (*<*)

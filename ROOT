@@ -12,10 +12,19 @@ sessions
     Equivalences
     HML
     formula_prices_list
-    HML_list
-    Relational_Equivalences
-    HML_definitions
-    HML_equivalences
+    Correspondences
+    Traces
+    Failures
+    Expr_helper
+    Failure_traces
+    Readiness
+    Ready_traces
+    Revivals
+    Impossible_futures
+    Possible_futures
+    Simulation
+    Ready_simulation
+    Two_nested_sim
   document_files
     "root.bib"
     "root.tex"

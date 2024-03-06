@@ -1,0 +1,622 @@
+%
+\begin{isabellebody}%
+\setisabellecontext{Traces}%
+%
+\isadelimtheory
+%
+\endisadelimtheory
+%
+\isatagtheory
+%
+\endisatagtheory
+{\isafoldtheory}%
+%
+\isadelimtheory
+%
+\endisadelimtheory
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsection{Trace semantics%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+As discussed, trace semantics identifies two processes as equivalent if they allow for the same set of observations, or sequences of actions.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsubsubsection{Definition 3.1.1%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+\textit{The \textnormal{modal-characterization of trace semantics} is given by the set $\mathcal{O}_T$ of trace formulas over Act, recursively defined by:}
+\begin{align*}
+&\langle a \rangle\varphi\in\mathcal{O}_T \text{ if } \varphi\in \mathcal{O}_T \text{ and }a\in\Act\\
+&\bigwedge\varnothing\in \mathcal{O}_T
+\end{align*}%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{inductive}\isamarkupfalse%
+\ hml{\isacharunderscore}{\kern0pt}trace\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}hml\ {\isasymRightarrow}\ bool{\isachardoublequoteclose}\ \isakeyword{where}\isanewline
+trace{\isacharunderscore}{\kern0pt}tt{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace\ TT{\isachardoublequoteclose}\ {\isacharbar}{\kern0pt}\isanewline
+trace{\isacharunderscore}{\kern0pt}conj{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isasympsi}s{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}{\isacharbar}{\kern0pt}\isanewline
+trace{\isacharunderscore}{\kern0pt}pos{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}pos\ {\isasymalpha}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isakeyword{if}\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace\ {\isasymphi}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}formulas\isanewline
+\ \ \isakeyword{where}\isanewline
+{\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}formulas\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymphi}{\isachardot}{\kern0pt}\ hml{\isacharunderscore}{\kern0pt}trace\ {\isasymphi}{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}%
+\begin{isamarkuptext}%
+This definition allows for the construction of traces such as $\langle a_1 \rangle \langle a_2 \rangle \ldots \langle a_n \rangle \textsf{T}$, which represents action sequences or traces.
+Two processes $p$ and $q$ are considered trace-equivalent if they satisfy the same formulas in $\mathcal{O}_T$, namely 
+$$p \sim_T q \longleftrightarrow \forall\varphi\in\mathcal{O}_T. p\models\varphi \longleftrightarrow q\models\varphi$$%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{context}\isamarkupfalse%
+\ lts\isanewline
+\isakeyword{begin}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ \isakeyword{where}\isanewline
+{\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ p\ q\ {\isasymequiv}\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}formulas\ p\ q{\isachardoublequoteclose}%
+\begin{isamarkuptext}%
+The subset $\mathcal{O}_X$ only allows for finite sequences of actions, without the use of conjunctions or negations. 
+Therefore, the complexity of a trace formula is limited by its modal depth (and one conjunction for \textsf{T}). 
+As a result, the language derivied from the price coordinate $(\infty, 1, 0, 0, 0, 0)$ encompasses all trace formulas. 
+We refer to this HML-sublanguage as $\mathcal{O}{e_T}$.%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{definition}\isamarkupfalse%
+\ expr{\isacharunderscore}{\kern0pt}traces\isanewline
+\ \ \isakeyword{where}\isanewline
+{\isachardoublequoteopen}expr{\isacharunderscore}{\kern0pt}traces\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isasymphi}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}less{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}t\ {\isacharparenleft}{\kern0pt}expr\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasyminfinity}{\isacharcomma}{\kern0pt}\ {\isadigit{1}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{definition}\isamarkupfalse%
+\ expr{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ \isanewline
+\ \ \isakeyword{where}\isanewline
+{\isachardoublequoteopen}expr{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ p\ q\ {\isasymequiv}\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ expr{\isacharunderscore}{\kern0pt}traces\ p\ q{\isachardoublequoteclose}\isanewline
+\isacommand{end}\isamarkupfalse%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsubsubsection{Proposition 3.1.2%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+The language of formulas with prices below $(\infty, 1, 0, 0, 0, 0)$ characterizes trace equivalence. That is, for two processes $p$ and $q$, $p \sim_T q \longleftrightarrow p \sim_{e_T} q$. Explicitly: \\
+
+\[
+\forall \varphi \in \mathcal{O}_T. p \models \varphi \longleftrightarrow q \models \varphi \longleftrightarrow \forall \varphi \in \mathcal{O}_{e_T}. p \models \varphi \longleftrightarrow q \models \varphi
+\]%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+\textit{Proof.} We show that $\mathcal{O}_T$ and $\mathcal{O}_{e_T}$ capture the same set of formulas. We do this for both sides by induction over the structure of \textsf{HML}[$\Sigma$].
+
+First, we show that if $\varphi \in \mathcal{O}_\text{T}$, then \textsf{expr}$(\varphi) \leq (\infty, 1, 0, 0, 0, 0)$:
+\begin{align*}
+&\textit{(Base) Case $\bigwedge\varnothing$:} &&\parbox[t]{0.8\textwidth}{We can easily derive that $\bigwedge\varnothing = (0, 1, 0, 0, 0, 0)$ and thus $\bigwedge\varnothing \leq (\infty, 1, 0, 0, 0, 0)$.}\\
+&\textit{Case $\langle a \rangle \varphi$:} &&\parbox[t]{0.8\textwidth}{Since $\langle a \rangle$ only adds to $\textsf{expr}_1$, we can easily show that if $\textsf{expr}(\varphi) \leq (\infty, 1, 0, 0, 0, 0)$, then $\langle a \rangle\varphi \leq (\infty, 1, 0, 0, 0, 0)$.}
+\end{align*}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+Next, we show that if $\textsf{expr}(\varphi) \leq (\infty, 1, 0, 0, 0, 0)$, then $\varphi \in \mathcal{O}_\text{X}$:
+\begin{align*}
+&\textit{Case $\bigwedge_{i\in I}(\psi_i)$:} &&\parbox[t]{0.8\textwidth}{Since every formula ends with \textsf{T}, and $\textsf{expr}_2$ denotes the depth of a conjunction, $\textsf{expr}_2(\bigwedge_{i\in I}(\psi_i)) \geq 2$ if $I\neq\varnothing$. Therefore, $I$ must be empty.} \\
+&\textit{Case $\langle a \rangle\varphi$:} &&\parbox[t]{0.8\textwidth}{From the induction hypothesis and the monotonicity attribute, we have that $\varphi\in\mathcal{O}_T$. With the definition of $\mathcal{O}_T$, we have that $\langle a \rangle\varphi\in\mathcal{O}_T$.}
+\end{align*}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimvisible
+%
+\endisadelimvisible
+%
+\isatagvisible
+%
+\endisatagvisible
+{\isafoldvisible}%
+%
+\isadelimvisible
+\isanewline
+%
+\endisadelimvisible
+\isacommand{lemma}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}right{\isacharcolon}{\kern0pt}\ \isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace\ {\isasymphi}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}less{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}t\ {\isacharparenleft}{\kern0pt}expr\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasyminfinity}{\isacharcomma}{\kern0pt}\ {\isadigit{1}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\isanewline
+\isacommand{proof}\isamarkupfalse%
+{\isacharparenleft}{\kern0pt}induct\ {\isasymphi}\ rule{\isacharcolon}{\kern0pt}hml{\isacharunderscore}{\kern0pt}trace{\isachardot}{\kern0pt}induct{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}tt\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}trace{\isacharunderscore}{\kern0pt}conj\ {\isasympsi}s{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{4}}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isasympsi}s{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ expr{\isacharunderscore}{\kern0pt}{\isadigit{4}}{\isachardot}{\kern0pt}simps\ Sup{\isacharunderscore}{\kern0pt}enat{\isacharunderscore}{\kern0pt}def\ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}trace{\isacharunderscore}{\kern0pt}pos\ {\isasymphi}\ {\isasymalpha}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ HML{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}conj{\isacharunderscore}{\kern0pt}empty{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ A{\isadigit{1}}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}less{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}t\ {\isacharparenleft}{\kern0pt}expr\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasymPhi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasyminfinity}{\isacharcomma}{\kern0pt}\ {\isadigit{1}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\ \isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}I\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}\ {\isasymand}\ J\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isatagproof
+\isacommand{proof}\isamarkupfalse%
+{\isacharminus}{\kern0pt}\isanewline
+\ \ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isadigit{1}}\ {\isacharplus}{\kern0pt}\ Sup\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ I\ {\isasymunion}\ {\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ J{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ formula{\isacharunderscore}{\kern0pt}prices{\isacharunderscore}{\kern0pt}list{\isachardot}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}{\isacharunderscore}{\kern0pt}conj\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{with}\isamarkupfalse%
+\ assms\ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isachardot}{\kern0pt}{\isachardot}{\kern0pt}{\isachardot}{\kern0pt}\ {\isasymle}\ {\isadigit{1}}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ expr{\isachardot}{\kern0pt}simps\ less{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}t{\isachardot}{\kern0pt}simps\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\ \ \isacommand{hence}\isamarkupfalse%
+\ le{\isacharunderscore}{\kern0pt}{\isadigit{0}}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}Sup\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ I\ {\isasymunion}\ {\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ J{\isacharparenright}{\kern0pt}\ {\isasymle}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\ \ \isacommand{hence}\isamarkupfalse%
+\ le{\isacharunderscore}{\kern0pt}{\isadigit{0}}{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}{\isasymforall}x\ {\isasymin}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ I{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymle}\ {\isadigit{0}}{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymforall}x\ {\isasymin}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ J{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymle}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Sup{\isacharunderscore}{\kern0pt}le{\isacharunderscore}{\kern0pt}iff\ UnCI\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ metis{\isacharplus}{\kern0pt}\isanewline
+\ \ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isasymforall}x\ {\isasymin}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ I{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymge}\ {\isadigit{1}}{\isachardoublequoteclose}\ \isanewline
+\ \ \ \ {\isachardoublequoteopen}{\isasymforall}x\ {\isasymin}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}\ {\isasymcirc}\ {\isasymPhi}{\isacharparenright}{\kern0pt}\ {\isacharbackquote}{\kern0pt}\ J{\isacharparenright}{\kern0pt}{\isachardot}{\kern0pt}\ x\ {\isasymge}\ {\isadigit{1}}{\isachardoublequoteclose}\ \isacommand{using}\isamarkupfalse%
+\ expr{\isacharunderscore}{\kern0pt}{\isadigit{2}}{\isacharunderscore}{\kern0pt}lb\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ fastforce{\isacharplus}{\kern0pt}\isanewline
+\ \ \isacommand{with}\isamarkupfalse%
+\ le{\isacharunderscore}{\kern0pt}{\isadigit{0}}\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}thesis\ \isacommand{using}\isamarkupfalse%
+\ imageI\ \isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}left{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}less{\isacharunderscore}{\kern0pt}eq{\isacharunderscore}{\kern0pt}t\ {\isacharparenleft}{\kern0pt}expr\ {\isasymphi}{\isacharparenright}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasyminfinity}{\isacharcomma}{\kern0pt}\ {\isadigit{1}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{0}}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}trace\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\isanewline
+\isacommand{proof}\isamarkupfalse%
+{\isacharparenleft}{\kern0pt}induction\ {\isasymphi}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ TT\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}tt\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}pos\ {\isasymalpha}\ {\isasymphi}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ trace{\isacharunderscore}{\kern0pt}pos\ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasymPhi}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{using}\isamarkupfalse%
+\ HML{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}conj{\isacharunderscore}{\kern0pt}empty\ trace{\isacharunderscore}{\kern0pt}conj\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ metis\isanewline
+\isacommand{qed}\isamarkupfalse%
+\isanewline
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isadelimvisible
+%
+\endisadelimvisible
+%
+\isatagvisible
+%
+\endisatagvisible
+{\isafoldvisible}%
+%
+\isadelimvisible
+\isanewline
+%
+\endisadelimvisible
+\isacommand{context}\isamarkupfalse%
+\ lts\ \isakeyword{begin}\isanewline
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ {\isachardoublequoteopen}hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ p\ q\ {\isasymlongleftrightarrow}\ expr{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent\ p\ q{\isachardoublequoteclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{unfolding}\isamarkupfalse%
+\ hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ expr{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ expr{\isacharunderscore}{\kern0pt}traces{\isacharunderscore}{\kern0pt}def\ hml{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}formulas{\isacharunderscore}{\kern0pt}def\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
+\ HML{\isacharunderscore}{\kern0pt}trace{\isacharunderscore}{\kern0pt}lemma\ \isanewline
+\ \ \isacommand{by}\isamarkupfalse%
+\ blast%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{end}\isamarkupfalse%
+%
+\begin{isamarkuptext}%
+On Infinity...%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isatagproof
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isatagproof
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isadelimproof
+%
+\endisadelimproof
+%
+\isatagproof
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isacommand{end}\isamarkupfalse%
+\isanewline
+%
+\isadelimtheory
+%
+\endisadelimtheory
+%
+\isatagtheory
+\isacommand{end}\isamarkupfalse%
+%
+\endisatagtheory
+{\isafoldtheory}%
+%
+\isadelimtheory
+%
+\endisadelimtheory
+%
+\end{isabellebody}%
+\endinput
+%:%file=~/Documents/Isabelle_HOL/Traces.thy%:%
+%:%24=7%:%
+%:%36=9%:%
+%:%45=11%:%
+%:%57=13%:%
+%:%58=14%:%
+%:%59=15%:%
+%:%60=16%:%
+%:%61=17%:%
+%:%63=18%:%
+%:%64=18%:%
+%:%65=19%:%
+%:%66=20%:%
+%:%67=21%:%
+%:%68=22%:%
+%:%69=23%:%
+%:%70=23%:%
+%:%71=24%:%
+%:%72=25%:%
+%:%74=26%:%
+%:%75=27%:%
+%:%76=28%:%
+%:%78=30%:%
+%:%79=30%:%
+%:%80=31%:%
+%:%81=32%:%
+%:%82=33%:%
+%:%83=33%:%
+%:%84=34%:%
+%:%86=36%:%
+%:%87=37%:%
+%:%88=38%:%
+%:%89=39%:%
+%:%91=41%:%
+%:%92=41%:%
+%:%93=42%:%
+%:%94=43%:%
+%:%95=44%:%
+%:%96=45%:%
+%:%97=45%:%
+%:%98=46%:%
+%:%99=47%:%
+%:%100=48%:%
+%:%108=49%:%
+%:%120=50%:%
+%:%121=51%:%
+%:%122=52%:%
+%:%123=53%:%
+%:%124=54%:%
+%:%128=56%:%
+%:%129=57%:%
+%:%130=58%:%
+%:%131=59%:%
+%:%132=60%:%
+%:%133=61%:%
+%:%134=62%:%
+%:%138=64%:%
+%:%139=65%:%
+%:%140=66%:%
+%:%141=67%:%
+%:%142=68%:%
+%:%155=75%:%
+%:%158=76%:%
+%:%159=76%:%
+%:%160=77%:%
+%:%161=78%:%
+%:%164=79%:%
+%:%168=79%:%
+%:%169=79%:%
+%:%170=80%:%
+%:%171=80%:%
+%:%172=81%:%
+%:%173=81%:%
+%:%174=82%:%
+%:%175=82%:%
+%:%176=82%:%
+%:%177=82%:%
+%:%178=83%:%
+%:%179=83%:%
+%:%180=84%:%
+%:%181=84%:%
+%:%182=85%:%
+%:%183=85%:%
+%:%184=86%:%
+%:%185=86%:%
+%:%186=86%:%
+%:%187=87%:%
+%:%188=87%:%
+%:%189=87%:%
+%:%190=87%:%
+%:%191=88%:%
+%:%192=88%:%
+%:%193=89%:%
+%:%194=89%:%
+%:%195=90%:%
+%:%196=90%:%
+%:%197=90%:%
+%:%198=90%:%
+%:%199=91%:%
+%:%205=91%:%
+%:%208=92%:%
+%:%209=93%:%
+%:%210=93%:%
+%:%211=94%:%
+%:%212=95%:%
+%:%219=96%:%
+%:%220=96%:%
+%:%221=97%:%
+%:%222=97%:%
+%:%223=98%:%
+%:%224=98%:%
+%:%225=98%:%
+%:%226=99%:%
+%:%227=99%:%
+%:%228=99%:%
+%:%229=100%:%
+%:%230=100%:%
+%:%231=101%:%
+%:%232=101%:%
+%:%233=102%:%
+%:%234=102%:%
+%:%235=103%:%
+%:%236=103%:%
+%:%237=104%:%
+%:%238=104%:%
+%:%239=105%:%
+%:%240=105%:%
+%:%241=106%:%
+%:%242=106%:%
+%:%243=107%:%
+%:%244=107%:%
+%:%245=108%:%
+%:%246=108%:%
+%:%247=109%:%
+%:%248=109%:%
+%:%249=110%:%
+%:%250=110%:%
+%:%251=110%:%
+%:%252=110%:%
+%:%253=111%:%
+%:%254=111%:%
+%:%255=112%:%
+%:%261=112%:%
+%:%264=113%:%
+%:%265=114%:%
+%:%266=114%:%
+%:%267=115%:%
+%:%268=116%:%
+%:%271=117%:%
+%:%275=117%:%
+%:%276=117%:%
+%:%277=118%:%
+%:%278=118%:%
+%:%279=119%:%
+%:%280=119%:%
+%:%281=120%:%
+%:%282=120%:%
+%:%283=120%:%
+%:%284=121%:%
+%:%285=121%:%
+%:%286=121%:%
+%:%287=122%:%
+%:%288=122%:%
+%:%289=123%:%
+%:%290=123%:%
+%:%291=124%:%
+%:%292=124%:%
+%:%293=124%:%
+%:%294=125%:%
+%:%295=125%:%
+%:%296=125%:%
+%:%297=126%:%
+%:%298=126%:%
+%:%299=127%:%
+%:%300=127%:%
+%:%301=128%:%
+%:%302=128%:%
+%:%303=128%:%
+%:%304=128%:%
+%:%305=129%:%
+%:%306=129%:%
+%:%307=130%:%
+%:%308=130%:%
+%:%327=137%:%
+%:%330=138%:%
+%:%331=138%:%
+%:%332=139%:%
+%:%333=140%:%
+%:%334=140%:%
+%:%337=141%:%
+%:%341=141%:%
+%:%342=141%:%
+%:%343=142%:%
+%:%344=142%:%
+%:%345=143%:%
+%:%346=143%:%
+%:%351=143%:%
+%:%354=144%:%
+%:%355=145%:%
+%:%358=147%:%
+%:%397=192%:%
+%:%400=193%:%
+%:%401=193%:%
+%:%408=194%:%

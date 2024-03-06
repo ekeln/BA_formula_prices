@@ -39,7 +39,7 @@ In the context of this spectrum, demonstrating that a system model's observed be
 finding the finest notions of behavioral equivalence that equate them. Special bisimulation games and algorithms capable of answering equivalence questions 
 by performing a 'spectroscopy' of the differences between two processes have been developed \cite{bisping2022deciding}\cite{bisping2023process}.
 These approaches rechart the linear-time--branching-time spectrum using an expressiveness function that assigns a \textit{formula price} to every formula. 
-This price is supposed to capture the expressive capabilities of this particular formula. However, to be sure that these characterizations really capture the desired equivalences one has to perform the proofs. 
+This price is supposed to capture the expressive capabilities of a particular formula. However, to be sure that these characterizations really capture the desired equivalences one has to perform the proofs. 
 \<close>
 
 text \<open>
@@ -47,17 +47,17 @@ text \<open>
     \centering
 \begin{tikzpicture}[auto,node distance=3.2cm] % Adjusted node distance
   \node[align=center] (B) {Bisimulation B\\$(\infty, \infty, \infty, \infty, \infty, \infty)$};
-  \node[align=center, below of=B] (2S) {2-nested-simulation 2S};
-  \node[align=center, below left of=2S] (RS) {ready simulation RS};
-  \node[align=center, below right of=RS] (RT) {readiness traces RT};
-  \node[align=center] (PF) at (6,-8) {possible futures PF};
-  \node[align=center, below left of=RT] (FT) {failure traces FT};
-  \node[align=center, left of=FT] (S) {simulation S};
-  \node[align=center, below right of=RT] (R) {readiness R};
-  \node[align=center, below left of=R] (RV) {revivals RV};
-  \node[align=center] (IF) at (5,-12) {impossible futures IF};
-  \node[align=center, below right of=RV] (F) {failures F};
-  \node[align=center, below left of=F] (T) {traces T};
+  \node[align=center, below of=B] (2S) {2-nested-simulation 2S\\$(\infty, \infty, \infty, \infty, \infty, 1)$};
+  \node[align=center, below left of=2S] (RS) {ready simulation RS\\$(\infty, \infty, \infty, \infty, 1, 1)$};
+  \node[align=center, below right of=RS] (RT) {readiness traces RT\\$(\infty, \infty, \infty, 1, 1, 1)$};
+  \node[align=center] (PF) at (6,-8) {possible futures PF\\$(\infty, 2, \infty, \infty, \infty, 1)$};
+  \node[align=center, below left of=RT] (FT) {failure traces FT\\$(\infty, \infty, \infty, 0, 1, 1)$};
+  \node[align=center, left of=FT] (S) {simulation S\\$(\infty, \infty, \infty, \infty, 0, 0)$};
+  \node[align=center, below right of=RT] (R) {readiness R\\$(\infty, 2, 1, 1, 1, 1)$};
+  \node[align=center, below left of=R] (RV) {revivals RV\\$(\infty, 2, 1, 0, 1, 1)$};
+  \node[align=center] (IF) at (5,-12) {impossible futures IF\\$(\infty, 2, 0, 0, \infty, 1)$};
+  \node[align=center, below right of=RV] (F) {failures F\\$(\infty, 2, 0, 0, 1, 1)$};
+  \node[align=center, below left of=F] (T) {traces T\\$(\infty, 1, 0, 0, 0, 0)$};
 
   
   \draw[-] (B) -- node[above] {} (2S);
@@ -70,6 +70,7 @@ text \<open>
   \draw[-] (RT) -- node[left] {} (R);
   \draw[-] (FT) -- node[left] {} (RV);
   \draw[-] (R) -- node[left] {} (RV);
+  \draw[-] (R) -- node[left] {} (PF);
   \draw[-] (RV) -- node[left] {} (F);
   \draw[-] (IF) -- node[left] {} (F);
   \draw[-] (F) -- node[left] {} (T);
@@ -85,7 +86,7 @@ This thesis provides a machine-checkable proof that the price bounds of the expr
 More precisely, we consider a formula $\varphi$ to be in an observation language $\mathcal{O}_X$ iff its price is within the given price bound.
 For every expressiveness price bound $e_X$, we derive the sublanguage of Hennessy--Miler logic $\mathcal{O}_X$ and show that a formula $\varphi$ is in $\mathcal{O}_X$ precisely if its price \<open>expr(\<phi>)\<close> is less than or equal to $e_X$.
 Then we show that $\mathcal{O}_X$ has exactly the same distinguishing power as the modal-logical characterization of that equivalence.
-In (ref Foundations (chapter 2)) we discuss and introduce formal definitions of LTSs, Hennessy-Milner logic and the expressiveness function $\textsf{expr}$, in (ref The Correspondances?! name!) we perform
+In (ref Foundations (chapter 2)) we discuss and introduce formal definitions of LTSs, Hennessy-Milner logic and the expressiveness function $\textsf{expr}$. In (ref The Correspondances?! name!) we provide modal-logical definitions and perform
 the proofs for the standard notions of equivalence, i.e. the equivalences of (ref Figure 1). Namely for trace-, failures-, failure-trace-, readiness-, ready-trace-, revivals-, possible-futures-, impossible-futures-, simulation-, ready-simulation-, 2-nested-simulation- and bisimulation semantics.
 All the main concepts and proofs have been formalized and conducted using the interactive proof assistant Isabelle. More information on Isabelle can be found in (appendix?).
 We tried to present Isabelle implementations directly after their corresponding mathematical definitions.

@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{mathtools}
 \usepackage[mathscr]{euscript}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{enumitem}
@@ -78,12 +79,12 @@
 \input{Transition_Systems}
 \input{Equivalences}
 \input{HML}
-\input{Relational_Equivalences}
-\input{HML_list}
-\input{HML_definitions}
-\input{HML_equivalences}
 \input{formula_prices_list}
-
+\input{Correspondences}
+\input{Traces}
+\input{Failures}
+\input{Failure_traces}
+\input{Readiness}
 {
 \interlinepenalty=10000
 \bibliographystyle{alphaurl}

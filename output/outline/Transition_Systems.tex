@@ -40,14 +40,13 @@
 As described in \cref{chap::introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
 A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. 
 Actions denote the events or operations that can occur within the system. The outgoing transitions of each process 
-correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled with the same or different actions. This signifies that the system can choose any of these transitions non-deterministically
+correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled by the same or different actions. This signifies that the system can choose any of these transitions non-deterministically
 \footnote{Note that "non-determinism" has been used differently in some of the literature (citation needed). In the context of reactive systems, 
 all transitions are directly triggered by external actions or events and represent synchronization with the environment.
 The next state of the system is then uniquely determined by its current state and the external action. In that sense the behavior of the system is deterministic.}.
 The semantic equivalences treated in \cite{GLABBEEK20013} are defined entirely in terms of action relations.
-We treat processes as being \textit{sequential}, meaning it can perform at most one action at a time, and instantanious.
-Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. However, in our definition of LTS, 
-internal behavior is not considered.%
+Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. These internal tranistions are not observable from the outside, which yields new notions of equivalence. However, in our definition of LTS, 
+$\tau$-transitions are not explicitly treated different from other transitions.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \isadelimdocument
@@ -68,9 +67,9 @@ internal behavior is not considered.%
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-A \textit{Labeled Transition System} (LTS) is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
+\textit{A \textnormal{Labeled Transition System (LTS)} is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
 $\Act$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
-We write $p \xrightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.%
+We write $p \xrightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -87,7 +86,8 @@ the set of transitions uniquely defines a specific LTS. We express this relation
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-\begin{center}
+\begin{figure}[htbp]
+    \centering
 \begin{tikzpicture}[auto,node distance=1.5cm]
   \coordinate (p1) at (-3,0);
   \node at (-3, 0.2) {$p_1$}; 
@@ -113,23 +113,30 @@ the set of transitions uniquely defines a specific LTS. We express this relation
   \draw[->] (q2) -- node[above] {b} (q3);
   \draw[->] (q2) -- node[right] {c} (q4);
 \end{tikzpicture}
-\end{center}%
+\caption{TEEEEEEEEEEEEEEEEEEST}
+    \label{fig:your_label}
+\end{figure}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-If we compare the states $p_1$ and $q_1$ of (ref example 1) we can see many similarities but also differences between their behavior.
-They can perform the same set of action-sequences, however the $p_1$ can take a a-transition to $p_2$ where only a b-transition is possible, 
-while $q_1$ can only has one a-transition into $q_2$ where both b and c are possible actions.
+If we compare the states $p_1$ and $q_1$ of (ref example 1) we can see many similarities but also differences in their behavior.
+They can perform the same set of action-sequences, however the state $p_1$ can take a a-transition to $p_2$ where only a b-transition is possible, 
+while $q_1$ only has one a-transition into $q_2$ where both b and c are possible actions.
 Abstracting away details of the inner workings of a system leads us to a notion of equivalence that focuses solely on its externally observable behavior, called \textit{trace equivalence}. 
 We can imagine an observer that simply writes down the events of a process as they occur. 
-This observer views two processes as equivalent iff they allow the same sequences of actions. As discussed, $p_1$ and $q_1$ are clearly trace-equivalent.
+This observer views two processes as equivalent iff they allow the same sequences of actions. As discussed, $p_1$ and $q_1$ are trace-equivalent since they allow for the action sequences..
 Opposite to that we can define a equivalence that also captures internal behavior. \textit{Strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes we omit such qualifiers.} considers two states equivalent if, 
 for every possible action of one state, there exists a corresponding action of the other and vice versa. 
 Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an a-transition from $q_1$ to $q_2$, $p_1$ can perform an a-transition to $p_2$
-and $q_2$ and $p_2$ do not have the same possible actions. Bisimilarity is the finest commonly used \textit{extensional behavioral equivalence}.
+and $q_2$ and $p_2$ do not have the same possible actions. Bisimilarity is the finest\footnote{} commonly used \textit{extensional behavioral equivalence}.
 In extensional equivalences, only observable behavior is taken into account, without considering the
 identity of the processes. This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, 
-where the (intensional) identity of processes is relevant.%
+where the (intensional) identity of processes is relevant. 
+(The linear-time--branching-time spectrum is a framework that orders behavioral equivalences between trace- and bisimulation semantics by how refined one equivalence is. Finer equivalences make more distinctions between processes, while coarser make less distinctions.)%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+Definition LT - BT, statt letzer satz in letztem paragraph, da sich das mit introductoin doppelt?%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -154,71 +161,199 @@ We introduce some concepts to better talk about LTS. Note that these Isabelle de
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-The \textit{$\alpha$-derivatives} of a state refer to the set of states that can be reached with an $\alpha$-transition:
-$$\mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$$%
+\begin{itemize}
+    \item \textit{The \textnormal{$\alpha$-derivatives} of a state refer to the set of states that can be reached with an $\alpha$-transition:
+    $\mathit{Der} (p, \alpha) = \{ p' \mid p \xrightarrow{\alpha} p' \}.$}
+
+    \item \textit{A process is in a \textnormal{deadlock} if no observation is possible. That is:
+    $\mathit{deadlock} (p) = (\forall\alpha .\mathit{Der} (p, \alpha) = \varnothing)$}
+
+    \item \textit{The set of \textnormal{initial actions} of a process $p$ is defined by: 
+    $I(p)=\{\alpha \in Act \mid \exists p'. p \xrightarrow{\alpha} p'\}$}
+
+    \item \textit{The \textnormal{step sequence relation} $\xrightarrow{\sigma}^*$ for $\sigma \in \text{Act}^*$ is the reflexive transitive closure of $p \xrightarrow{\alpha} p'$.
+    It is defined recursively by:
+    \begin{align*}
+        p &\xrightarrow{\varepsilon}^* p \\
+        p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p' \xrightarrow{\sigma}^* p''
+    \end{align*}}
+
+    \item \textit{We call a sequence of states $s_0, s_1, s_2, ..., s_n$ a \textnormal{path} if there exists a step sequence between $s_0$ and $s_n$.}
+\end{itemize}%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{abbreviation}\isamarkupfalse%
 \ derivatives\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}derivatives\ p\ {\isasymalpha}\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-The set of \textit{initial actions} of a process $p$ is defined by: 
-$$I(p)=\{\alpha \in Act \mid \exists p'. p \xrightarrow{\alpha} p'\}$$%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{abbreviation}\isamarkupfalse%
-\ initial{\isacharunderscore}{\kern0pt}actions{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
-\ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}initial{\isacharunderscore}{\kern0pt}actions\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymalpha}{\isacharbar}{\kern0pt}{\isasymalpha}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-The step sequence relation $\xrightarrow{\sigma}^*$ for $\sigma \in \Act^*$ is the reflexive transitive closure of $p \xrightarrow{\alpha} p'$.
-It is defined recursively by:
-\begin{align*}
-  p &\xrightarrow{\varepsilon}^* p \\
-  p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p' \xrightarrow{\sigma}^* p''
-\end{align*}%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{inductive}\isamarkupfalse%
-\ step{\isacharunderscore}{\kern0pt}sequence\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ list\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ {\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}{\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
-{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ p{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharparenleft}{\kern0pt}a{\isacharhash}{\kern0pt}rt{\isacharparenright}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isakeyword{if}\ {\isacartoucheopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ rt\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-$p$ is image-finite if for each $\alpha \in \Act$ the set $mathit{Der} (p, \alpha)$ is finite.
-An LTS is image-finite if each $p \in \Proc$ is image-finite:
-"$$\forall p \in\Proc, \alpha \in \Act. mathit{Der} (p, \alpha)$$ is finite.%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ image{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
-{\isacartoucheopen}image{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p\ {\isasymalpha}{\isachardot}{\kern0pt}\ finite\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-nötig?%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ image{\isacharunderscore}{\kern0pt}countable\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}bool{\isacartoucheclose}\isanewline
-\ \ \isakeyword{where}\ {\isacartoucheopen}image{\isacharunderscore}{\kern0pt}countable\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}\ p\ {\isasymalpha}{\isachardot}{\kern0pt}\ countable\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-stimmt definition? definition benötigt nach umstieg auf sets?%
-\end{isamarkuptext}\isamarkuptrue%
-\isacommand{definition}\isamarkupfalse%
-\ lts{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
-{\isacartoucheopen}lts{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}finite\ {\isacharparenleft}{\kern0pt}UNIV\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}s\ set{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
-\begin{isamarkuptext}%
-We say that a process is in a \textit{deadlock} if no observation is possible. That is:
-$$\mathit{deadlock} (p) = (\forall\alpha .\mathit{Der} (p, \alpha) = \varnothing)$$%
-\end{isamarkuptext}\isamarkuptrue%
+{\isacartoucheopen}derivatives\ p\ {\isasymalpha}\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
+\isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ deadlock\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
 {\isacartoucheopen}deadlock\ p\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}{\isasymalpha}{\isachardot}{\kern0pt}\ derivatives\ p\ {\isasymalpha}\ {\isacharequal}{\kern0pt}\ {\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
-\ relevant{\isacharunderscore}{\kern0pt}actions\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
+\ initial{\isacharunderscore}{\kern0pt}actions{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ set{\isacartoucheclose}\isanewline
 \ \ \isakeyword{where}\isanewline
-{\isacartoucheopen}relevant{\isacharunderscore}{\kern0pt}actions\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}a{\isachardot}{\kern0pt}\ {\isasymexists}p\ p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}a\ p{\isacharprime}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}%
+{\isacartoucheopen}initial{\isacharunderscore}{\kern0pt}actions\ p\ {\isasymequiv}\ {\isacharbraceleft}{\kern0pt}{\isasymalpha}{\isacharbar}{\kern0pt}{\isasymalpha}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharbraceright}{\kern0pt}{\isacartoucheclose}\isanewline
+\isanewline
+\isacommand{inductive}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}a\ list\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ {\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}{\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\ \isakeyword{where}\isanewline
+{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ p{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
+{\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharparenleft}{\kern0pt}a{\isacharhash}{\kern0pt}rt{\isacharparenright}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isakeyword{if}\ {\isacartoucheopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ rt\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\ \isanewline
+\isanewline
+\isacommand{inductive}\isamarkupfalse%
+\ paths\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}s\ list\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
+\ \ {\isacartoucheopen}paths\ {\isacharbrackleft}{\kern0pt}p{\isacharcomma}{\kern0pt}\ p{\isacharbrackright}{\kern0pt}{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
+\ \ {\isacartoucheopen}paths\ {\isacharparenleft}{\kern0pt}p{\isacharhash}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharhash}{\kern0pt}ps{\isacharparenright}{\kern0pt}{\isacartoucheclose}\ \isakeyword{if}\ {\isacartoucheopen}{\isasymexists}a{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}\ {\isasymand}\ paths\ {\isacharparenleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharhash}{\kern0pt}ps{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
-\textbf{Example 2} (van Glaabeeck counterex. 1)%
+If there exists a path from $p$ to $p''$ there exists a corresponding step sequence and vice versa.%
 \end{isamarkuptext}\isamarkuptrue%
+\isacommand{lemma}\isamarkupfalse%
+\isanewline
+\ \ \isakeyword{assumes}\ {\isacartoucheopen}paths\ {\isacharparenleft}{\kern0pt}p\ {\isacharhash}{\kern0pt}\ ps\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isakeyword{shows}\ {\isacartoucheopen}{\isasymexists}tr{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}induct\ ps\ arbitrary{\isacharcolon}{\kern0pt}\ p{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ Nil\isanewline
+\ \ \isacommand{hence}\isamarkupfalse%
+\ {\isacartoucheopen}paths\ {\isacharbrackleft}{\kern0pt}p{\isacharcomma}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\ \ \isacommand{hence}\isamarkupfalse%
+\ {\isacartoucheopen}p\ {\isacharequal}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}metis\ list{\isachardot}{\kern0pt}discI\ list{\isachardot}{\kern0pt}sel{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\ list{\isachardot}{\kern0pt}sel{\isacharparenleft}{\kern0pt}{\isadigit{3}}{\isacharparenright}{\kern0pt}\ paths{\isachardot}{\kern0pt}cases{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{hence}\isamarkupfalse%
+\ {\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}Cons\ p{\isacharprime}{\kern0pt}\ ps{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{obtain}\isamarkupfalse%
+\ a\ \isakeyword{where}\ {\isacartoucheopen}p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}{\isacartoucheclose}\ {\isacartoucheopen}paths\ {\isacharparenleft}{\kern0pt}p{\isacharprime}{\kern0pt}\ {\isacharhash}{\kern0pt}\ ps\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Cons{\isachardot}{\kern0pt}prems\ paths{\isachardot}{\kern0pt}simps{\isacharbrackleft}{\kern0pt}of\ {\isacartoucheopen}p\ {\isacharhash}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p{\isacharprime}{\kern0pt}\ {\isacharhash}{\kern0pt}\ ps{\isacharparenright}{\kern0pt}\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacartoucheclose}{\isacharbrackright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
+\ \ \isacommand{obtain}\isamarkupfalse%
+\ tr\ \isakeyword{where}\ {\isacartoucheopen}p{\isacharprime}{\kern0pt}\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ Cons{\isachardot}{\kern0pt}hyps\ {\isacartoucheopen}paths\ {\isacharparenleft}{\kern0pt}p{\isacharprime}{\kern0pt}\ {\isacharhash}{\kern0pt}\ ps\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ {\isacartoucheopen}p\ {\isasymmapsto}\ a\ p{\isacharprime}{\kern0pt}{\isacartoucheclose}\ step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\isanewline
+\ \ \isakeyword{assumes}\ {\isacartoucheopen}p\ {\isasymmapsto}{\isachardollar}{\kern0pt}\ tr\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \isakeyword{shows}\ {\isacartoucheopen}{\isasymexists}ps{\isachardot}{\kern0pt}\ paths\ {\isacharparenleft}{\kern0pt}p\ {\isacharhash}{\kern0pt}\ ps\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharbrackright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ assms\isanewline
+\isacommand{proof}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}induct\ rule{\isacharcolon}{\kern0pt}step{\isacharunderscore}{\kern0pt}sequence{\isachardot}{\kern0pt}induct{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}{\isadigit{1}}\ p{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{have}\isamarkupfalse%
+\ {\isacartoucheopen}paths\ {\isacharparenleft}{\kern0pt}p\ {\isacharhash}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}{\isacharbrackright}{\kern0pt}\ {\isacharat}{\kern0pt}\ {\isacharbrackleft}{\kern0pt}p{\isacharbrackright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ paths{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{1}}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ simp\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\ \isacommand{by}\isamarkupfalse%
+\ blast\isanewline
+\isacommand{next}\isamarkupfalse%
+\isanewline
+\ \ \isacommand{case}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}{\isadigit{2}}\ p\ a\ rt\ p{\isacharprime}{\kern0pt}{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \isacommand{then}\isamarkupfalse%
+\ \isacommand{show}\isamarkupfalse%
+\ {\isacharquery}{\kern0pt}case\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ paths{\isachardot}{\kern0pt}intros{\isacharparenleft}{\kern0pt}{\isadigit{2}}{\isacharparenright}{\kern0pt}\ append{\isacharunderscore}{\kern0pt}Cons\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ metis\isanewline
+\isacommand{qed}\isamarkupfalse%
+%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+%
+\endisadelimproof
 %
 \begin{isamarkuptext}%
-\begin{center}
+LTSs can be classified by imposing limitations on the number of possible transitions from each state.%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\isatagdocument
+%
+\isamarkupsubsubsection{Definition 2.1.3%
+}
+\isamarkuptrue%
+%
+\endisatagdocument
+{\isafolddocument}%
+%
+\isadelimdocument
+%
+\endisadelimdocument
+%
+\begin{isamarkuptext}%
+\textit{A process $p$ is \textnormal{image-finite} if, for each $\alpha \in \Act$, the set $\mathit{Der} (p, \alpha)$ is finite.
+A LTS is image-finite if each $p \in \Proc$ is image-finite:
+$\forall p \in\Proc, \alpha \in \Act. \mathit{Der} (p, \alpha)$ is finite.}%
+\end{isamarkuptext}\isamarkuptrue%
+\isacommand{definition}\isamarkupfalse%
+\ image{\isacharunderscore}{\kern0pt}finite\ \isakeyword{where}\isanewline
+{\isacartoucheopen}image{\isacharunderscore}{\kern0pt}finite\ {\isasymequiv}\ {\isacharparenleft}{\kern0pt}{\isasymforall}p\ {\isasymalpha}{\isachardot}{\kern0pt}\ finite\ {\isacharparenleft}{\kern0pt}derivatives\ p\ {\isasymalpha}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+\isacommand{end}\isamarkupfalse%
+%
+\begin{isamarkuptext}%
+\begin{figure}[htbp]
+    \centering
 \begin{tikzpicture}[auto,node distance=1.5cm]
   \coordinate (p1) at (-3,0);
   \node at (-3, 0.2) {$p$}; 
@@ -262,16 +397,17 @@ $$\mathit{deadlock} (p) = (\forall\alpha .\mathit{Der} (p, \alpha) = \varnothing
   \draw[->, dotted] (q10) -- +(0,-1) node[right] {};
   \node[] (dot2) at (4.7,-1) {$\ldots$};
 \end{tikzpicture}
-\end{center}%
+\caption{TEEEEEEEEEEEEEEEEEEST}
+    \label{fig:your_label}
+\end{figure}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
 Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they have unlimited ways to proceed. 
 Given the possibility of infinity in sequential and branching behavior, we must consider how we identify processes that only differ in their infinite behavior. 
-Take the states $p$ and $q$ of (ref example 2). They have the same (finite) step sequences, however only $q$ has an infinite trace. Do we consider them trace equivalent?
+Take the states $p$ and $q$ of (ref example 2). They have the same (finite) step sequences, however, only $q$ has an infinite trace. Do we consider them trace equivalent?
 We will investigate this further in (Trace Semantics, Simulation?).%
 \end{isamarkuptext}\isamarkuptrue%
-\isacommand{end}\isamarkupfalse%
 %
 \isadelimtheory
 %
@@ -301,19 +437,19 @@ We will investigate this further in (Trace Semantics, Simulation?).%
 %:%47=18%:%
 %:%48=19%:%
 %:%49=20%:%
-%:%50=21%:%
-%:%59=23%:%
+%:%58=22%:%
+%:%70=24%:%
 %:%71=25%:%
 %:%72=26%:%
-%:%73=27%:%
+%:%76=28%:%
 %:%77=29%:%
-%:%78=30%:%
-%:%80=32%:%
+%:%79=31%:%
+%:%80=31%:%
 %:%81=32%:%
 %:%82=33%:%
 %:%83=34%:%
-%:%84=35%:%
-%:%86=37%:%
+%:%85=36%:%
+%:%89=39%:%
 %:%90=40%:%
 %:%91=41%:%
 %:%92=42%:%
@@ -341,8 +477,8 @@ We will investigate this further in (Trace Semantics, Simulation?).%
 %:%114=64%:%
 %:%115=65%:%
 %:%116=66%:%
-%:%120=68%:%
-%:%121=69%:%
+%:%117=67%:%
+%:%118=68%:%
 %:%122=70%:%
 %:%123=71%:%
 %:%124=72%:%
@@ -354,102 +490,201 @@ We will investigate this further in (Trace Semantics, Simulation?).%
 %:%130=78%:%
 %:%131=79%:%
 %:%132=80%:%
-%:%136=82%:%
-%:%145=84%:%
-%:%157=86%:%
-%:%158=87%:%
-%:%160=89%:%
-%:%161=89%:%
-%:%162=90%:%
-%:%163=91%:%
+%:%133=81%:%
+%:%134=82%:%
+%:%135=83%:%
+%:%139=86%:%
+%:%143=88%:%
+%:%152=90%:%
+%:%164=92%:%
 %:%165=93%:%
 %:%166=94%:%
+%:%167=95%:%
 %:%168=96%:%
-%:%169=96%:%
-%:%170=97%:%
-%:%171=98%:%
-%:%173=100%:%
-%:%174=101%:%
-%:%175=102%:%
-%:%176=103%:%
-%:%177=104%:%
-%:%178=105%:%
+%:%169=97%:%
+%:%170=98%:%
+%:%171=99%:%
+%:%172=100%:%
+%:%173=101%:%
+%:%174=102%:%
+%:%175=103%:%
+%:%176=104%:%
+%:%177=105%:%
+%:%178=106%:%
+%:%179=107%:%
 %:%180=108%:%
-%:%181=108%:%
-%:%182=109%:%
-%:%183=110%:%
-%:%185=112%:%
-%:%186=113%:%
-%:%187=114%:%
-%:%189=116%:%
-%:%190=116%:%
-%:%191=117%:%
-%:%193=119%:%
+%:%181=109%:%
+%:%182=110%:%
+%:%184=113%:%
+%:%185=113%:%
+%:%186=114%:%
+%:%187=115%:%
+%:%188=116%:%
+%:%189=117%:%
+%:%190=117%:%
+%:%191=118%:%
+%:%192=119%:%
+%:%193=120%:%
+%:%194=120%:%
 %:%195=121%:%
-%:%196=121%:%
-%:%197=122%:%
+%:%196=122%:%
+%:%197=123%:%
+%:%198=124%:%
 %:%199=124%:%
-%:%201=125%:%
-%:%202=125%:%
-%:%203=126%:%
-%:%205=128%:%
-%:%206=129%:%
-%:%208=131%:%
-%:%209=131%:%
-%:%210=132%:%
-%:%211=133%:%
-%:%212=134%:%
-%:%213=134%:%
-%:%214=135%:%
-%:%215=136%:%
-%:%217=138%:%
-%:%221=141%:%
-%:%222=142%:%
-%:%223=143%:%
-%:%224=144%:%
-%:%225=145%:%
-%:%226=146%:%
-%:%227=147%:%
-%:%228=148%:%
-%:%229=149%:%
-%:%230=150%:%
-%:%231=151%:%
-%:%232=152%:%
-%:%233=153%:%
-%:%234=154%:%
-%:%235=155%:%
-%:%236=156%:%
-%:%237=157%:%
-%:%238=158%:%
-%:%239=159%:%
-%:%240=160%:%
-%:%241=161%:%
-%:%242=162%:%
-%:%243=163%:%
-%:%244=164%:%
-%:%245=165%:%
-%:%246=166%:%
-%:%247=167%:%
-%:%248=168%:%
-%:%249=169%:%
-%:%250=170%:%
-%:%251=171%:%
-%:%252=172%:%
-%:%253=173%:%
-%:%254=174%:%
-%:%255=175%:%
-%:%256=176%:%
-%:%257=177%:%
-%:%258=178%:%
-%:%259=179%:%
-%:%260=180%:%
-%:%261=181%:%
-%:%262=182%:%
-%:%263=183%:%
-%:%264=184%:%
-%:%265=185%:%
-%:%269=187%:%
-%:%270=188%:%
-%:%271=189%:%
-%:%272=190%:%
-%:%274=192%:%
+%:%200=125%:%
+%:%201=126%:%
+%:%202=127%:%
+%:%203=128%:%
+%:%204=128%:%
+%:%205=129%:%
+%:%206=130%:%
+%:%208=133%:%
+%:%210=135%:%
+%:%211=135%:%
+%:%212=136%:%
+%:%213=137%:%
+%:%216=138%:%
+%:%220=138%:%
+%:%221=138%:%
+%:%222=139%:%
+%:%223=139%:%
+%:%224=140%:%
+%:%225=140%:%
+%:%226=141%:%
+%:%227=141%:%
+%:%228=142%:%
+%:%229=142%:%
+%:%230=143%:%
+%:%231=143%:%
+%:%232=144%:%
+%:%233=144%:%
+%:%234=145%:%
+%:%235=145%:%
+%:%236=146%:%
+%:%237=146%:%
+%:%238=146%:%
+%:%239=147%:%
+%:%240=147%:%
+%:%241=147%:%
+%:%242=148%:%
+%:%243=148%:%
+%:%244=149%:%
+%:%245=149%:%
+%:%246=150%:%
+%:%247=150%:%
+%:%248=151%:%
+%:%249=151%:%
+%:%250=152%:%
+%:%251=152%:%
+%:%252=153%:%
+%:%253=153%:%
+%:%254=154%:%
+%:%255=154%:%
+%:%256=155%:%
+%:%257=155%:%
+%:%258=156%:%
+%:%259=156%:%
+%:%260=157%:%
+%:%261=157%:%
+%:%262=157%:%
+%:%263=158%:%
+%:%264=158%:%
+%:%265=159%:%
+%:%266=159%:%
+%:%267=160%:%
+%:%273=160%:%
+%:%276=161%:%
+%:%277=162%:%
+%:%278=162%:%
+%:%279=163%:%
+%:%280=164%:%
+%:%283=165%:%
+%:%287=165%:%
+%:%288=165%:%
+%:%289=166%:%
+%:%290=166%:%
+%:%291=167%:%
+%:%292=167%:%
+%:%293=168%:%
+%:%294=168%:%
+%:%295=169%:%
+%:%296=169%:%
+%:%297=170%:%
+%:%298=170%:%
+%:%299=171%:%
+%:%300=171%:%
+%:%301=171%:%
+%:%302=171%:%
+%:%303=172%:%
+%:%304=172%:%
+%:%305=173%:%
+%:%306=173%:%
+%:%307=174%:%
+%:%308=174%:%
+%:%309=174%:%
+%:%310=175%:%
+%:%311=175%:%
+%:%312=176%:%
+%:%313=176%:%
+%:%314=177%:%
+%:%324=179%:%
+%:%333=180%:%
+%:%345=181%:%
+%:%346=182%:%
+%:%347=183%:%
+%:%349=185%:%
+%:%350=185%:%
+%:%351=186%:%
+%:%352=202%:%
+%:%355=205%:%
+%:%356=206%:%
+%:%357=207%:%
+%:%358=208%:%
+%:%359=209%:%
+%:%360=210%:%
+%:%361=211%:%
+%:%362=212%:%
+%:%363=213%:%
+%:%364=214%:%
+%:%365=215%:%
+%:%366=216%:%
+%:%367=217%:%
+%:%368=218%:%
+%:%369=219%:%
+%:%370=220%:%
+%:%371=221%:%
+%:%372=222%:%
+%:%373=223%:%
+%:%374=224%:%
+%:%375=225%:%
+%:%376=226%:%
+%:%377=227%:%
+%:%378=228%:%
+%:%379=229%:%
+%:%380=230%:%
+%:%381=231%:%
+%:%382=232%:%
+%:%383=233%:%
+%:%384=234%:%
+%:%385=235%:%
+%:%386=236%:%
+%:%387=237%:%
+%:%388=238%:%
+%:%389=239%:%
+%:%390=240%:%
+%:%391=241%:%
+%:%392=242%:%
+%:%393=243%:%
+%:%394=244%:%
+%:%395=245%:%
+%:%396=246%:%
+%:%397=247%:%
+%:%398=248%:%
+%:%399=249%:%
+%:%400=250%:%
+%:%401=251%:%
+%:%402=252%:%
+%:%406=254%:%
+%:%407=255%:%
+%:%408=256%:%
+%:%409=257%:%
