@@ -23,8 +23,9 @@ sessions
     Impossible_futures
     Possible_futures
     Simulation
-    Ready_simulation
+    (*Ready_simulation*)
     Two_nested_sim
+    Alternative_price_function
   document_files
     "root.bib"
     "root.tex"

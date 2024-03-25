@@ -861,8 +861,9 @@ lemma ft_lemma:
 
 text \<open>BlaBla... Dann Induktion über die Formeln und für jede formel äquivalente formel erstellen.\<close>
 
+(*\<^marker>\<open>tag (proof) visible\<close>*)
 context lts begin
-lemma \<^marker>\<open>tag (proof) visible\<close> alt_failure_trace_def_implies_failure_trace_def:
+lemma  alt_failure_trace_def_implies_failure_trace_def:
   fixes \<phi> :: "('a, 's) hml"
   assumes "hml_failure_trace \<phi>"
   shows "\<exists>\<psi>. HML_failure_trace \<psi> \<and> (\<forall>s. (s \<Turnstile> \<phi>) \<longleftrightarrow> (s \<Turnstile> \<psi>))"
@@ -951,7 +952,7 @@ next
   qed
 qed
 
-lemma \<^marker>\<open>tag (proof) visible\<close> stacked_pos_rewriting:
+lemma stacked_pos_rewriting:
   assumes "stacked_pos_conj_pos \<phi>" "\<not>HML_true \<phi>"
   shows "\<exists>\<alpha>. (\<forall>s. (s \<Turnstile> \<phi>) \<longleftrightarrow> (s \<Turnstile> (hml_pos \<alpha> TT)))"
   using assms proof(induction \<phi>)
@@ -982,14 +983,14 @@ next
   then show ?case by blast
 qed
 
-lemma \<^marker>\<open>tag (proof) visible\<close> nested_empty_conj_TT_or_FF:
+lemma nested_empty_conj_TT_or_FF:
   assumes "nested_empty_conj \<phi>"
   shows "(\<forall>s. (s \<Turnstile> \<phi>)) \<or> (\<forall>s. \<not>(s \<Turnstile> \<phi>))"
   using assms HML_true_nested_empty_pos_conj
   unfolding HML_true_def
   by(induction, simp, fastforce)
 
-lemma \<^marker>\<open>tag (proof) visible\<close> failure_trace_def_implies_alt_failure_trace_def:
+lemma failure_trace_def_implies_alt_failure_trace_def:
   fixes \<phi> :: "('a, 's) hml"
   assumes "HML_failure_trace \<phi>"
   shows "\<exists>\<psi>. hml_failure_trace \<psi> \<and> (\<forall>s. (s \<Turnstile> \<phi>) \<longleftrightarrow> (s \<Turnstile> \<psi>))"

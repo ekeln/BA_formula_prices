@@ -8,22 +8,19 @@ begin
 section \<open>Labeled Transition Systems\<close>
 text \<open>\label{sec:LTS}\<close>
 
-text \<open>As described in \cref{chap::introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
+text \<open>As described in \cref{chap:introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
 A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. 
 Actions denote the events or operations that can occur within the system. The outgoing transitions of each process 
-correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled by the same or different actions. This signifies that the system can choose any of these transitions non-deterministically
-\footnote{Note that "non-determinism" has been used differently in some of the literature (citation needed). In the context of reactive systems, 
-all transitions are directly triggered by external actions or events and represent synchronization with the environment.
-The next state of the system is then uniquely determined by its current state and the external action. In that sense the behavior of the system is deterministic.}.
-The semantic equivalences treated in \cite{GLABBEEK20013} are defined entirely in terms of action relations.
-Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. These internal tranistions are not observable from the outside, which yields new notions of equivalence. However, in our definition of LTS, 
+correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled by the same or different actions. This apparent `choice' of transition signifies that the system can select from these options non-deterministicaly\footnote{In the context of reactive systems, this `choice' is a representation of the system's possible behaviors rather than actual non-determinism. In reality, transitions represent synchronizations with the system's environment. The next state of the system is then uniquely determined by its current state and the external action.}.
+The semantic equivalences we investigate are defined entirely in terms of action relations. Many modeling methods use a special $\tau$-action to represent internal behavior. These internal transitions are not observable from the outside, which yields new notions of equivalence. However, in our definition of LTS, 
 $\tau$-transitions are not explicitly treated different from other transitions.\<close>
+
 
 subsubsection \<open>Definition 2.1.1 (Labeled transition Systems)\<close>
 
-text \<open>\textit{A \textnormal{Labeled Transition System (LTS)} is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
-$\Act$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
-We write $p \xrightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.}\<close>
+text \<open>\textit{A \textnormal{Labeled Transition System (LTS)} is a tuple $\mathcal{S} = (\text{Proc}, \text{Act}, \rightarrow)$ where $\text{Proc}$ is the set of processes, 
+$\text{Act}$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \text{Proc} \times \text{Act} \times \text{Proc}$ is a transition relation.
+We write $p \xrightarrow{\alpha} p^\prime$ for $(p, \alpha, p^\prime)\in \rightarrow$.}\<close>
 
 text \<open>Actions and processes are formalized using type variable \<open>'a\<close> and \<open>'s\<close>, respectively. As only actions and states involved in the transition relation are relevant, 
 the set of transitions uniquely defines a specific LTS. We express this relationship using the predicate \<open>tran\<close>. In Isabelle we associate \<open>tran\<close> with a more readable notation, \<open>p \<mapsto>\<alpha> p'\<close> for $p \xrightarrow{\alpha} p'$.\<close>
@@ -33,7 +30,7 @@ locale lts =
     ("_ \<mapsto>_ _" [70, 70, 70] 80)
 begin
 
-text \<open>\textbf{Example 1} (Taken from (Glabbeeck, counterex. 3)) A simple LTS. Depending on how ``close'' we look, we might consider the observable behaviors of $p_1$ and $q_2$ equivalent or not.\<close>
+text \<open>The graph \ref{fig:2_1} depicts a simple LTS. Depending on how `close' we look, we might consider the observable behaviors of $p_1$ and $q_1$ equivalent or not.\<close>
 
 text \<open>
 \begin{figure}[htbp]
@@ -63,27 +60,25 @@ text \<open>
   \draw[->] (q2) -- node[above] {b} (q3);
   \draw[->] (q2) -- node[right] {c} (q4);
 \end{tikzpicture}
-\caption{TEEEEEEEEEEEEEEEEEEST}
-    \label{fig:your_label}
+\caption{Counterexample 3 glaabbeck}
+    \label{fig:2_1}
 \end{figure}\<close>
 
-text \<open>If we compare the states $p_1$ and $q_1$ of (ref example 1) we can see many similarities but also differences in their behavior.
-They can perform the same set of action-sequences, however the state $p_1$ can take a a-transition to $p_2$ where only a b-transition is possible, 
-while $q_1$ only has one a-transition into $q_2$ where both b and c are possible actions.
+text \<open>If we compare the states $p_1$ and $q_1$ of (ref example 1), we can observe many similarities but also differences in their behavior. 
+They can perform the same set of action sequences; however, the state $p_1$ can transition to $p_2$ via an $a$-transition, whereas only a $b$-transition is possible from $q_1$ to $q_2$, where both $b$ and $c$ actions are possible.
+
 Abstracting away details of the inner workings of a system leads us to a notion of equivalence that focuses solely on its externally observable behavior, called \textit{trace equivalence}. 
-We can imagine an observer that simply writes down the events of a process as they occur. 
-This observer views two processes as equivalent iff they allow the same sequences of actions. As discussed, $p_1$ and $q_1$ are trace-equivalent since they allow for the action sequences..
-Opposite to that we can define a equivalence that also captures internal behavior. \textit{Strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes we omit such qualifiers.} considers two states equivalent if, 
-for every possible action of one state, there exists a corresponding action of the other and vice versa. 
-Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an a-transition from $q_1$ to $q_2$, $p_1$ can perform an a-transition to $p_2$
-and $q_2$ and $p_2$ do not have the same possible actions. Bisimilarity is the finest\footnote{} commonly used \textit{extensional behavioral equivalence}.
-In extensional equivalences, only observable behavior is taken into account, without considering the
-identity of the processes. This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, 
-where the (intensional) identity of processes is relevant. 
-(The linear-time--branching-time spectrum is a framework that orders behavioral equivalences between trace- and bisimulation semantics by how refined one equivalence is. Finer equivalences make more distinctions between processes, while coarser make less distinctions.) 
+We can imagine an observer who simply records the events of a process as they occur. This observer views two processes as equivalent if and only if they allow the same sequences of actions. 
+As discussed, $p_1$ and $q_1$ are trace-equivalent since they allow for the same action sequences. In contrast, \textit{strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes, we omit such qualifiers.} 
+considers two states equivalent if, for every possible action of one state, there exists a corresponding action of the other, and vice versa. 
+Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an $a$-transition from $q_1$ to $q_2$, $p_1$ can perform an $a$-transition to $p_2$, but $q_2$ and $p_2$ do not have the same possible actions.
+Bisimilarity is the finest\footnote{} commonly used \textit{extensional behavioral equivalence}. In extensional equivalences, only observable behavior is taken into account, without considering the identity of the processes. 
+This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, where the (intensional) identity of processes is relevant.
 \<close>
 
-text \<open>Definition LT - BT, statt letzer satz in letztem paragraph, da sich das mit introductoin doppelt?\<close>
+text \<open>Figure \ref{fig:1_1} charts the \textit{linear-time--branching-time-spectrum}. This spectrum orders behavioral equivalences between trace- and bisimulation semantics by how refined one equivalence is. Finer equivalences make more distinctions between
+processes, while coarser ones make fewer distinctions. If processes are equated by one notion of equivalence, they are also equated by every notion below. Note that, like \cite{bisping2023process}, we omit the examination of completed trace, completed simulation and possible worlds observations (evtl discussion?).
+\<close>
 
 text \<open>We introduce some concepts to better talk about LTS. Note that these Isabelle definitions are only defined in the \<open>context\<close> of LTS.\<close>
 
@@ -103,7 +98,7 @@ text \<open>\begin{itemize}
     It is defined recursively by:
     \begin{align*}
         p &\xrightarrow{\varepsilon}^* p \\
-        p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p' \xrightarrow{\sigma}^* p''
+        p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p \xrightarrow{\alpha\sigma}^* p''
     \end{align*}}
 
     \item \textit{We call a sequence of states $s_0, s_1, s_2, ..., s_n$ a \textnormal{path} if there exists a step sequence between $s_0$ and $s_n$.}
@@ -247,14 +242,17 @@ text \<open>
   \draw[->, dotted] (q10) -- +(0,-1) node[right] {};
   \node[] (dot2) at (4.7,-1) {$\ldots$};
 \end{tikzpicture}
-\caption{TEEEEEEEEEEEEEEEEEEST}
-    \label{fig:your_label}
+\caption{counterexample glaabeeck (cite)}
+    \label{fig:2.2}
 \end{figure}\<close>
 
-text \<open>Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they have unlimited ways to proceed. 
+text \<open>Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they can have unlimited ways to proceed. 
 Given the possibility of infinity in sequential and branching behavior, we must consider how we identify processes that only differ in their infinite behavior. 
-Take the states $p$ and $q$ of (ref example 2). They have the same (finite) step sequences, however, only $q$ has an infinite trace. Do we consider them trace equivalent?
-We will investigate this further in (Trace Semantics, Simulation?).\<close>
+Take the states $p$ and $q$ of \ref{fig:2.2}, they have the same (finite) step sequences, however, only $q$ has an infinite trace. Do we consider them trace equivalent?
+This distinction criterion leads to a number of new equivalences. (Van glaabeeck) distinguishes between finite and infinite versions for all equivalences.
+They also investigate an intermediate version for simulation-like semantics, that assumes that an observer can investigate arbitrary many properties of a process in parallel, but only in a finite amount of time, 
+and a version of the finite versions of semantics with refusal sets, where these sets are finite. This thesis focuses on the default versions of these semantics, allowing for infinite copies of a process to be tested but only for a finite duration. That corresponds to the finitary version for trace-like semantics. Processes whose behavior differ only in infinite execution, such as $p$ and $q$, are considered equivalent regarding trace-like semantics.
+For simulation-like semantics, this corresponds to the infinitary version. An observer can observe arbitrary many copies of a processes, and can therefore also observe infinite sequential behavior (see van glaabeeck prop 8.3, theorem 4). This means that simulation-like semantics can distinguish between $p$ and $q$ (see simulation chapter).\<close>
 
 (*<*)
 end

@@ -25,4 +25,7 @@ subsubsection \<open>Is formalization of LTS actually correct (can \<open>'s\<cl
 
 subsubsection \<open>HM-theoreme:\<close>
 text \<open>Add machine checkable proofs that modal characterizations correspond to colloquial definitions (relational, refusal sets, ...)\<close>
+
+subsubsection \<open>Spectroscopy Game\<close>
+text \<open>(Als anwendung von spektrum)\<close>
 end

@@ -15,8 +15,17 @@ sessions
     Correspondences
     Traces
     Failures
+    Expr_helper
     Failure_traces
-    Readiness
+    (*Readiness
+    Ready_traces
+    Revivals
+    Impossible_futures
+    Possible_futures
+    Simulation
+    Ready_simulation
+    Two_nested_sim*)
+    Alternative_price_function
   document_files
     "root.bib"
     "root.tex"

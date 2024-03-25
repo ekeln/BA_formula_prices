@@ -46,20 +46,20 @@ next
 qed
 
 lemma ttf_in_HML_trace:
-  shows "(trace_to_formula t) \<in> HML_trace_formulas"
+  shows "(trace_to_formula t) \<in> hml_trace_formulas"
 proof(induction t)
   case Nil
   then show ?case 
-    using HML_trace.simps HML_trace_formulas_def trace_to_formula.simps(1) by blast
+    using hml_trace.simps hml_trace_formulas_def trace_to_formula.simps(1) by blast
 next
   case (Cons a t)
   then show ?case 
-    using HML_trace_formulas_def trace_pos by fastforce
+    using hml_trace_formulas_def trace_pos by fastforce
 qed
 
 lemma HM_trace_aux_theorem:
   fixes p \<phi>
-  assumes "(\<phi> \<in> HML_trace_formulas \<and> (p \<Turnstile> \<phi>))"  
+  assumes "(\<phi> \<in> hml_trace_formulas \<and> (p \<Turnstile> \<phi>))"  
   shows "\<exists>t. t \<in> traces p \<and> (\<phi> \<Lleftarrow>\<Rrightarrow> (trace_to_formula t))"
   using assms
 proof(induction \<phi> arbitrary: p)
@@ -69,8 +69,8 @@ proof(induction \<phi> arbitrary: p)
     by fastforce
 next
   case (hml_pos \<alpha> \<phi>)
-  then have \<phi>_trace: "\<phi> \<in> HML_trace_formulas"
-    using HML_trace.simps HML_trace_formulas_def 
+  then have \<phi>_trace: "\<phi> \<in> hml_trace_formulas"
+    using hml_trace.simps hml_trace_formulas_def 
     by (metis hml.distinct(1) hml.distinct(5) hml.inject(1) mem_Collect_eq)
   from hml_pos obtain q where "p \<mapsto>\<alpha> q \<and> q \<Turnstile> \<phi>"
     by auto
@@ -91,7 +91,7 @@ next
 next
   case (hml_conj I J \<Phi>)
   hence "I = {}" "J = {}"
-    by (metis CollectD HML_trace.simps HML_trace_formulas_def hml.distinct(3) hml.distinct(5) hml.inject(2))+
+    by (metis CollectD hml_trace.simps hml_trace_formulas_def hml.distinct(3) hml.distinct(5) hml.inject(2))+
   then show ?case
     using step_sequence.intros(1) hml_formula_eq_def hml_impl_iffI 
     by fastforce
@@ -108,17 +108,18 @@ text \<open>HM Theorem for Traces\<close>
 
 lemma HM_trace_theorem:
   fixes p q
-  shows "(traces p = traces q) = 
-HML_trace_equivalent p q"
+  shows "(traces p = traces q) = hml_trace_equivalent p q"
 proof
   assume trace_eq: "traces p = traces q"
-  show "HML_trace_equivalent p q"
-    unfolding HML_trace_equivalent_def using HM_trace_aux_theorem state_satisfies_trace trace_eq 
-    using hml_formula_eq_def hml_impl_iffI by blast
+  show "hml_trace_equivalent p q"
+    unfolding hml_trace_equivalent_def using HM_trace_aux_theorem state_satisfies_trace trace_eq 
+    using hml_formula_eq_def hml_impl_iffI 
+impossible_futures_def_implies_alt_impossible_futures_def
+    by (meson if_tt ) by blast
 next
-  assume assm: "HML_trace_equivalent p q"
+  assume assm: "hml_trace_equivalent p q"
   then show "traces p = traces q"
-    unfolding HML_trace_equivalent_def using state_satisfies_trace assm ttf ttf_in_HML_trace 
+    unfolding hml_trace_equivalent_def using state_satisfies_trace assm ttf ttf_in_HML_trace 
     by blast
 qed
 

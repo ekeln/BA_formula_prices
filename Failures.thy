@@ -19,7 +19,7 @@ text \<open>\textit{The \textnormal{modal characterization of failures semantics
 &\bigwedge_{i\in I}\lnot\langle a \rangle \textsf{T}
 \end{align*}\<close>
 
-inductive hml_failure :: "('a, 's)hml \<Rightarrow> bool"
+inductive hml_failure :: "('a, 'i)hml \<Rightarrow> bool"
   where
 failure_tt: "hml_failure TT" |
 failure_pos: "hml_failure (hml_pos \<alpha> \<phi>)" if "hml_failure \<phi>" |

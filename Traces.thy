@@ -6,7 +6,7 @@ begin
 
 section \<open>Trace semantics\<close>
 
-text \<open>As discussed, trace semantics identifies two processes as equivalent if they allow for the same set of observations, or sequences of actions.\<close>
+text \<open>As discussed, trace semantics identifies two processes as equivalent if they allow for the same set of observations, or action sequences.\<close>
 
 subsubsection \<open>Definition 3.1.1\<close>
 
@@ -15,7 +15,7 @@ text \<open>\textit{The \textnormal{modal-characterization of trace semantics} i
 &\langle a \rangle\varphi\in\mathcal{O}_T \text{ if } \varphi\in \mathcal{O}_T \text{ and }a\in\Act\\
 &\bigwedge\varnothing\in \mathcal{O}_T
 \end{align*}\<close>
-inductive hml_trace :: "('a, 's)hml \<Rightarrow> bool" where
+inductive hml_trace :: "('a, 'i)hml \<Rightarrow> bool" where
 trace_tt: "hml_trace TT" |
 trace_conj: "hml_trace (hml_conj {} {} \<psi>s)"|
 trace_pos: "hml_trace (hml_pos \<alpha> \<phi>)" if "hml_trace \<phi>"
@@ -23,17 +23,11 @@ trace_pos: "hml_trace (hml_pos \<alpha> \<phi>)" if "hml_trace \<phi>"
 definition hml_trace_formulas
   where
 "hml_trace_formulas \<equiv> {\<phi>. hml_trace \<phi>}"
+
 text \<open>This definition allows for the construction of traces such as $\langle a_1 \rangle \langle a_2 \rangle \ldots \langle a_n \rangle \textsf{T}$, which represents action sequences or traces.
 Two processes $p$ and $q$ are considered trace-equivalent if they satisfy the same formulas in $\mathcal{O}_T$, namely 
-$$p \sim_T q \longleftrightarrow \forall\varphi\in\mathcal{O}_T. p\models\varphi \longleftrightarrow q\models\varphi$$\<close>
-
-context lts
-begin
-
-definition hml_trace_equivalent where
-"hml_trace_equivalent p q \<equiv> HML_subset_equivalent hml_trace_formulas p q"
-
-text \<open>The subset $\mathcal{O}_X$ only allows for finite sequences of actions, without the use of conjunctions or negations. 
+$$p \sim_T q \longleftrightarrow \forall\varphi\in\mathcal{O}_T. p\models\varphi \longleftrightarrow q\models\varphi$$
+The subset $\mathcal{O}_X$ only allows for finite sequences of actions, without the use of conjunctions or negations. 
 Therefore, the complexity of a trace formula is limited by its modal depth (and one conjunction for \textsf{T}). 
 As a result, the language derivied from the price coordinate $(\infty, 1, 0, 0, 0, 0)$ encompasses all trace formulas. 
 We refer to this HML-sublanguage as $\mathcal{O}{e_T}$.\<close>
@@ -42,10 +36,20 @@ definition expr_traces
   where
 "expr_traces = {\<phi>. (less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))}"
 
+text \<open>As discussed, the equivalences are defined in the context of lts.\<close>
+
+context lts begin
+
+definition hml_trace_equivalent where
+"hml_trace_equivalent p q \<equiv> 
+  HML_subset_equivalent hml_trace_formulas p q"
+
 definition expr_trace_equivalent 
   where
-"expr_trace_equivalent p q \<equiv> HML_subset_equivalent expr_traces p q"
+"expr_trace_equivalent p q \<equiv> 
+  HML_subset_equivalent expr_traces p q"
 end
+
 subsubsection \<open>Proposition 3.1.2\<close>
 text \<open>The language of formulas with prices below $(\infty, 1, 0, 0, 0, 0)$ characterizes trace equivalence. That is, for two processes $p$ and $q$, $p \sim_T q \longleftrightarrow p \sim_{e_T} q$. Explicitly: \\
 
@@ -134,7 +138,7 @@ lemma \<^marker>\<open>tag (proof) visible\<close> HML_trace_lemma:
 "(hml_trace \<phi>) = (less_eq_t (expr \<phi>) (\<infinity>, 1, 0, 0, 0, 0))"
   using trace_left trace_right by blast
 (*>*)
-
+text \<open>\<close>
 context lts begin
 
 lemma "hml_trace_equivalent p q \<longleftrightarrow> expr_trace_equivalent p q"
@@ -143,9 +147,6 @@ lemma "hml_trace_equivalent p q \<longleftrightarrow> expr_trace_equivalent p q"
   by blast
 
 end
-
-text \<open>On Infinity...\<close>
-
 
 (*APPENDIX? (Bei HM-trace-theorem)*)
 (*<*)

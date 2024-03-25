@@ -19,10 +19,14 @@
 \usepackage{graphicx}
 \usepackage[pass]{geometry}
 \usepackage{pdfpages}
+\usepackage{textcomp}
+\usepackage{multicol}
+\usepackage{hyperref}
 
 \urlstyle{rm}
 \isabellestyle{it}
 
+\definecolor{myyellow}{RGB}{204, 204, 0} 
 \definecolor{keyword}{RGB}{0,153,102}
 \definecolor{command}{RGB}{0,102,153}
 \isabellestyle{tt}
@@ -57,6 +61,7 @@
 \end{center}
 }
 
+\hyphenation{HML-expressiveness}
 
 \begin{document}
 
@@ -90,7 +95,7 @@
 \input{Impossible_futures}
 \input{Possible_futures}
 \input{Simulation}
-\input{Ready_simulation}
+%\input{Ready_simulation}
 \input{Two_nested_sim}
 {
 \interlinepenalty=10000
@@ -99,6 +104,8 @@
 \interlinepenalty=0
 }
 
+\appendix
+\input{Alternative_price_function}
 
 \end{document}
 

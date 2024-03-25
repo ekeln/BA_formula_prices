@@ -37,15 +37,11 @@
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-As described in \cref{chap::introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
+As described in \cref{chap:introduction}, labeled transition systems are formal models used to describe the behavior of reactive systems.
 A LTS consists of three components: processes, actions, and transitions. Processes represent momentary states or configurations of a system. 
 Actions denote the events or operations that can occur within the system. The outgoing transitions of each process 
-correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled by the same or different actions. This signifies that the system can choose any of these transitions non-deterministically
-\footnote{Note that "non-determinism" has been used differently in some of the literature (citation needed). In the context of reactive systems, 
-all transitions are directly triggered by external actions or events and represent synchronization with the environment.
-The next state of the system is then uniquely determined by its current state and the external action. In that sense the behavior of the system is deterministic.}.
-The semantic equivalences treated in \cite{GLABBEEK20013} are defined entirely in terms of action relations.
-Note that many modeling methods of systems use a special $\tau$-action to represent internal behavior. These internal tranistions are not observable from the outside, which yields new notions of equivalence. However, in our definition of LTS, 
+correspond to the actions the system can perform in that state, yielding a subsequent state. A process may have multiple outgoing transitions labeled by the same or different actions. This apparent `choice' of transition signifies that the system can select from these options non-deterministicaly\footnote{In the context of reactive systems, this `choice' is a representation of the system's possible behaviors rather than actual non-determinism. In reality, transitions represent synchronizations with the system's environment. The next state of the system is then uniquely determined by its current state and the external action.}.
+The semantic equivalences we investigate are defined entirely in terms of action relations. Many modeling methods use a special $\tau$-action to represent internal behavior. These internal transitions are not observable from the outside, which yields new notions of equivalence. However, in our definition of LTS, 
 $\tau$-transitions are not explicitly treated different from other transitions.%
 \end{isamarkuptext}\isamarkuptrue%
 %
@@ -67,9 +63,9 @@ $\tau$-transitions are not explicitly treated different from other transitions.%
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-\textit{A \textnormal{Labeled Transition System (LTS)} is a tuple $\mathcal{S} = (\Proc, \Act, \rightarrow)$ where $\Proc$ is the set of processes, 
-$\Act$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \Proc \times \Act \times \Proc$ is a transition relation.
-We write $p \xrightarrow{\alpha} p'$ for $(p, \alpha, p')\in \rightarrow$.}%
+\textit{A \textnormal{Labeled Transition System (LTS)} is a tuple $\mathcal{S} = (\text{Proc}, \text{Act}, \rightarrow)$ where $\text{Proc}$ is the set of processes, 
+$\text{Act}$ is the set of actions and $\cdot\xrightarrow{\cdot}\cdot$ $\subseteq \text{Proc} \times \text{Act} \times \text{Proc}$ is a transition relation.
+We write $p \xrightarrow{\alpha} p^\prime$ for $(p, \alpha, p^\prime)\in \rightarrow$.}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -82,7 +78,7 @@ the set of transitions uniquely defines a specific LTS. We express this relation
 \ \ \ \ {\isacharparenleft}{\kern0pt}{\isachardoublequoteopen}{\isacharunderscore}{\kern0pt}\ {\isasymmapsto}{\isacharunderscore}{\kern0pt}\ {\isacharunderscore}{\kern0pt}{\isachardoublequoteclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{7}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{8}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
 \isakeyword{begin}%
 \begin{isamarkuptext}%
-\textbf{Example 1} (Taken from (Glabbeeck, counterex. 3)) A simple LTS. Depending on how ``close'' we look, we might consider the observable behaviors of $p_1$ and $q_2$ equivalent or not.%
+The graph \ref{fig:2_1} depicts a simple LTS. Depending on how `close' we look, we might consider the observable behaviors of $p_1$ and $q_1$ equivalent or not.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -113,30 +109,27 @@ the set of transitions uniquely defines a specific LTS. We express this relation
   \draw[->] (q2) -- node[above] {b} (q3);
   \draw[->] (q2) -- node[right] {c} (q4);
 \end{tikzpicture}
-\caption{TEEEEEEEEEEEEEEEEEEST}
-    \label{fig:your_label}
+\caption{Counterexample 3 glaabbeck}
+    \label{fig:2_1}
 \end{figure}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-If we compare the states $p_1$ and $q_1$ of (ref example 1) we can see many similarities but also differences in their behavior.
-They can perform the same set of action-sequences, however the state $p_1$ can take a a-transition to $p_2$ where only a b-transition is possible, 
-while $q_1$ only has one a-transition into $q_2$ where both b and c are possible actions.
+If we compare the states $p_1$ and $q_1$ of (ref example 1), we can observe many similarities but also differences in their behavior. 
+They can perform the same set of action sequences; however, the state $p_1$ can transition to $p_2$ via an $a$-transition, whereas only a $b$-transition is possible from $q_1$ to $q_2$, where both $b$ and $c$ actions are possible.
+
 Abstracting away details of the inner workings of a system leads us to a notion of equivalence that focuses solely on its externally observable behavior, called \textit{trace equivalence}. 
-We can imagine an observer that simply writes down the events of a process as they occur. 
-This observer views two processes as equivalent iff they allow the same sequences of actions. As discussed, $p_1$ and $q_1$ are trace-equivalent since they allow for the action sequences..
-Opposite to that we can define a equivalence that also captures internal behavior. \textit{Strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes we omit such qualifiers.} considers two states equivalent if, 
-for every possible action of one state, there exists a corresponding action of the other and vice versa. 
-Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an a-transition from $q_1$ to $q_2$, $p_1$ can perform an a-transition to $p_2$
-and $q_2$ and $p_2$ do not have the same possible actions. Bisimilarity is the finest\footnote{} commonly used \textit{extensional behavioral equivalence}.
-In extensional equivalences, only observable behavior is taken into account, without considering the
-identity of the processes. This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, 
-where the (intensional) identity of processes is relevant. 
-(The linear-time--branching-time spectrum is a framework that orders behavioral equivalences between trace- and bisimulation semantics by how refined one equivalence is. Finer equivalences make more distinctions between processes, while coarser make less distinctions.)%
+We can imagine an observer who simply records the events of a process as they occur. This observer views two processes as equivalent if and only if they allow the same sequences of actions. 
+As discussed, $p_1$ and $q_1$ are trace-equivalent since they allow for the same action sequences. In contrast, \textit{strong bisimilarity}\footnote{Behavioral equivalences are commonly denoted as strong, as opposed to weak, if they do not take internal behavior into account. Since we are only concerned with concrete processes, we omit such qualifiers.} 
+considers two states equivalent if, for every possible action of one state, there exists a corresponding action of the other, and vice versa. 
+Additionally, the resulting states after taking these actions must also be bisimilar. The states $p_1$ and $q_1$ are not bisimilar, since for an $a$-transition from $q_1$ to $q_2$, $p_1$ can perform an $a$-transition to $p_2$, but $q_2$ and $p_2$ do not have the same possible actions.
+Bisimilarity is the finest\footnote{} commonly used \textit{extensional behavioral equivalence}. In extensional equivalences, only observable behavior is taken into account, without considering the identity of the processes. 
+This sets bisimilarity apart from stronger graph equivalences like \textit{graph isomorphism}, where the (intensional) identity of processes is relevant.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-Definition LT - BT, statt letzer satz in letztem paragraph, da sich das mit introductoin doppelt?%
+Figure \ref{fig:1_1} charts the \textit{linear-time--branching-time-spectrum}. This spectrum orders behavioral equivalences between trace- and bisimulation semantics by how refined one equivalence is. Finer equivalences make more distinctions between
+processes, while coarser ones make fewer distinctions. If processes are equated by one notion of equivalence, they are also equated by every notion below. Note that, like \cite{bisping2023process}, we omit the examination of completed trace, completed simulation and possible worlds observations (evtl discussion?).%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
@@ -175,7 +168,7 @@ We introduce some concepts to better talk about LTS. Note that these Isabelle de
     It is defined recursively by:
     \begin{align*}
         p &\xrightarrow{\varepsilon}^* p \\
-        p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p' \xrightarrow{\sigma}^* p''
+        p &\xrightarrow{\alpha} p' \text{ with } \alpha \in \text{Act} \text{ and } p' \xrightarrow{\sigma}^* p'' \text{ implies } p \xrightarrow{\alpha\sigma}^* p''
     \end{align*}}
 
     \item \textit{We call a sequence of states $s_0, s_1, s_2, ..., s_n$ a \textnormal{path} if there exists a step sequence between $s_0$ and $s_n$.}
@@ -397,16 +390,19 @@ $\forall p \in\Proc, \alpha \in \Act. \mathit{Der} (p, \alpha)$ is finite.}%
   \draw[->, dotted] (q10) -- +(0,-1) node[right] {};
   \node[] (dot2) at (4.7,-1) {$\ldots$};
 \end{tikzpicture}
-\caption{TEEEEEEEEEEEEEEEEEEST}
-    \label{fig:your_label}
+\caption{counterexample glaabeeck (cite)}
+    \label{fig:2.2}
 \end{figure}%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
-Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they have unlimited ways to proceed. 
+Our definition of LTS allows for an unrestricted number of states, all of which can be arbitrarily branching. This means that they can have unlimited ways to proceed. 
 Given the possibility of infinity in sequential and branching behavior, we must consider how we identify processes that only differ in their infinite behavior. 
-Take the states $p$ and $q$ of (ref example 2). They have the same (finite) step sequences, however, only $q$ has an infinite trace. Do we consider them trace equivalent?
-We will investigate this further in (Trace Semantics, Simulation?).%
+Take the states $p$ and $q$ of \ref{fig:2.2}, they have the same (finite) step sequences, however, only $q$ has an infinite trace. Do we consider them trace equivalent?
+This distinction criterion leads to a number of new equivalences. (Van glaabeeck) distinguishes between finite and infinite versions for all equivalences.
+They also investigate an intermediate version for simulation-like semantics, that assumes that an observer can investigate arbitrary many properties of a process in parallel, but only in a finite amount of time, 
+and a version of the finite versions of semantics with refusal sets, where these sets are finite. This thesis focuses on the default versions of these semantics, allowing for infinite copies of a process to be tested but only for a finite duration. That corresponds to the finitary version for trace-like semantics. Processes whose behavior differ only in infinite execution, such as $p$ and $q$, are considered equivalent regarding trace-like semantics.
+For simulation-like semantics, this corresponds to the infinitary version. An observer can observe arbitrary many copies of a processes, and can therefore also observe infinite sequential behavior (see van glaabeeck prop 8.3, theorem 4). This means that simulation-like semantics can distinguish between $p$ and $q$ (see simulation chapter).%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \isadelimtheory
@@ -433,258 +429,254 @@ We will investigate this further in (Trace Semantics, Simulation?).%
 %:%43=14%:%
 %:%44=15%:%
 %:%45=16%:%
-%:%46=17%:%
-%:%47=18%:%
-%:%48=19%:%
-%:%49=20%:%
-%:%58=22%:%
-%:%70=24%:%
-%:%71=25%:%
-%:%72=26%:%
+%:%54=19%:%
+%:%66=21%:%
+%:%67=22%:%
+%:%68=23%:%
+%:%72=25%:%
+%:%73=26%:%
+%:%75=28%:%
 %:%76=28%:%
 %:%77=29%:%
+%:%78=30%:%
 %:%79=31%:%
-%:%80=31%:%
-%:%81=32%:%
-%:%82=33%:%
-%:%83=34%:%
+%:%81=33%:%
 %:%85=36%:%
-%:%89=39%:%
-%:%90=40%:%
-%:%91=41%:%
-%:%92=42%:%
-%:%93=43%:%
-%:%94=44%:%
-%:%95=45%:%
-%:%96=46%:%
-%:%97=47%:%
-%:%98=48%:%
-%:%99=49%:%
-%:%100=50%:%
-%:%101=51%:%
-%:%102=52%:%
-%:%103=53%:%
-%:%104=54%:%
-%:%105=55%:%
-%:%106=56%:%
-%:%107=57%:%
-%:%108=58%:%
-%:%109=59%:%
-%:%110=60%:%
-%:%111=61%:%
-%:%112=62%:%
-%:%113=63%:%
-%:%114=64%:%
-%:%115=65%:%
-%:%116=66%:%
-%:%117=67%:%
-%:%118=68%:%
-%:%122=70%:%
-%:%123=71%:%
-%:%124=72%:%
-%:%125=73%:%
-%:%126=74%:%
-%:%127=75%:%
-%:%128=76%:%
-%:%129=77%:%
-%:%130=78%:%
+%:%86=37%:%
+%:%87=38%:%
+%:%88=39%:%
+%:%89=40%:%
+%:%90=41%:%
+%:%91=42%:%
+%:%92=43%:%
+%:%93=44%:%
+%:%94=45%:%
+%:%95=46%:%
+%:%96=47%:%
+%:%97=48%:%
+%:%98=49%:%
+%:%99=50%:%
+%:%100=51%:%
+%:%101=52%:%
+%:%102=53%:%
+%:%103=54%:%
+%:%104=55%:%
+%:%105=56%:%
+%:%106=57%:%
+%:%107=58%:%
+%:%108=59%:%
+%:%109=60%:%
+%:%110=61%:%
+%:%111=62%:%
+%:%112=63%:%
+%:%113=64%:%
+%:%114=65%:%
+%:%118=67%:%
+%:%119=68%:%
+%:%120=69%:%
+%:%121=70%:%
+%:%122=71%:%
+%:%123=72%:%
+%:%124=73%:%
+%:%125=74%:%
+%:%126=75%:%
+%:%127=76%:%
 %:%131=79%:%
 %:%132=80%:%
-%:%133=81%:%
-%:%134=82%:%
-%:%135=83%:%
-%:%139=86%:%
-%:%143=88%:%
-%:%152=90%:%
-%:%164=92%:%
-%:%165=93%:%
-%:%166=94%:%
-%:%167=95%:%
-%:%168=96%:%
-%:%169=97%:%
-%:%170=98%:%
-%:%171=99%:%
-%:%172=100%:%
-%:%173=101%:%
-%:%174=102%:%
-%:%175=103%:%
-%:%176=104%:%
-%:%177=105%:%
-%:%178=106%:%
-%:%179=107%:%
-%:%180=108%:%
-%:%181=109%:%
-%:%182=110%:%
+%:%136=83%:%
+%:%145=85%:%
+%:%157=87%:%
+%:%158=88%:%
+%:%159=89%:%
+%:%160=90%:%
+%:%161=91%:%
+%:%162=92%:%
+%:%163=93%:%
+%:%164=94%:%
+%:%165=95%:%
+%:%166=96%:%
+%:%167=97%:%
+%:%168=98%:%
+%:%169=99%:%
+%:%170=100%:%
+%:%171=101%:%
+%:%172=102%:%
+%:%173=103%:%
+%:%174=104%:%
+%:%175=105%:%
+%:%177=108%:%
+%:%178=108%:%
+%:%179=109%:%
+%:%180=110%:%
+%:%181=111%:%
+%:%182=112%:%
+%:%183=112%:%
 %:%184=113%:%
-%:%185=113%:%
-%:%186=114%:%
+%:%185=114%:%
+%:%186=115%:%
 %:%187=115%:%
 %:%188=116%:%
 %:%189=117%:%
-%:%190=117%:%
-%:%191=118%:%
+%:%190=118%:%
+%:%191=119%:%
 %:%192=119%:%
 %:%193=120%:%
-%:%194=120%:%
-%:%195=121%:%
-%:%196=122%:%
+%:%194=121%:%
+%:%195=122%:%
+%:%196=123%:%
 %:%197=123%:%
 %:%198=124%:%
-%:%199=124%:%
-%:%200=125%:%
-%:%201=126%:%
-%:%202=127%:%
-%:%203=128%:%
-%:%204=128%:%
-%:%205=129%:%
-%:%206=130%:%
-%:%208=133%:%
-%:%210=135%:%
-%:%211=135%:%
-%:%212=136%:%
-%:%213=137%:%
-%:%216=138%:%
-%:%220=138%:%
-%:%221=138%:%
-%:%222=139%:%
-%:%223=139%:%
-%:%224=140%:%
-%:%225=140%:%
-%:%226=141%:%
-%:%227=141%:%
-%:%228=142%:%
-%:%229=142%:%
-%:%230=143%:%
-%:%231=143%:%
-%:%232=144%:%
-%:%233=144%:%
-%:%234=145%:%
-%:%235=145%:%
-%:%236=146%:%
-%:%237=146%:%
-%:%238=146%:%
-%:%239=147%:%
-%:%240=147%:%
-%:%241=147%:%
-%:%242=148%:%
-%:%243=148%:%
-%:%244=149%:%
-%:%245=149%:%
-%:%246=150%:%
-%:%247=150%:%
-%:%248=151%:%
-%:%249=151%:%
-%:%250=152%:%
-%:%251=152%:%
-%:%252=153%:%
-%:%253=153%:%
-%:%254=154%:%
-%:%255=154%:%
-%:%256=155%:%
-%:%257=155%:%
-%:%258=156%:%
-%:%259=156%:%
-%:%260=157%:%
-%:%261=157%:%
-%:%262=157%:%
-%:%263=158%:%
-%:%264=158%:%
-%:%265=159%:%
-%:%266=159%:%
-%:%267=160%:%
-%:%273=160%:%
-%:%276=161%:%
-%:%277=162%:%
-%:%278=162%:%
-%:%279=163%:%
-%:%280=164%:%
-%:%283=165%:%
-%:%287=165%:%
-%:%288=165%:%
-%:%289=166%:%
-%:%290=166%:%
-%:%291=167%:%
-%:%292=167%:%
-%:%293=168%:%
-%:%294=168%:%
-%:%295=169%:%
-%:%296=169%:%
-%:%297=170%:%
-%:%298=170%:%
-%:%299=171%:%
-%:%300=171%:%
-%:%301=171%:%
-%:%302=171%:%
-%:%303=172%:%
-%:%304=172%:%
-%:%305=173%:%
-%:%306=173%:%
-%:%307=174%:%
-%:%308=174%:%
-%:%309=174%:%
-%:%310=175%:%
-%:%311=175%:%
-%:%312=176%:%
-%:%313=176%:%
-%:%314=177%:%
-%:%324=179%:%
-%:%333=180%:%
-%:%345=181%:%
-%:%346=182%:%
-%:%347=183%:%
-%:%349=185%:%
-%:%350=185%:%
-%:%351=186%:%
-%:%352=202%:%
-%:%355=205%:%
-%:%356=206%:%
-%:%357=207%:%
-%:%358=208%:%
-%:%359=209%:%
-%:%360=210%:%
-%:%361=211%:%
-%:%362=212%:%
-%:%363=213%:%
-%:%364=214%:%
-%:%365=215%:%
-%:%366=216%:%
-%:%367=217%:%
-%:%368=218%:%
-%:%369=219%:%
-%:%370=220%:%
-%:%371=221%:%
-%:%372=222%:%
-%:%373=223%:%
-%:%374=224%:%
-%:%375=225%:%
-%:%376=226%:%
-%:%377=227%:%
-%:%378=228%:%
-%:%379=229%:%
-%:%380=230%:%
-%:%381=231%:%
-%:%382=232%:%
-%:%383=233%:%
-%:%384=234%:%
-%:%385=235%:%
-%:%386=236%:%
-%:%387=237%:%
-%:%388=238%:%
-%:%389=239%:%
-%:%390=240%:%
-%:%391=241%:%
-%:%392=242%:%
-%:%393=243%:%
-%:%394=244%:%
-%:%395=245%:%
-%:%396=246%:%
-%:%397=247%:%
-%:%398=248%:%
+%:%199=125%:%
+%:%201=128%:%
+%:%203=130%:%
+%:%204=130%:%
+%:%205=131%:%
+%:%206=132%:%
+%:%209=133%:%
+%:%213=133%:%
+%:%214=133%:%
+%:%215=134%:%
+%:%216=134%:%
+%:%217=135%:%
+%:%218=135%:%
+%:%219=136%:%
+%:%220=136%:%
+%:%221=137%:%
+%:%222=137%:%
+%:%223=138%:%
+%:%224=138%:%
+%:%225=139%:%
+%:%226=139%:%
+%:%227=140%:%
+%:%228=140%:%
+%:%229=141%:%
+%:%230=141%:%
+%:%231=141%:%
+%:%232=142%:%
+%:%233=142%:%
+%:%234=142%:%
+%:%235=143%:%
+%:%236=143%:%
+%:%237=144%:%
+%:%238=144%:%
+%:%239=145%:%
+%:%240=145%:%
+%:%241=146%:%
+%:%242=146%:%
+%:%243=147%:%
+%:%244=147%:%
+%:%245=148%:%
+%:%246=148%:%
+%:%247=149%:%
+%:%248=149%:%
+%:%249=150%:%
+%:%250=150%:%
+%:%251=151%:%
+%:%252=151%:%
+%:%253=152%:%
+%:%254=152%:%
+%:%255=152%:%
+%:%256=153%:%
+%:%257=153%:%
+%:%258=154%:%
+%:%259=154%:%
+%:%260=155%:%
+%:%266=155%:%
+%:%269=156%:%
+%:%270=157%:%
+%:%271=157%:%
+%:%272=158%:%
+%:%273=159%:%
+%:%276=160%:%
+%:%280=160%:%
+%:%281=160%:%
+%:%282=161%:%
+%:%283=161%:%
+%:%284=162%:%
+%:%285=162%:%
+%:%286=163%:%
+%:%287=163%:%
+%:%288=164%:%
+%:%289=164%:%
+%:%290=165%:%
+%:%291=165%:%
+%:%292=166%:%
+%:%293=166%:%
+%:%294=166%:%
+%:%295=166%:%
+%:%296=167%:%
+%:%297=167%:%
+%:%298=168%:%
+%:%299=168%:%
+%:%300=169%:%
+%:%301=169%:%
+%:%302=169%:%
+%:%303=170%:%
+%:%304=170%:%
+%:%305=171%:%
+%:%306=171%:%
+%:%307=172%:%
+%:%317=174%:%
+%:%326=175%:%
+%:%338=176%:%
+%:%339=177%:%
+%:%340=178%:%
+%:%342=180%:%
+%:%343=180%:%
+%:%344=181%:%
+%:%345=197%:%
+%:%348=200%:%
+%:%349=201%:%
+%:%350=202%:%
+%:%351=203%:%
+%:%352=204%:%
+%:%353=205%:%
+%:%354=206%:%
+%:%355=207%:%
+%:%356=208%:%
+%:%357=209%:%
+%:%358=210%:%
+%:%359=211%:%
+%:%360=212%:%
+%:%361=213%:%
+%:%362=214%:%
+%:%363=215%:%
+%:%364=216%:%
+%:%365=217%:%
+%:%366=218%:%
+%:%367=219%:%
+%:%368=220%:%
+%:%369=221%:%
+%:%370=222%:%
+%:%371=223%:%
+%:%372=224%:%
+%:%373=225%:%
+%:%374=226%:%
+%:%375=227%:%
+%:%376=228%:%
+%:%377=229%:%
+%:%378=230%:%
+%:%379=231%:%
+%:%380=232%:%
+%:%381=233%:%
+%:%382=234%:%
+%:%383=235%:%
+%:%384=236%:%
+%:%385=237%:%
+%:%386=238%:%
+%:%387=239%:%
+%:%388=240%:%
+%:%389=241%:%
+%:%390=242%:%
+%:%391=243%:%
+%:%392=244%:%
+%:%393=245%:%
+%:%394=246%:%
+%:%395=247%:%
 %:%399=249%:%
 %:%400=250%:%
 %:%401=251%:%
 %:%402=252%:%
-%:%406=254%:%
-%:%407=255%:%
-%:%408=256%:%
-%:%409=257%:%
+%:%403=253%:%
+%:%404=254%:%
+%:%405=255%:%

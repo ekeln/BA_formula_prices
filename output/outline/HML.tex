@@ -34,15 +34,14 @@
 %
 \begin{isamarkuptext}%
 For the purpose of this thesis, we focus on the modal-logical characterizations of equivalences, using Hennessy--Milner logic (HML). 
-First introduced by Matthew Hennessy and Robin Milner (citation), HML is a modal logic for expressing properties of systems described by LTS.
+First introduced by Matthew Hennessy and Robin Milner \cite{hm85}, HML is a modal logic for expressing properties of systems described by LTS.
 Intuitively, HML describes observations on an LTS and two processes are considered equivalent under HML if there exists no observation that distinguishes between them.
-(citation) defined the modal-logical language as consisting of (finite) conjunctions, negations and a (modal) possibility operator:
-$$\varphi ::= t\!t \mid \varphi_1 \;\wedge\; \varphi_2 \mid \neg\varphi \mid \langle\alpha\rangle\varphi$$
-(where $\alpha$ ranges over the set of actions.) The paper also proves that this language characterizes a relation that is effectively the same as bisimilarity. 
+In their seminal paper, Matthew Hennessy and Robin Milner defined the modal-logical language as consisting of (finite) conjunctions, negations and a (modal) possibility operator:
+$$\varphi ::= t\!t \mid \varphi_1 \;\wedge\; \varphi_2 \mid \neg\varphi \mid \langle\alpha\rangle\varphi \quad\text{with }\alpha\in\Sigma$$
+The paper also proves that this language characterizes a relation that is effectively the same as bisimilarity. 
 This theorem is called the Hennessy--Milner Theorem and can be expressed as follows: for image-finite LTSs, two processes are bisimilar iff they satisfy the same set of HML formulas. We call this the modal characterization of
-bisimilarity. (Infinitary) Hennessy--Milner logic extends the original definition by allowing for conjunction of arbitrary width. 
-This yields the modal characterization of bisimilarity for arbitrary LTS (cite). In (Section Bisimilarity) we provide an intuition of the proof along with the Isabelle proof.
-In the following sections we mean the infinitary version when talking about HML.%
+bisimilarity. (Infinitary) Hennessy--Milner logic extends the original definition by allowing for conjunctions of arbitrary width. 
+This yields the modal characterization of bisimilarity for arbitrary LTS and is proven in (Appendix). In the following sections we always mean the infinitary version when talking about HML.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \isadelimdocument
@@ -63,20 +62,35 @@ In the following sections we mean the infinitary version when talking about HML.
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-\textbf{Syntax} \textit{The \textnormal{syntax of Hennessy--Milner logic} over a set $\Sigma$ of actions HML[$\Sigma$] is defined by the grammar:}
+\textbf{Syntax} \textit{The \textnormal{syntax of Hennessy--Milner logic} over a set $\Sigma$ of actions HML[$\Sigma$] is defined by the grammar:
 \begin{align*}
     \varphi &::= \langle a \rangle \varphi && \text{with } a \in \Sigma \\
             &\quad | \, \bigwedge_{i \in I} \psi_i \\
     \psi &::= \neg \varphi \, | \, \varphi.
 \end{align*}
-Where $I$ denotes an index set. The empty conjunction \textsf{T} $\coloneqq \bigwedge\varnothing$ is usually omitted in writing.%
+Where $I$ denotes an index set. The empty conjunction \textsf{T} $\coloneqq \bigwedge\varnothing$ is usually omitted in writing.}
+
+\textbf{Semantics} \textit{The \textnormal{semantics of HML} parametrized by $\Sigma$ (on LTS processes) are given by the relation $\models$ : $(\Proc, \text{HML}[\Sigma])$:
+\begin{align*}
+  p &\models \langle \alpha \rangle\varphi && \text{if there exists } q \text{ such that } q\in\mathit{Der}(p, \alpha) \text{ and } q \models\varphi \\
+  p &\models \bigwedge_{i \in I} \psi_i && \text{if } p\models\psi_i \text{ for all } i\in I \\
+  p &\models \lnot\varphi && \text{if } p\not\models\varphi
+\end{align*}}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+$\langle a \rangle$ captures the observation of an $a$-transition by the system. 
+Similar to propositional logic, conjunctions are used to describe multiple properties of a state that must hold simultaneously. Each conjunct represents a possible branching or execution path of the system. $\lnot\varphi$ indicates the absence of behavior represented by the subformula $\varphi$.%
 \end{isamarkuptext}\isamarkuptrue%
 %
 \begin{isamarkuptext}%
 The data type \isa{{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml} formalizes the definition of HML formulas above. It is parameterized by the type of actions \isa{{\isacharprime}{\kern0pt}a} for $\Sigma$
-and an index type \isa{{\isacharprime}{\kern0pt}i}. We use an index sets of arbitrary type \isa{I\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}i\ set} and a mapping \isa{F\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}i\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml} to formalize
-conjunctions so that each element of \isa{I} is mapped to a formula%
-\footnote{Note that the formalization via an arbitrary set, i.e. \isa{hml{\isacharunderscore}{\kern0pt}conj\ {\isasymopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}hml\ set{\isasymclose}} does not yield a valid type, since \isa{set} is not a bounded natural functor.}%.%
+and an index type \isa{{\isacharprime}{\kern0pt}i}. We include the constructor \isa{TT} for the formula \textsf{T} as part of the Isabelle syntax. This is to enable Isabelle to infer that the type \isa{{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml} is not empty. The constructor \isa{hml{\isacharunderscore}{\kern0pt}pos} corresponds directly to the possibility operator. 
+Conjunctions are formalized using the constructor \isa{hml{\isacharunderscore}{\kern0pt}conj}. The constructor has two index sets of arbitrary type \isa{{\isacharprime}{\kern0pt}i\ set} and a mapping \isa{F\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}i\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml} as type variables. The first variable is used to denote the positive conjuncts and the second denotes the negative conjuncts. 
+The term \isa{{\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasymPhi}{\isacharparenright}{\kern0pt}} corresponds to $\bigwedge \left( \bigcup_{i \in I} \{(\Phi\; i)\} \cup \bigcup_{i \in J} \{\lnot (\Phi\; i)\} \right)$.
+We decided to formalize HML without the explicit $\psi$ to avoid using mutual recursion, since it is harder to handle especially in proofs using induction over the data type.
+Note that the formalization via an arbitrary set, i.e. \isa{hml{\isacharunderscore}{\kern0pt}conj\ {\isasymopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharparenright}{\kern0pt}hml\ set{\isasymclose}} does not yield a valid type, since \isa{set} is not a bounded natural functor.
+Corresponding to the mathematical definition, this formalization allows for conjunctions of arbitrary---even of infinite---width.%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{datatype}\isamarkupfalse%
 \ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml\ {\isacharequal}{\kern0pt}\isanewline
@@ -84,22 +98,7 @@ TT\ {\isacharbar}{\kern0pt}\isanewline
 hml{\isacharunderscore}{\kern0pt}pos\ {\isacartoucheopen}{\isacharprime}{\kern0pt}a{\isacartoucheclose}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}hml{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
 hml{\isacharunderscore}{\kern0pt}conj\ {\isacartoucheopen}{\isacharprime}{\kern0pt}i\ set{\isacartoucheclose}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}i\ set{\isacartoucheclose}\ {\isacartoucheopen}{\isacharprime}{\kern0pt}i\ {\isasymRightarrow}\ {\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}i{\isacharparenright}{\kern0pt}\ hml{\isacartoucheclose}%
 \begin{isamarkuptext}%
-Note that in the Isabelle formalization differs from the mathematical definition by including a special formula \isa{TT} for \textsf{T} as part of the syntax. 
-This is to to enable Isabelle to infer that the type \isa{hml} is not empty. Semantically, \isa{TT} is synonymous to \isa{{\isasymAnd}{\isacharbraceleft}{\kern0pt}{\isacharbraceright}{\kern0pt}}.
-Corresponding to the mathematical definition, this formalization allows for conjunctions of arbitrary - even of infinite - width.%
-\end{isamarkuptext}\isamarkuptrue%
-%
-\begin{isamarkuptext}%
-$\langle a \rangle$ captures the observation of an $a$-transition by the system. 
-Similar to propositional logic, conjunctions are used to describe multiple properties of a state that must hold simultaneously. Each conjunct represents a possible branching or execution path of the system. 
-$\lnot\varphi$ indicate the absence of behavior represented by the subformula $\varphi$. 
-
-\textbf{Semantics} \textit{The \textnormal{semantics of HML} parametrized by $\Sigma$ (on LTS processes) are given by the relation $\models$ : $(\Proc, \text{HML}[\Sigma])$:}
-\begin{align*}
-  p &\models \langle \alpha \rangle\varphi && \text{if there exists } q \text{ such that } q\in\mathit{Der}(p, \alpha) \text{ and } q \models\varphi \\
-  p &\models \bigwedge_{i \in I} \psi_i && \text{if } p\models\psi_i \text{ for all } i\in I \\
-  p &\models \lnot\varphi && \text{if } p\not\models\varphi
-\end{align*}%
+The semantic models-relation is formalized in Isabelle in the context of LTS. This means that the index type \isa{{\isacharprime}{\kern0pt}i} is replaced by the type of processes \isa{{\isacharprime}{\kern0pt}s}. Since this modal-logically characterizes bisimilarity, we can conclude that it suffices for the cardinality of the indexsets to be equal to the cardinality of the set of processes.%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{context}\isamarkupfalse%
 \ lts\ \isakeyword{begin}\isanewline
@@ -109,8 +108,9 @@ $\lnot\varphi$ indicate the absence of behavior represented by the subformula $\
 {\isacharparenleft}{\kern0pt}{\isacartoucheopen}{\isacharunderscore}{\kern0pt}\ {\isasymTurnstile}\ {\isacharunderscore}{\kern0pt}{\isacartoucheclose}\ {\isacharbrackleft}{\kern0pt}{\isadigit{5}}{\isadigit{0}}{\isacharcomma}{\kern0pt}\ {\isadigit{5}}{\isadigit{0}}{\isacharbrackright}{\kern0pt}\ {\isadigit{5}}{\isadigit{0}}{\isacharparenright}{\kern0pt}\isanewline
 \isakeyword{where}\isanewline
 hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}tt{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharunderscore}{\kern0pt}\ {\isasymTurnstile}\ TT{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ True{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}pos{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}pos\ {\isasymalpha}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}\ q{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymmapsto}{\isasymalpha}\ q{\isacharparenright}{\kern0pt}\ {\isasymand}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
-hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}conj{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasympsi}s{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isasymforall}i\ {\isasymin}\ I{\isachardot}{\kern0pt}\ p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ i{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymforall}j\ {\isasymin}\ J{\isachardot}{\kern0pt}\ {\isasymnot}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ j{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
+hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}pos{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}pos\ {\isasymalpha}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isasymexists}q{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}p\ {\isasymmapsto}{\isasymalpha}\ q{\isacharparenright}{\kern0pt}\ {\isasymand}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isacharparenright}{\kern0pt}{\isacartoucheclose}\ {\isacharbar}{\kern0pt}\isanewline
+hml{\isacharunderscore}{\kern0pt}sem{\isacharunderscore}{\kern0pt}conj{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}hml{\isacharunderscore}{\kern0pt}conj\ I\ J\ {\isasympsi}s{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isacharequal}{\kern0pt}\ {\isacharparenleft}{\kern0pt}{\isacharparenleft}{\kern0pt}{\isasymforall}i\ {\isasymin}\ I{\isachardot}{\kern0pt}\ p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ i{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}\isanewline
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ {\isasymand}\ {\isacharparenleft}{\kern0pt}{\isasymforall}j\ {\isasymin}\ J{\isachardot}{\kern0pt}\ {\isasymnot}{\isacharparenleft}{\kern0pt}p\ {\isasymTurnstile}\ {\isacharparenleft}{\kern0pt}{\isasympsi}s\ j{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacharparenright}{\kern0pt}{\isacartoucheclose}%
 \begin{isamarkuptext}%
 A formula that is true for all processes in a LTS can be considered a property that holds universally for the system, akin to a tautology in classical logic.%
 \end{isamarkuptext}\isamarkuptrue%
@@ -149,9 +149,17 @@ A formula that is true for all processes in a LTS can be considered a property t
 \endisadelimdocument
 %
 \begin{isamarkuptext}%
-\textit{As discussed, equivalences in LTS can be defined in terms of \textsf{HML} subsets. Two processes are equivalent regarding a subset of HML if they satisfy the same formulas of that subset. 
-A subset provides a \textnormal{modal-logical characterization $\mathcal{O}_X$} of an equivalence X if, according to that subset, the same processes are considered equivalent as they are under the colloquial definition of that equivalence.
-We denote \textnormal{X-equivalence} of two processes $p$ $q$ by $p \sim_X q$. If they processes are equivalent for every formula in HML, they are bisimilar $p \sim_B q$. A formula \textnormal{distinguishes} one state from another if it is true for the former and false for the latter.}%
+\textit{
+\begin{itemize}
+    \item As discussed, equivalences in LTS can be defined in terms of \textsf{HML} subsets. Two processes are \textnormal{X-equivalent} regarding a subset of Hennessy--Milner logic, $\mathcal{O}_X \subseteq \textnormal{HML}[\Sigma]$, if they satisfy the same formulas of that subset. 
+    \item A subset provides a \textnormal{modal-logical characterization} of an equivalence X if, according to that subset, the same processes are considered equivalent as they are under the colloquial definition of that equivalence.
+    \item A formula $\varphi \in \textnormal{HML}[\Sigma]$ \textnormal{distinguishes} one state from another if it is true for the former and false for the latter.
+\end{itemize}
+}%
+\end{isamarkuptext}\isamarkuptrue%
+%
+\begin{isamarkuptext}%
+We do not introduce the modal-logical characterizations of all equivalences here, but one by one in chapter (ref).%
 \end{isamarkuptext}\isamarkuptrue%
 \isacommand{definition}\isamarkupfalse%
 \ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}hml\ set\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
@@ -165,69 +173,15 @@ We denote \textnormal{X-equivalence} of two processes $p$ $q$ by $p \sim_X q$. I
 \ distinguishes\ {\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ \ {\isacartoucheopen}{\isacharparenleft}{\kern0pt}{\isacharprime}{\kern0pt}a{\isacharcomma}{\kern0pt}\ {\isacharprime}{\kern0pt}s{\isacharparenright}{\kern0pt}\ hml\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ {\isacharprime}{\kern0pt}s\ {\isasymRightarrow}\ bool{\isacartoucheclose}\ \isakeyword{where}\isanewline
 \ \ \ {\isacartoucheopen}distinguishes\ {\isasymphi}\ p\ q\ {\isasymequiv}\ p\ {\isasymTurnstile}\ {\isasymphi}\ {\isasymand}\ {\isasymnot}\ q\ {\isasymTurnstile}\ {\isasymphi}{\isacartoucheclose}%
 \begin{isamarkuptext}%
-$\cdot \sim_X \cdot$ is an equivalence relation.%
+For the purposes of this thesis, we consider the modal-logical characterizations, similar to those presented in (van Glaabbeck), as synonymous with the characterization of the equivalences.
+\textnormal{X-equivalence} of two processes $p$ and $q$ is denoted by $p \sim_X q$. If they are equivalent for every formula in \textnormal{HML}[\Sigma], they are bisimilar, denoted as $p \sim_B q$.%
 \end{isamarkuptext}\isamarkuptrue%
-\isacommand{lemma}\isamarkupfalse%
-\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}refl{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}reflp\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ X{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
 %
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{using}\isamarkupfalse%
-\ reflpI\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\isanewline
-\ \ \isacommand{by}\isamarkupfalse%
-\ metis%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-\isanewline
-%
-\endisadelimproof
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}trans{\isacharcolon}{\kern0pt}\ {\isachardoublequoteopen}transp\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ X{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{using}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ transp{\isacharunderscore}{\kern0pt}def\isanewline
-\ \ \isacommand{by}\isamarkupfalse%
-\ force%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-\isanewline
-%
-\endisadelimproof
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}sym{\isacharcolon}{\kern0pt}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}symp\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ X{\isacharparenright}{\kern0pt}{\isachardoublequoteclose}\isanewline
-%
-\isadelimproof
-\ \ %
-\endisadelimproof
-%
-\isatagproof
-\isacommand{unfolding}\isamarkupfalse%
-\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ symp{\isacharunderscore}{\kern0pt}def\ \isanewline
-\ \ \isacommand{by}\isamarkupfalse%
-\ blast\isanewline
-\isanewline
-%
-\endisatagproof
-{\isafoldproof}%
-%
-\isadelimproof
-%
-\endisadelimproof
+\begin{isamarkuptext}%
+Next we show some properties to better talk about these definitions. We show that $\cdot \sim_X \cdot$ is an equivalence relation. 
+Also, the equivalence is preserved under transitions, meaning that the X-equivalence is maintained when processes transition to new states.
+Finally, we show that if two states are not HML equivalent, there must be a distinguishing formula.%
+\end{isamarkuptext}\isamarkuptrue%
 %
 \isadelimvisible
 %
@@ -239,12 +193,53 @@ $\cdot \sim_X \cdot$ is an equivalence relation.%
 {\isafoldvisible}%
 %
 \isadelimvisible
+\isanewline
+%
+\endisadelimvisible
+\isacommand{lemma}\isamarkupfalse%
+\ {\isacartoucheopen}equivp\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent\ X{\isacharparenright}{\kern0pt}{\isacartoucheclose}\isanewline
+%
+\isadelimproof
+\ \ %
+\endisadelimproof
+%
+\isatagproof
+\isacommand{using}\isamarkupfalse%
+\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}trans\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}sym\ subs{\isacharunderscore}{\kern0pt}equiv{\isacharunderscore}{\kern0pt}refl\ equivpI\isanewline
+\ \ \isacommand{by}\isamarkupfalse%
+\ blast%
+\endisatagproof
+{\isafoldproof}%
+%
+\isadelimproof
+\isanewline
+%
+\endisadelimproof
+%
+\isadelimvisible
+\isanewline
 %
 \endisadelimvisible
 %
-\begin{isamarkuptext}%
-If two states are not HML equivalent, there must be a distinguishing formula.%
-\end{isamarkuptext}\isamarkuptrue%
+\isatagvisible
+\isacommand{lemma}\isamarkupfalse%
+\ equiv{\isacharunderscore}{\kern0pt}der{\isacharcolon}{\kern0pt}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}HML{\isacharunderscore}{\kern0pt}equivalent\ p\ q{\isachardoublequoteclose}\ {\isachardoublequoteopen}{\isasymexists}p{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ p\ {\isasymmapsto}{\isasymalpha}\ p{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}{\isasymexists}p{\isacharprime}{\kern0pt}\ q{\isacharprime}{\kern0pt}{\isachardot}{\kern0pt}\ {\isacharparenleft}{\kern0pt}HML{\isacharunderscore}{\kern0pt}equivalent\ p{\isacharprime}{\kern0pt}\ q{\isacharprime}{\kern0pt}{\isacharparenright}{\kern0pt}\ {\isasymand}\ q\ {\isasymmapsto}{\isasymalpha}\ q{\isacharprime}{\kern0pt}{\isachardoublequoteclose}\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
+\ assms\ hml{\isacharunderscore}{\kern0pt}semantics{\isachardot}{\kern0pt}simps\isanewline
+\ \ \isacommand{unfolding}\isamarkupfalse%
+\ HML{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\ HML{\isacharunderscore}{\kern0pt}subset{\isacharunderscore}{\kern0pt}equivalent{\isacharunderscore}{\kern0pt}def\isanewline
+\ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}{\kern0pt}metis\ UNIV{\isacharunderscore}{\kern0pt}def\ iso{\isacharunderscore}{\kern0pt}tuple{\isacharunderscore}{\kern0pt}UNIV{\isacharunderscore}{\kern0pt}I{\isacharparenright}{\kern0pt}%
+\endisatagvisible
+{\isafoldvisible}%
+%
+\isadelimvisible
+\isanewline
+%
+\endisadelimvisible
+\isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ hml{\isacharunderscore}{\kern0pt}distinctions{\isacharcolon}{\kern0pt}\isanewline
 \ \ \isakeyword{fixes}\ state{\isacharcolon}{\kern0pt}{\isacharcolon}{\kern0pt}\ {\isacharprime}{\kern0pt}s\isanewline
@@ -310,17 +305,18 @@ If two states are not HML equivalent, there must be a distinguishing formula.%
 {\isafoldproof}%
 %
 \isadelimproof
-\isanewline
 %
 \endisadelimproof
-\isanewline
-\isacommand{end}\isamarkupfalse%
 %
 \begin{isamarkuptext}%
-We can now use HML to capture differences between $p_1$ and $q_1$ of (ref Example 1). The formula
-$\langle a \rangle\bigwedge\{\lnot\langle c \rangle\}$ distinguishes $p_1$ from $q_1$ and $\bigwedge\{\lnot\langle a \rangle\bigwedge\{\lnot\langle c \rangle\}\}$ distinguishes
-$q_1$ from $p_1$. The Hennessy–Milner Theorem implies that if a distinguishing formula exists, then $p_1$ and $q_1$ cannot be bisimilar.%
+\textit{Example 1.} We can now use HML to capture differences between $p_1$ and $q_1$ of Figure \ref{fig:2_1}. The formula
+$\varphi_1 :=\langle a \rangle\bigwedge\{\lnot\langle c \rangle\}$ distinguishes $p_1$ from $q_1$ and $\varphi_2 := \bigwedge\{\lnot\langle a \rangle\bigwedge\{\lnot\langle c \rangle\}\}$ distinguishes
+$q_1$ from $p_1$. The Hennessy--Milner Theorem implies that if a distinguishing formula exists, then $p_1$ and $q_1$ cannot be bisimilar.%
 \end{isamarkuptext}\isamarkuptrue%
+\isacommand{end}\isamarkupfalse%
+\ %
+\isamarkupcmt{of context lts%
+}\isanewline
 %
 \isadelimvisible
 %
@@ -387,8 +383,8 @@ $q_1$ from $p_1$. The Hennessy–Milner Theorem implies that if a distinguishing
 %:%42=14%:%
 %:%43=15%:%
 %:%44=16%:%
-%:%45=17%:%
-%:%54=19%:%
+%:%53=18%:%
+%:%65=19%:%
 %:%66=20%:%
 %:%67=21%:%
 %:%68=22%:%
@@ -396,142 +392,145 @@ $q_1$ from $p_1$. The Hennessy–Milner Theorem implies that if a distinguishing
 %:%70=24%:%
 %:%71=25%:%
 %:%72=26%:%
-%:%76=28%:%
-%:%77=29%:%
-%:%78=30%:%
-%:%79=31%:%
-%:%81=33%:%
-%:%82=33%:%
-%:%83=34%:%
-%:%84=35%:%
-%:%85=36%:%
+%:%73=27%:%
+%:%74=28%:%
+%:%75=29%:%
+%:%76=30%:%
+%:%77=31%:%
+%:%78=32%:%
+%:%82=34%:%
+%:%83=35%:%
 %:%87=38%:%
 %:%88=39%:%
 %:%89=40%:%
-%:%93=42%:%
-%:%94=43%:%
-%:%95=44%:%
-%:%96=45%:%
-%:%97=46%:%
-%:%98=47%:%
-%:%99=48%:%
-%:%100=49%:%
-%:%101=50%:%
-%:%102=51%:%
+%:%90=41%:%
+%:%91=42%:%
+%:%92=43%:%
+%:%93=44%:%
+%:%95=46%:%
+%:%96=46%:%
+%:%97=47%:%
+%:%98=48%:%
+%:%99=49%:%
+%:%101=51%:%
+%:%103=53%:%
 %:%104=53%:%
-%:%105=53%:%
-%:%106=54%:%
+%:%105=54%:%
+%:%106=55%:%
 %:%107=55%:%
-%:%108=55%:%
-%:%109=56%:%
-%:%110=57%:%
-%:%111=58%:%
-%:%112=59%:%
-%:%113=60%:%
-%:%115=62%:%
-%:%117=63%:%
-%:%118=63%:%
-%:%119=64%:%
-%:%140=73%:%
-%:%152=75%:%
-%:%153=76%:%
-%:%154=77%:%
-%:%156=79%:%
-%:%157=79%:%
-%:%158=80%:%
-%:%159=81%:%
-%:%160=82%:%
-%:%161=82%:%
-%:%162=83%:%
-%:%163=84%:%
-%:%164=85%:%
-%:%165=85%:%
-%:%166=86%:%
-%:%168=88%:%
+%:%108=56%:%
+%:%109=57%:%
+%:%110=58%:%
+%:%111=59%:%
+%:%112=60%:%
+%:%115=63%:%
+%:%117=64%:%
+%:%118=64%:%
+%:%119=65%:%
+%:%140=74%:%
+%:%152=76%:%
+%:%153=77%:%
+%:%154=78%:%
+%:%155=79%:%
+%:%156=80%:%
+%:%157=81%:%
+%:%158=82%:%
+%:%162=84%:%
+%:%164=86%:%
+%:%165=86%:%
+%:%166=87%:%
+%:%167=88%:%
+%:%168=89%:%
+%:%169=89%:%
 %:%170=90%:%
-%:%171=90%:%
-%:%174=91%:%
-%:%178=91%:%
-%:%179=91%:%
-%:%180=92%:%
-%:%181=92%:%
-%:%186=92%:%
-%:%189=93%:%
-%:%190=94%:%
-%:%191=94%:%
-%:%194=95%:%
-%:%198=95%:%
-%:%199=95%:%
-%:%200=96%:%
-%:%201=96%:%
-%:%206=96%:%
-%:%209=97%:%
-%:%210=98%:%
-%:%211=98%:%
-%:%212=99%:%
-%:%215=100%:%
-%:%219=100%:%
-%:%220=100%:%
-%:%221=101%:%
-%:%222=101%:%
-%:%223=102%:%
-%:%246=112%:%
-%:%248=114%:%
-%:%249=114%:%
-%:%250=115%:%
-%:%251=116%:%
-%:%252=117%:%
-%:%259=118%:%
-%:%260=118%:%
-%:%261=119%:%
-%:%262=119%:%
-%:%263=119%:%
-%:%264=120%:%
-%:%265=120%:%
-%:%266=120%:%
-%:%267=121%:%
-%:%268=121%:%
-%:%269=121%:%
-%:%270=121%:%
-%:%271=122%:%
-%:%272=122%:%
-%:%273=122%:%
-%:%274=123%:%
-%:%275=123%:%
-%:%276=124%:%
-%:%277=124%:%
-%:%278=124%:%
-%:%279=125%:%
-%:%280=125%:%
-%:%281=126%:%
-%:%282=126%:%
-%:%283=126%:%
-%:%284=127%:%
-%:%285=127%:%
-%:%286=128%:%
-%:%287=128%:%
-%:%288=129%:%
-%:%289=129%:%
-%:%291=131%:%
-%:%292=132%:%
-%:%293=132%:%
-%:%294=133%:%
-%:%295=133%:%
-%:%296=134%:%
-%:%297=134%:%
-%:%298=135%:%
-%:%299=135%:%
-%:%300=136%:%
-%:%301=136%:%
-%:%302=136%:%
-%:%303=137%:%
-%:%304=137%:%
-%:%305=138%:%
-%:%306=138%:%
-%:%307=139%:%
-%:%313=139%:%
-%:%316=140%:%
-%:%317=141%:%
-%:%320=143%:%
-%:%321=144%:%
-%:%322=145%:%
+%:%171=91%:%
+%:%172=92%:%
+%:%173=92%:%
+%:%174=93%:%
+%:%176=96%:%
+%:%177=97%:%
+%:%181=100%:%
+%:%182=101%:%
+%:%183=102%:%
+%:%196=118%:%
+%:%199=119%:%
+%:%200=119%:%
+%:%203=120%:%
+%:%207=120%:%
+%:%208=120%:%
+%:%209=121%:%
+%:%210=121%:%
+%:%215=121%:%
+%:%220=122%:%
+%:%225=123%:%
+%:%226=123%:%
+%:%227=124%:%
+%:%228=125%:%
+%:%229=126%:%
+%:%230=126%:%
+%:%231=127%:%
+%:%232=127%:%
+%:%233=128%:%
+%:%234=128%:%
+%:%239=128%:%
+%:%242=129%:%
+%:%243=130%:%
+%:%244=130%:%
+%:%245=131%:%
+%:%246=132%:%
+%:%247=133%:%
+%:%254=134%:%
+%:%255=134%:%
+%:%256=135%:%
+%:%257=135%:%
+%:%258=135%:%
+%:%259=136%:%
+%:%260=136%:%
+%:%261=136%:%
+%:%262=137%:%
+%:%263=137%:%
+%:%264=137%:%
+%:%265=137%:%
+%:%266=138%:%
+%:%267=138%:%
+%:%268=138%:%
+%:%269=139%:%
+%:%270=139%:%
+%:%271=140%:%
+%:%272=140%:%
+%:%273=140%:%
+%:%274=141%:%
+%:%275=141%:%
+%:%276=142%:%
+%:%277=142%:%
+%:%278=142%:%
+%:%279=143%:%
+%:%280=143%:%
+%:%281=144%:%
+%:%282=144%:%
+%:%283=145%:%
+%:%284=145%:%
+%:%286=147%:%
+%:%287=148%:%
+%:%288=148%:%
+%:%289=149%:%
+%:%290=149%:%
+%:%291=150%:%
+%:%292=150%:%
+%:%293=151%:%
+%:%294=151%:%
+%:%295=152%:%
+%:%296=152%:%
+%:%297=152%:%
+%:%298=153%:%
+%:%299=153%:%
+%:%300=154%:%
+%:%301=154%:%
+%:%302=155%:%
+%:%312=157%:%
+%:%313=158%:%
+%:%314=159%:%
+%:%316=161%:%
+%:%317=161%:%
+%:%318=161%:%
+%:%319=161%:%
